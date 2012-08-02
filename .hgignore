@@ -1,0 +1,6 @@
+syntax: glob
+*.dex
+*.class
+*\/bin\/*
+*\/gen\/*
+*\/obj\/*

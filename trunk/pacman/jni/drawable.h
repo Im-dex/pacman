@@ -13,7 +13,9 @@ class Drawable
 public:
 
 	Drawable() = delete;
-	Drawable(std::shared_ptr<VertexBuffer> vertexBuffer, std::shared_ptr<Texture2D> texture, std::shared_ptr<ShaderProgram> shader);
+	Drawable(std::shared_ptr<VertexBuffer> vertexBuffer, std::shared_ptr<Texture2D> texture,
+			 std::shared_ptr<ShaderProgram> shader);
+
 	Drawable(const Drawable&) = default;
 	virtual ~Drawable() {}
 
@@ -32,6 +34,21 @@ public:
 	std::shared_ptr<ShaderProgram> GetShaderProgram() const
 	{
 		return mShaderProgram;
+	}
+
+	void SetVertexBuffer(const std::shared_ptr<VertexBuffer> vertexBuffer)
+	{
+		mVertexBuffer = vertexBuffer;
+	}
+
+	void SetTexture(const std::shared_ptr<Texture2D> texture)
+	{
+		mTexture = texture;
+	}
+
+	void SetShaderProgram(const std::shared_ptr<ShaderProgram> shaderProgram)
+	{
+		mShaderProgram = shaderProgram;
 	}
 
 private:

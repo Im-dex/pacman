@@ -77,8 +77,8 @@ public:
 	void Set(const T xyzw);
 
 	T Length() const;
-	Vector4<T>& Normalize();
-	Vector4<T>& Reverse();
+	Vector4<T> Normalize() const;
+	Vector4<T> Reverse() const;
 
 private:
 

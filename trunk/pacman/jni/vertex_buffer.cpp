@@ -6,95 +6,65 @@
 
 namespace Pacman {
 
-const size_t kPositionComponentsCount = 2;
-const size_t kColorComponentsCount = 4;
-const size_t kTexCoordComponentsCount = 2;
-
-const size_t kPositionSize = sizeof(float) * kPositionComponentsCount; // 2 coordinates for 2D
-const size_t kColorSize = sizeof(float) * kColorComponentsCount; // 4 color components (include alpha)
-const size_t kTexCoordsSize = sizeof(float) * kTexCoordComponentsCount; // UV
+static const size_t kPositionComponentsCount = 2; // x, y
+static const size_t kColorComponentsCount = 4; // r, g, b, a
+static const size_t kTexCoordsComponentsCount = 2; // u, v
 
 static const char* kPositionAttributeName = "vPosition";
 static const char* kColorAttributeName = "vColor";
 static const char* kTexCoordsAttributeName = "vTexCoords";
 
 VertexBuffer::VertexBuffer()
-			: mVertexData(nullptr),
-			  mVertexDataSize(0),
-			  mVertexSize(0),
+			: mVertices(),
+			  mVerticesCount(0),
 			  mFVF(static_cast<const fvf_t>(FVFElement::None))
 {
 }
 
-VertexBuffer::VertexBuffer(const byte_t* vertexData, const size_t size, const fvf_t fvf)
-			: mVertexData(nullptr),
-			  mVertexDataSize(0),
-			  mVertexSize(0),
+VertexBuffer::VertexBuffer(const Vertex* vertexData, const size_t count, const fvf_t fvf)
+			: mVertices(),
+			  mVerticesCount(0),
 			  mFVF(static_cast<const fvf_t>(FVFElement::None))
 {
-	SetData(vertexData, size, fvf);
+	SetData(vertexData, count, fvf);
 }
 
-VertexBuffer::~VertexBuffer()
+void VertexBuffer::SetData(const Vertex* vertexData, const size_t count, const fvf_t fvf)
 {
-	delete[] mVertexData;
-}
-
-void VertexBuffer::SetData(const byte_t* vertexData, const size_t size, const fvf_t fvf)
-{
-	delete[] mVertexData;
-	mVertexData = new byte_t[size];
-	memcpy(mVertexData, vertexData, size);
-	mVertexDataSize = size;
-	mVertexSize = ComputeVertexSize(fvf);
+	mVertices = std::unique_ptr<Vertex[]>(new Vertex[count]);
+	memcpy(mVertices.get(), vertexData, sizeof(Vertex) * count);
+	mVerticesCount = count;
 	mFVF = fvf;
-	PACMAN_CHECK_ERROR(mVertexDataSize % mVertexSize == 0, ErrorCode::BadFVF);
 }
 
 void VertexBuffer::Bind(const std::shared_ptr<ShaderProgram> shaderProgram) const
 {
-	size_t beginingOffset = 0;
-
 	if ((mFVF & static_cast<const fvf_t>(FVFElement::Position)) == static_cast<const fvf_t>(FVFElement::Position))
 	{
+		const void* data = static_cast<const void*>(mVertices.get());
 		shaderProgram->SetVertexAttribute(kPositionAttributeName, kPositionComponentsCount, VertexAttributeType::Float,
-										  mVertexSize - kPositionSize, mVertexData);
-		beginingOffset += kPositionSize;
+										  sizeof(Vertex), static_cast<const byte_t*>(data));
 	}
 
 	if ((mFVF & static_cast<const fvf_t>(FVFElement::Color)) == static_cast<const fvf_t>(FVFElement::Color))
 	{
+		const void* data = static_cast<const void*>(mVertices.get() + kPositionComponentsCount);
 		shaderProgram->SetVertexAttribute(kColorAttributeName, kColorComponentsCount, VertexAttributeType::Float,
-										  mVertexSize - kColorSize, mVertexData + beginingOffset);
-		beginingOffset += kColorSize;
+										  sizeof(Vertex), static_cast<const byte_t*>(data));
 	}
 
 	if ((mFVF & static_cast<const fvf_t>(FVFElement::TexCoords)) == static_cast<const fvf_t>(FVFElement::TexCoords))
 	{
-		shaderProgram->SetVertexAttribute(kTexCoordsAttributeName, kTexCoordComponentsCount, VertexAttributeType::Float,
-										  mVertexSize - kTexCoordsSize, mVertexData + beginingOffset);
-		beginingOffset += kTexCoordsSize;
+		const void* data = static_cast<const void*>(mVertices.get() + kPositionComponentsCount + kColorComponentsCount);
+		shaderProgram->SetVertexAttribute(kTexCoordsAttributeName, kTexCoordsComponentsCount, VertexAttributeType::Float, sizeof(Vertex),
+										  static_cast<const byte_t*>(data));
 	}
 }
 
 void VertexBuffer::Draw() const
 {
-	glDrawArrays(GL_TRIANGLES, 0, mVertexDataSize / mVertexSize);
+	glDrawArrays(GL_TRIANGLES, 0, mVerticesCount);
 	PACMAN_CHECK_GL_ERROR();
-}
-
-const size_t VertexBuffer::ComputeVertexSize(const fvf_t fvf) const
-{
-	size_t result = 0;
-	if ((fvf & static_cast<const fvf_t>(FVFElement::Position)) == static_cast<const fvf_t>(FVFElement::Position))
-		result += kPositionSize;
-
-	if ((fvf & static_cast<const fvf_t>(FVFElement::Color)) == static_cast<const fvf_t>(FVFElement::Color))
-		result += kColorSize;
-
-	if ((fvf & static_cast<const fvf_t>(FVFElement::TexCoords)) == static_cast<const fvf_t>(FVFElement::TexCoords))
-		result += kTexCoordsSize;
-	return result;
 }
 
 } // Pacman namespace
