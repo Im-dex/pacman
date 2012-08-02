@@ -232,10 +232,9 @@ FORCEINLINE void Vector2<T>::SetY(const T y)
 }
 
 template <typename T>
-FORCEINLINE Vector2<T>& Vector2<T>::Reverse()
+FORCEINLINE Vector2<T> Vector2<T>::Reverse() const
 {
-    std::reverse(mData);
-    return *this;
+    return Vector2<T>(mY, mX);
 }
 
 template <typename T>

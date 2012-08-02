@@ -19,7 +19,7 @@ public:
 	static const Matrix4<T> kZero;
 	static const Matrix4<T> kIdentity;
 
-	static Matrix4<T> Ortho(const T left, const T right, const T top, const T bottom, const T near, const T far);
+	static Matrix4<T> Ortho(const T left, const T right, const T bottom, const T top, const T near, const T far);
 
 	explicit Matrix4() = default;
 	explicit Matrix4(const T m00, const T m01, const T m02, const T m03,
@@ -62,17 +62,17 @@ public:
 	T* GetRawData();
 	const T* GetRawData() const;
 
-	Matrix4<T>& Inverse();
+	Matrix4<T> Inverse() const;
 /*	Matrix4<T>& TranslationInverse();
 	Matrix4<T>& ScaleInverse();*/
-	Matrix4<T>& Transpose();
+	Matrix4<T> Transpose() const;
 
 	Matrix4<T>& TranslateX(const T x);
 	Matrix4<T>& TranslateY(const T y);
 	Matrix4<T>& TranslateZ(const T z);
 	Matrix4<T>& Translate(const T x, const T y, const T z);
 
-	// angle must will be in the degrees
+	// angle must will be in the radians
 	Matrix4<T>& RotateX(const T x);
 	Matrix4<T>& RotateY(const T y);
 	Matrix4<T>& RotateZ(const T z);

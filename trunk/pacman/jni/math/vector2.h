@@ -68,7 +68,7 @@ public:
     void SetX(const T x);
     void SetY(const T y);
 
-    Vector2<T>& Reverse();
+    Vector2<T> Reverse() const;
 
 private:
 

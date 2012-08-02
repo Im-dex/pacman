@@ -284,18 +284,16 @@ FORCEINLINE T Vector3<T>::Length() const
 }
 
 template <typename T>
-FORCEINLINE Vector3<T>& Vector3<T>::Normalize()
+FORCEINLINE Vector3<T> Vector3<T>::Normalize() const
 {
 	T invLength = T(1) / Length();
-	*this *= invLength;
-	return *this;
+	return *this * invLength;
 }
 
 template <typename T>
-FORCEINLINE Vector3<T>& Vector3<T>::Reverse()
+FORCEINLINE Vector3<T> Vector3<T>::Reverse() const
 {
-	std::reverse(mData);
-	return *this;
+	return Vector3<T>(mZ, mY, mX);
 }
 
 template <typename T>

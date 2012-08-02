@@ -22,18 +22,25 @@ enum class FVFElement : fvf_t
 	TexCoords = 4  // 2 float UV coordinates
 };
 
+struct Vertex
+{
+	float x, y; // position
+	float r, g, b, a; // color
+	float u, v; // tex coords
+};
+
 class VertexBuffer
 {
 public:
 
 	VertexBuffer();
-	VertexBuffer(const byte_t* vertexData, const size_t size, const fvf_t fvf);
+	VertexBuffer(const Vertex* vertexData, const size_t count, const fvf_t fvf);
 	VertexBuffer(const VertexBuffer&) = delete;
-	~VertexBuffer();
+	~VertexBuffer() = default;
 
 	VertexBuffer& operator= (const VertexBuffer&) = delete;
 
-	void SetData(const byte_t* vertexData, const size_t size, const fvf_t fvf);
+	void SetData(const Vertex* vertexData, const size_t count, const fvf_t fvf);
 
 	void Bind(const std::shared_ptr<ShaderProgram> shaderProgram) const;
 
@@ -41,12 +48,9 @@ public:
 
 private:
 
-	const size_t ComputeVertexSize(const fvf_t fvf) const;
-
-	byte_t* mVertexData;
-	size_t  mVertexDataSize;
-	size_t  mVertexSize;
-	fvf_t	mFVF;
+	std::unique_ptr<Vertex[]> mVertices;
+	size_t  				  mVerticesCount;
+	fvf_t					  mFVF;
 };
 
 } // Pacman namespace

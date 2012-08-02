@@ -232,7 +232,7 @@ FORCEINLINE const T* Matrix4<T>::GetRawData() const
 }
 
 template <typename T>
-Matrix4<T>& Matrix4<T>::Inverse()
+Matrix4<T> Matrix4<T>::Inverse() const
 {
 	const T a9 = mM20 * mM31 - mM21 * mM30;
 	const T aa = mM20 * mM32 - mM22 * mM30;
@@ -267,27 +267,30 @@ Matrix4<T>& Matrix4<T>::Inverse()
 	const T b2 = mM10 * mM22 - mM12 * mM20;
 	const T b3 = mM11 * mM33 - mM13 * mM31;
 
-	mM00 = det * t1;
-	mM01 = -det * (mM01 * a3 - mM02 * a5 + mM03 * a2);
-	mM02 = det * (mM01 * a7 - mM02 * b3 + mM03 * a6);
-	mM03 = -det * (mM01 * ab - mM02 * b0 + mM03 * ac);
+	const T m00 = det * t1;
+	const T m01 = -det * (mM01 * a3 - mM02 * a5 + mM03 * a2);
+	const T m02 = det * (mM01 * a7 - mM02 * b3 + mM03 * a6);
+	const T m03 = -det * (mM01 * ab - mM02 * b0 + mM03 * ac);
 
-	mM10 = -det * t2;
-	mM11 = det * (mM00 * a3 - mM02 * a8 + mM03 * aa);
-	mM12 = -det * (mM00 * a7 - mM02 * ad + mM03 * b1);
-	mM13 = det * (mM00 * ab - mM02 * ae + mM03 * b2);
+	const T m10 = -det * t2;
+	const T m11 = det * (mM00 * a3 - mM02 * a8 + mM03 * aa);
+	const T m12 = -det * (mM00 * a7 - mM02 * ad + mM03 * b1);
+	const T m13 = det * (mM00 * ab - mM02 * ae + mM03 * b2);
 
-	mM20 = det * t3;
-	mM21 = -det * (mM00 * a5 - mM01 * a8 + mM03 * a9);
-	mM22 = det * (mM00 * b3 - mM01 * ad + mM03 * af);
-	mM23 = -det * (mM00 * b0 - mM01 * ae + mM03 * a0);
+	const T m20 = det * t3;
+	const T m21 = -det * (mM00 * a5 - mM01 * a8 + mM03 * a9);
+	const T m22 = det * (mM00 * b3 - mM01 * ad + mM03 * af);
+	const T m23 = -det * (mM00 * b0 - mM01 * ae + mM03 * a0);
 
-	mM30 = -det * t4;
-	mM31 = det * (mM00 * a2 - mM01 * aa + mM02 * a9);
-	mM32 = -det * (mM00 * a6 - mM01 * b1 + mM02 * af);
-	mM33 = det * (mM00 * ac - mM01 * b2 + mM02 * a0);
+	const T m30 = -det * t4;
+	const T m31 = det * (mM00 * a2 - mM01 * aa + mM02 * a9);
+	const T m32 = -det * (mM00 * a6 - mM01 * b1 + mM02 * af);
+	const T m33 = det * (mM00 * ac - mM01 * b2 + mM02 * a0);
 
-	return *this;
+	return Matrix4<T>(m00, m01, m02, m03,
+					  m10, m11, m12, m13,
+					  m20, m21, m22, m23,
+					  m30, m31, m32, m33);
 }
 
 /*template <typename T>
@@ -309,16 +312,12 @@ FORCEINLINE Matrix4<T> Matrix4<T>::ScaleInverse()
 }*/
 
 template <typename T>
-FORCEINLINE Matrix4<T>& Matrix4<T>::Transpose()
+FORCEINLINE Matrix4<T> Matrix4<T>::Transpose() const
 {
-	std::swap(mM01, mM10);
-	std::swap(mM02, mM20);
-	std::swap(mM03, mM30);
-	std::swap(mM12, mM21);
-	std::swap(mM12, mM21);
-	std::swap(mM13, mM31);
-	std::swap(mM23, mM32);
-	return *this;
+	return Matrix4<T>(mM00, mM10, mM20, mM30,
+					  mM01, mM11, mM21, mM31,
+					  mM02, mM12, mM22, mM32,
+					  mM03, mM13, mM23, mM33);
 }
 
 template <typename T>
@@ -464,16 +463,20 @@ const Matrix4<T> Matrix4<T>::kIdentity = Matrix4<T>(T(1), T(0), T(0), T(0),
 												    T(0), T(0), T(0), T(1));
 
 template <typename T>
-Matrix4<T> Matrix4<T>::Ortho(const T left, const T right, const T top, const T bottom, const T near, const T far)
+Matrix4<T> Matrix4<T>::Ortho(const T left, const T right, const T bottom, const T top, const T near, const T far)
 {
 	const T val1 = T(2)  / (right - left);
 	const T val2 = T(2)  / (top - bottom);
 	const T val3 = T(-2) / (far - near);
 
-	return Matrix4<T>(val1, T(0), T(0), T(0),
-					  T(0), val2, T(0), T(0),
-					  T(0), T(0), val3, T(0),
-					  T(0), T(0), T(0), T(-1));
+	const T tx = -(right + left) / (right - left);
+	const T ty = -(top + bottom) / (top - bottom);
+	const T tz = -(far + near) / (far - near);
+
+	return Matrix4<T>(val1, T(0), T(0), tx,
+					  T(0), val2, T(0), ty,
+					  T(0), T(0), val3, tz,
+					  T(0), T(0), T(0),	T(1));
 }
 
 } // Math namespace

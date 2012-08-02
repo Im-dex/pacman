@@ -7,6 +7,8 @@
 #include "shader_program.h"
 #include "vertex_buffer.h"
 
+#include "base.h"
+
 #include <GLES2/gl2.h>
 //#include <GLES2/gl2ext.h>
 
@@ -14,6 +16,7 @@ namespace Pacman {
 
 static const char* kProjectionUniformName = "mProjectionMatrix";
 static const char* kModelMatrixUniformName = "mModelMatrix";
+static const char* kModelProjMatrixUniformName = "mModelProjectionMatrix";
 
 Renderer::Renderer()
 		: mProjection(),
@@ -24,8 +27,8 @@ Renderer::Renderer()
 
 void Renderer::Init(const size_t viewportWidth, const size_t viewportHeigth)
 {
-	mProjection = Math::Matrix4f::Ortho(0.0f, static_cast<const float>(viewportWidth), 0.0f,
-										static_cast<const float>(viewportHeigth), -1.0f, 1.0f);
+	mProjection = Math::Matrix4f::Ortho(0.0f, static_cast<const float>(viewportWidth),
+										static_cast<const float>(viewportHeigth), 0.0f, -1.0f, 1.0f);
 
 	glViewport(0, 0, static_cast<const int>(viewportWidth), static_cast<const int>(viewportHeigth));
 	PACMAN_CHECK_GL_ERROR();
@@ -57,12 +60,13 @@ void Renderer::RenderDrawable(const Drawable& drawable, const Math::Matrix4f mod
 
 	shaderProgram->Bind();
 
-	Math::Matrix4f projection(mProjection);
-	Math::Matrix4f model(modelMatrix);
-	projection.Transpose();
-	model.Transpose();
-	shaderProgram->SetUniform(kProjectionUniformName, projection);
+	//Math::Matrix4f projection = mProjection.Transpose();
+	//Math::Matrix4f model = modelMatrix.Transpose();
+	//shaderProgram->SetUniform(kProjectionUniformName, projection);
 	//shaderProgram->SetUniform(kModelMatrixUniformName, model);
+	Math::Matrix4f modelProjection = (mProjection * modelMatrix).Transpose();
+	shaderProgram->SetUniform(kModelProjMatrixUniformName, modelProjection);
+
 
 	vertexBuffer->Bind(shaderProgram);
 

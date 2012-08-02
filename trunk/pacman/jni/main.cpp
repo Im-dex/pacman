@@ -18,20 +18,21 @@ std::shared_ptr<SceneManager> sceneManager = nullptr;
 Sprite* testSprite = nullptr;
 std::shared_ptr<ShaderProgram> shaderProgram;
 
-static const char kVertexShader[] = "attribute vec2 vPosition;"
+static const char kVertexShader[] = "attribute vec4 vPosition;"
 									"attribute vec4 vColor;\n"
-									"uniform mat4 mProjectionMatrix;\n"
+									"//uniform mat4 mProjectionMatrix;\n"
 									"//uniform mat4 mModelMatrix;\n"
+									"uniform mat4 mModelProjectionMatrix;\n"
 									"varying vec4 vVertColor;\n"
 									"void main() {\n"
 									"	vVertColor = vColor;\n"
-									"	gl_Position = mProjectionMatrix * vec4(vPosition.x, vPosition.y, 0.0, 0.0);\n"
+									"	gl_Position = mModelProjectionMatrix * vPosition;\n"
 									"}\n";
 
 static const char kFragmentShader[] = "precision mediump float;\n"
 							  	  	  "varying vec4 vVertColor;\n"
 							  	  	  "void main() {\n"
-							  	  	  "	gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0);\n"
+							  	  	  "	gl_FragColor = vVertColor;\n"
 							  	  	  "}\n";
 
 void Init(JNIEnv* env)
@@ -50,6 +51,7 @@ void DeInit()
 
 void ResizeViewport(const size_t width, const size_t heigth)
 {
+	LOGI("w: %d, h: %d", width, heigth);
 	renderer->Init(width, heigth);
 	sceneManager = std::make_shared<SceneManager>(static_cast<const float>(width), static_cast<const float>(heigth));
 	renderer->SetSceneManager(sceneManager);
@@ -57,9 +59,9 @@ void ResizeViewport(const size_t width, const size_t heigth)
 	shaderProgram = std::make_shared<ShaderProgram>(kVertexShader, kFragmentShader);
 	shaderProgram->Link();
 
-	testSprite = new Sprite(20, 20, Color::kRed, Color::kRed, Color::kRed, Color::kRed, shaderProgram);
+	testSprite = new Sprite(100.0f, 100.0f, Color::kRed, Color::kGreen, Color::kBlue, Color::kRed, shaderProgram);
 
-	SceneNode node(*testSprite, Math::Vector2f(0.0f, 0.0f));
+	SceneNode node(*testSprite, Math::Vector2f(100.0f, 50.0f));
 	sceneManager->AttachNode(node);
 }
 

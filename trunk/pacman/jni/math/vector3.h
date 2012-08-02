@@ -75,8 +75,8 @@ public:
 
 	T Length() const;
 
-	Vector3<T>& Normalize();
-	Vector3<T>& Reverse();
+	Vector3<T> Normalize() const;
+	Vector3<T> Reverse() const;
 
 private:
 
