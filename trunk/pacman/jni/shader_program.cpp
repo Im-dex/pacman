@@ -180,7 +180,7 @@ GLint ShaderProgram::GetLocation(const std::string& name, const bool attribute)
 		GLint handle = attribute ? glGetAttribLocation(mProgramHandle, name.c_str())
 								 : glGetUniformLocation(mProgramHandle, name.c_str());
 		PACMAN_CHECK_GL_ERROR();
-		PACMAN_CHECK_ERROR(handle != -1, ErrorCode::ShaderLocationSearch);
+		PACMAN_CHECK_ERROR2(handle != -1, ErrorCode::ShaderLocationSearch, name.c_str());
 		auto result = mAttributeUniformHandles.insert(std::make_pair(name, handle));
 		PACMAN_CHECK_ERROR(result.second, ErrorCode::ContainerInsert);
 		iter = result.first;

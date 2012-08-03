@@ -39,25 +39,26 @@ void VertexBuffer::SetData(const Vertex* vertexData, const size_t count, const f
 
 void VertexBuffer::Bind(const std::shared_ptr<ShaderProgram> shaderProgram) const
 {
+	const void* data = static_cast<const void*>(mVertices.get());
+
 	if ((mFVF & static_cast<const fvf_t>(FVFElement::Position)) == static_cast<const fvf_t>(FVFElement::Position))
 	{
-		const void* data = static_cast<const void*>(mVertices.get());
 		shaderProgram->SetVertexAttribute(kPositionAttributeName, kPositionComponentsCount, VertexAttributeType::Float,
 										  sizeof(Vertex), static_cast<const byte_t*>(data));
 	}
 
 	if ((mFVF & static_cast<const fvf_t>(FVFElement::Color)) == static_cast<const fvf_t>(FVFElement::Color))
 	{
-		const void* data = static_cast<const void*>(mVertices.get() + kPositionComponentsCount);
+		const size_t beginningOffset = kPositionComponentsCount * sizeof(float);
 		shaderProgram->SetVertexAttribute(kColorAttributeName, kColorComponentsCount, VertexAttributeType::Float,
-										  sizeof(Vertex), static_cast<const byte_t*>(data));
+										  sizeof(Vertex), static_cast<const byte_t*>(data) + beginningOffset);
 	}
 
 	if ((mFVF & static_cast<const fvf_t>(FVFElement::TexCoords)) == static_cast<const fvf_t>(FVFElement::TexCoords))
 	{
-		const void* data = static_cast<const void*>(mVertices.get() + kPositionComponentsCount + kColorComponentsCount);
+		const size_t beginningOffset = (kPositionComponentsCount + kColorComponentsCount) * sizeof(float);
 		shaderProgram->SetVertexAttribute(kTexCoordsAttributeName, kTexCoordsComponentsCount, VertexAttributeType::Float, sizeof(Vertex),
-										  static_cast<const byte_t*>(data));
+										  static_cast<const byte_t*>(data) + beginningOffset);
 	}
 }
 
