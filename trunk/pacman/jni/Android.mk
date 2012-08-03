@@ -16,7 +16,8 @@ LOCAL_SRC_FILES := main.cpp\
 				   asset_manager.cpp\
 				   drawable.cpp\
 				   scene_node.cpp\
-				   scene_manager.cpp
+				   scene_manager.cpp\
+				   unique_id.cpp
 LOCAL_LDLIBS    := -llog -lGLESv2 -ljnigraphics
 
 include $(BUILD_SHARED_LIBRARY)

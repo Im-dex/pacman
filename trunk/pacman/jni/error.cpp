@@ -58,7 +58,13 @@ class Exception : public BaseException
 public:
 	Exception() throw() = delete;
 	Exception(const ErrorCode errorCode, const char* file, const size_t line, const char* message) throw()
-			: BaseException(file, line), mErrorCode(errorCode), mMessage(message) {}
+			: BaseException(file, line), mErrorCode(errorCode)
+	{
+		std::stringstream result("");
+		result << kErrorDescriptions[static_cast<uint32_t>(mErrorCode)] << " " << GetErrorFileLine() << std::endl;
+		result << message;
+		mResult = result.str();
+	}
 
 	Exception(const Exception&) = default;
 	virtual ~Exception() throw() {}
@@ -67,16 +73,13 @@ public:
 
 	virtual const char* what() const throw()
 	{
-		std::stringstream result("");
-		result << kErrorDescriptions[static_cast<uint32_t>(mErrorCode)] << " " << GetErrorFileLine() << std::endl;
-		result << mMessage;
-		return result.str().c_str();
+		return mResult.c_str();
 	}
 
 private:
 
 	ErrorCode mErrorCode;
-	std::string mMessage;
+	std::string mResult;
 };
 
 class GLException : public BaseException
@@ -84,7 +87,17 @@ class GLException : public BaseException
 public:
 	GLException() throw() = delete;
 	GLException(const std::vector<GLint>& errorCodes, const char* file, const size_t line) throw()
-			: BaseException(file, line), mErrorCodes(errorCodes) {}
+			: BaseException(file, line)
+	{
+		std::stringstream result("");
+		for (GLint error : errorCodes)
+		{
+			result << GetGLErrorString(error) << std::endl;
+		}
+
+		result << GetErrorFileLine() << std::endl;
+		mResult = result.str();
+	}
 
 	GLException(const GLException&) = default;
 	virtual ~GLException() throw() {}
@@ -93,14 +106,7 @@ public:
 
 	virtual const char* what() const throw()
 	{
-		std::stringstream result("");
-		for (GLint error : mErrorCodes)
-		{
-			result << GetGLErrorString(error) << std::endl;
-		}
-
-		result << GetErrorFileLine() << std::endl;
-		return result.str().c_str();
+		return mResult.c_str();
 	}
 
 private:
@@ -124,7 +130,7 @@ private:
 		}
 	}
 
-	std::vector<GLint> mErrorCodes;
+	std::string mResult;
 };
 
 //===========================================================================================================================
@@ -136,6 +142,7 @@ const char* FixEmptyString(const char* string)
 
 void ErrorHandler::CheckGLError(const char* file, const size_t line)
 {
+#ifndef ADRENO_PROFILER_COMPATIBILITY
 	std::vector<GLint> errors;
 	for (GLint err = glGetError(); err != GL_NO_ERROR; err = glGetError())
 	{
@@ -146,6 +153,7 @@ void ErrorHandler::CheckGLError(const char* file, const size_t line)
 	{
 		throw GLException(errors, file, line);
 	}
+#endif
 }
 
 void ErrorHandler::CleanGLErrors()

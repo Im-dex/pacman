@@ -2,8 +2,10 @@
 
 #include "color.h"
 #include "math/matrix4.h"
+#include "unique_id.h"
 
 #include <memory>
+#include <cstdint>
 
 namespace Pacman {
 
@@ -41,6 +43,7 @@ private:
 	Math::Matrix4f mProjection;
 	Color mClearColor;
 	std::shared_ptr<SceneManager> mSceneManager;
+	uid_t mCurTextureId;
 };
 
 } // Pacman namespace

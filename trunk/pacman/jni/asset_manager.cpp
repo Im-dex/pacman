@@ -68,9 +68,29 @@ std::shared_ptr<Texture2D> AssetManager::LoadTexture(JNIEnv* env, const char* na
 	jobject bitmap = LoadTextureFromAssets(env, name);
 	AndroidBitmapHolder bitmapHolder(env, bitmap);
 	AndroidBitmapInfo info = bitmapHolder.GetInfo();
-	PACMAN_CHECK_ERROR(info.format == ANDROID_BITMAP_FORMAT_RGBA_8888, ErrorCode::BadPixelFormat);
+
+	PixelFormat pixelFormat = PixelFormat::None;
+	switch (info.format)
+	{
+	case ANDROID_BITMAP_FORMAT_A_8:
+		pixelFormat = PixelFormat::A_8;
+		break;
+	case ANDROID_BITMAP_FORMAT_RGB_565:
+		pixelFormat = PixelFormat::RGB_565;
+		break;
+	case ANDROID_BITMAP_FORMAT_RGBA_4444:
+		pixelFormat = PixelFormat::RGBA_4444;
+		break;
+	case ANDROID_BITMAP_FORMAT_RGBA_8888:
+		pixelFormat = PixelFormat::RGBA_8888;
+		break;
+	case ANDROID_BITMAP_FORMAT_NONE:
+		pixelFormat = PixelFormat::None;
+		break;
+	}
+
 	byte_t* pixels = bitmapHolder.LockPixels();
-	return std::make_shared<Texture2D>(info.width, info.height, pixels, filtering, repeat);
+	return std::make_shared<Texture2D>(info.width, info.height, pixels, filtering, repeat, pixelFormat);
 }
 
 jobject AssetManager::LoadTextureFromAssets(JNIEnv* env, const char* name)

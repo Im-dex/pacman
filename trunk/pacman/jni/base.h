@@ -4,8 +4,11 @@
 #include <type_traits>
 #include <android/log.h>
 
+//#define ADRENO_PROFILER_COMPATIBILITY
+
 #ifdef __GNUC__
 	#define FORCEINLINE __attribute__((always_inline))
+	#define ALIGN(align) __attribute__((aligned((align))))
 #else
 	#error "Unknown compiler"
 #endif

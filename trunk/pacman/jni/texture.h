@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base.h"
+#include "unique_id.h"
 
 #include <GLES2/gl2.h>
 
@@ -21,20 +22,30 @@ enum class TextureRepeat
 	Repeat_ST
 };
 
-class Texture2D
+enum class PixelFormat
+{
+	None,
+	RGB_565,
+	RGBA_8888,
+	RGBA_4444,
+	A_8
+};
+
+class Texture2D : public UniqueIdProvider
 {
 public:
 
 	Texture2D() = delete;
 	Texture2D(const size_t width, const size_t height, const byte_t* data,
-			  const TextureFiltering filtering, const TextureRepeat repeat);
+			  const TextureFiltering filtering, const TextureRepeat repeat,
+			  const PixelFormat pixelFormat);
 
 	Texture2D(const Texture2D&) = delete;
 	~Texture2D();
 
 	Texture2D& operator= (const Texture2D&) = delete;
 
-	void Bind();
+	void Bind() const;
 
 private:
 

@@ -21,7 +21,8 @@ static const char* kModelProjMatrixUniformName = "mModelProjectionMatrix";
 Renderer::Renderer()
 		: mProjection(),
 		  mClearColor(Color::kBlack),
-		  mSceneManager()
+		  mSceneManager(),
+		  mCurTextureId(UniqueIdProvider::kNull)
 {
 }
 
@@ -31,6 +32,7 @@ void Renderer::Init(const size_t viewportWidth, const size_t viewportHeigth)
 										static_cast<const float>(viewportHeigth), 0.0f, -1.0f, 1.0f);
 
 	glViewport(0, 0, static_cast<const int>(viewportWidth), static_cast<const int>(viewportHeigth));
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	PACMAN_CHECK_GL_ERROR();
 }
 
@@ -55,19 +57,16 @@ void Renderer::RenderDrawable(const Drawable& drawable, const Math::Matrix4f mod
 	auto vertexBuffer = drawable.GetVertexBuffer();
 	auto shaderProgram = drawable.GetShaderProgram();
 
-	if (texture != nullptr)
+	if ((texture != nullptr) && (texture->GetId() != mCurTextureId))
+	{
 		texture->Bind();
+		mCurTextureId = texture->GetId();
+	}
 
 	shaderProgram->Bind();
 
-	//Math::Matrix4f projection = mProjection.Transpose();
-	//Math::Matrix4f model = modelMatrix.Transpose();
-	//shaderProgram->SetUniform(kProjectionUniformName, projection);
-	//shaderProgram->SetUniform(kModelMatrixUniformName, model);
 	Math::Matrix4f modelProjection = (mProjection * modelMatrix).Transpose();
 	shaderProgram->SetUniform(kModelProjMatrixUniformName, modelProjection);
-
-
 	vertexBuffer->Bind(shaderProgram);
 
 	vertexBuffer->Draw();

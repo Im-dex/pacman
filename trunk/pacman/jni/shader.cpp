@@ -42,7 +42,7 @@ void Shader::Compile()
 		}
 		else
 		{
-			PACMAN_CHECK_ERROR(false, ErrorCode::CompileShader);
+			PACMAN_CHECK_ERROR2(false, ErrorCode::CompileShader, source);
 		}
 	}
 
