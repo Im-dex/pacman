@@ -21,9 +21,13 @@ public:
 	static std::shared_ptr<Texture2D> LoadTexture(JNIEnv* env, const char* name, const TextureFiltering filtering,
 												  const TextureRepeat repeat);
 
+	static std::shared_ptr<Texture2D> LoadMap(JNIEnv* env, const char* name, const TextureFiltering filtering,
+											  const size_t screenWidth, const size_t screenHeigth);
+
 private:
 
 	static jobject LoadTextureFromAssets(JNIEnv* env, const char* name);
+	static jobject LoadFileFromAssets(JNIEnv* env, const char* name);
 };
 
 } // Pacman namespace

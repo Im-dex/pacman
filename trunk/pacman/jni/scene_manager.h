@@ -1,9 +1,11 @@
 #pragma once
 
-#include "scene_node.h"
 #include <list>
+#include <memory>
 
 namespace Pacman{
+
+class SceneNode;
 
 class SceneManager
 {
@@ -16,11 +18,11 @@ public:
 
 	SceneManager& operator= (const SceneManager&) = delete;
 
-	void AttachNode(const SceneNode& node);
+	void AttachNode(std::shared_ptr<SceneNode> node);
 
-	void DetachNode(const SceneNode& node);
+	void DetachNode(std::shared_ptr<SceneNode> node);
 
-	const std::list<SceneNode> GetNodes() const
+	std::list<std::shared_ptr<SceneNode>> GetNodes() const
 	{
 		return mNodes;
 	}
@@ -30,7 +32,7 @@ private:
 	float mSceneWidth;
 	float mSceneHeigth;
 
-	std::list<SceneNode> mNodes;
+	std::list<std::shared_ptr<SceneNode>> mNodes;
 };
 
 } // Pacman namespace

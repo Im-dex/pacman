@@ -112,6 +112,7 @@ public class SurfaceView extends GLSurfaceView {
 		
 
         public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display, EGLConfig[] configs) {
+        	int i = 0;
             for(EGLConfig config : configs) {
                 int d = findConfigAttrib(egl, display, config, EGL10.EGL_DEPTH_SIZE, 0);
                 int s = findConfigAttrib(egl, display, config, EGL10.EGL_STENCIL_SIZE, 0);
@@ -126,8 +127,10 @@ public class SurfaceView extends GLSurfaceView {
                 int b = findConfigAttrib(egl, display, config, EGL10.EGL_BLUE_SIZE, 0);
                 int a = findConfigAttrib(egl, display, config, EGL10.EGL_ALPHA_SIZE, 0);
 
-                if (r == mRed && g == mGreen && b == mBlue && a == mAlpha)
+                if (r == mRed && g == mGreen && b == mBlue && a == mAlpha) {
+                	Log.d(TAG, "Selected config: " + i);
                     return config;
+                }
             }
             
             return null;

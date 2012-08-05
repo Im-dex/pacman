@@ -8,8 +8,15 @@
 #include "asset_manager.h"
 #include "sprite.h"
 #include "shader_program.h"
+#include "timer.h"
+#include "scene_node.h"
+
+#include "base.h"
+//#include "update_thread.h"
 
 #include <memory>
+#include <numeric>
+#include <unistd.h>
 
 namespace Pacman {
 
@@ -19,6 +26,10 @@ Sprite* testSprite = nullptr;
 Sprite* testSprite2 = nullptr;
 std::shared_ptr<ShaderProgram> shaderProgram;
 std::shared_ptr<ShaderProgram> shaderProgram2;
+std::shared_ptr<SceneNode> node;
+std::shared_ptr<SceneNode> node2;
+//UpdateThread uthread;
+Timer timer;
 
 static const char kVertexShader[] = "attribute vec4 vPosition;"
 									"attribute vec4 vColor;\n"
@@ -68,6 +79,8 @@ void DeInit(JNIEnv* env)
 	delete renderer;
 }
 
+static uint64_t startTime = 0;
+
 void ResizeViewport(JNIEnv* env, const size_t width, const size_t heigth)
 {
 	LOGI("w: %d, h: %d", width, heigth);
@@ -76,30 +89,98 @@ void ResizeViewport(JNIEnv* env, const size_t width, const size_t heigth)
 	renderer->SetSceneManager(sceneManager);
 
 
+/*
 	shaderProgram = std::make_shared<ShaderProgram>(kVertexShader, kFragmentShader);
 	shaderProgram->Link();
 
 	testSprite = new Sprite(100.0f, 100.0f, Color::kRed, Color::kGreen, Color::kBlue, Color::kRed, shaderProgram);
 
-	SceneNode node(*testSprite, Math::Vector2f(100.0f, 50.0f));
+	node = std::make_shared<SceneNode>(*testSprite, Math::Vector2f(100.0f, 50.0f));
 	sceneManager->AttachNode(node);
-
+*/
 
 	// texture
-	auto texture = AssetManager::LoadTexture(env, "part.png", TextureFiltering::None, TextureRepeat::None);
+	auto texture = AssetManager::LoadTexture(env, "enemy.png", TextureFiltering::Bilinear, TextureRepeat::None);
 
 	shaderProgram2 = std::make_shared<ShaderProgram>(kVertexShader2, kFragmentShader2);
 	shaderProgram2->Link();
 
-	testSprite2 = new Sprite(64.0f, 64.0f, texture, shaderProgram2);
+	testSprite2 = new Sprite(32.0f, 32.0f, texture, shaderProgram2);
 
-	SceneNode node2(*testSprite2, Math::Vector2f(400.0f, 20.0f));
+	node2 = std::make_shared<SceneNode>(*testSprite2, Math::Vector2f(400.0f, 20.0f));
 	sceneManager->AttachNode(node2);
+
+	timer.Start();
+	startTime = timer.GetMillisec();
+	//uthread.SetNode(node2);
+	//uthread.Start();
 }
+
+static const float speed = 200; // pixels per second
+/*static const uint64_t minTimeInterval = 16;
+static const size_t kMaxFps = 50;
+static const size_t kMaxFrameSkips = 5;
+static const size_t kFramePeriod = 1000 / kMaxFps;*/
+
+/*static uint64_t timeDiff = 0;
+static uint64_t sleepTime = 0;
+static size_t framesSkipped = 0;*/
+
+static float kSmoothDTMillis = 17.5f;
+static float movAverageDTMillis = kSmoothDTMillis;
+static uint64_t lastTime = 0;
+
+static const float movAveragePeriod = 40.0; // fps
+static const float smoothFactor = 0.1f;
+
+static uint64_t lastUpdate = 0;
 
 void DrawFrame(JNIEnv* env)
 {
+	uint64_t cur = timer.GetMillisec();
+	float dt = (cur - lastUpdate) / 1000.0f;
+	lastUpdate = cur;
+
+	Math::Vector2f pos = node2->GetPosition();
+	if (pos.GetX() >= 1024.0f)
+	{
+		pos.SetX(0.0f);
+		node2->Translate(pos);
+	}
+
+	const float offset_x = speed * dt;
+	LOGI("offset by time: %f, %f", offset_x, dt);
+	node2->Move(Math::Vector2f(offset_x, 0.0f));
+
+	//uthread.Lock();
 	renderer->DrawFrame();
+	//uthread.Unlock();
+	//startTime = timer.GetMillisec();
+
+	/*timeDiff = timer.GetMillisec() - startTime;
+	sleepTime = kFramePeriod - timeDiff;
+
+	if (sleepTime > 0)
+	{
+		usleep(sleepTime * 1000);
+	}
+
+	while (sleepTime < 0 && framesSkipped < kMaxFrameSkips)
+	{
+		pos = node2->GetPosition();
+		if (pos.GetX() >= 800.0f)
+		{
+			pos.SetX(0.0f);
+			node2->Translate(pos);
+		}
+
+		const float offset_x2 = (speed * kFramePeriod) / 1000.0f;
+		//LOGI("offset by time: %f, %llu", offset_x, dt);
+		node2->Move(Math::Vector2f(offset_x2, 0.0f));
+
+		sleepTime += kFramePeriod;
+		framesSkipped++;
+	}*/
 }
 
 void TouchEvent(JNIEnv* env, const size_t event, const float x, const float y)

@@ -45,9 +45,23 @@ void Renderer::DrawFrame()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	PACMAN_CHECK_GL_ERROR();
 
+	int i = 0;
 	for (auto node : mSceneManager->GetNodes())
 	{
-		RenderDrawable(node.GetDrawable(), node.GetModelMatrix());
+		if (i == 1)
+		{
+			glEnable(GL_BLEND);
+			glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
+
+		RenderDrawable(node->GetDrawable(), node->GetModelMatrix());
+
+		if (i == 1)
+		{
+			glDisable(GL_BLEND);
+		}
+
+		i++;
 	}
 }
 
