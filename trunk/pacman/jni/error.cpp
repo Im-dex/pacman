@@ -25,7 +25,12 @@ const char* kErrorDescriptions[] =
 	"Insertion into the container failed",
 	"Java class not found",
 	"Java function not found",
-	"Android API call failed"
+	"Android API call failed",
+	"Failed access timer",
+	"Thread creation failed",
+	"Thread joining failed",
+	"Mutex access failed",
+	"Bad format"
 };
 
 class BaseException : public std::exception

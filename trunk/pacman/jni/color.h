@@ -2,6 +2,8 @@
 
 #include "base.h"
 
+#include <array>
+
 namespace Pacman {
 
 class Color
@@ -17,12 +19,16 @@ public:
 	Color() = delete;
 	Color(const byte_t r, const byte_t g, const byte_t b, const byte_t a);
 	Color(const Color& other) = default;
+	Color(Color&& other);
 	~Color() = default;
 
 	Color& operator= (const Color& other) = default;
+	Color& operator= (Color&& other);
 
 	bool operator== (const Color& other) const;
 	bool operator!= (const Color& other) const;
+
+	void Fill(byte_t* buffer, const size_t componentsCount) const;
 
 	byte_t GetRed() const
 	{
@@ -99,10 +105,17 @@ private:
 		return static_cast<float>(value) * (1.0f / 255.0f);
 	}
 
-	byte_t mR;
-	byte_t mG;
-	byte_t mB;
-	byte_t mA;
+	union
+	{
+		struct
+		{
+			byte_t mR;
+			byte_t mG;
+			byte_t mB;
+			byte_t mA;
+		};
+		std::array<byte_t, 4> mData;
+	};
 };
 
 } // Pacman namespace

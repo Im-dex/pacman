@@ -30,7 +30,12 @@ enum class ErrorCode : uint32_t
 	ContainerInsert,
 	JClassNotFound,
 	JFuncNotFound,
-	AndroidAPICallFailed
+	AndroidAPICallFailed,
+	TimerFailed,
+	CreateThreadFailed,
+	JoinThreadFailed,
+	MutexError,
+	BadFormat
 };
 
 struct ErrorHandler

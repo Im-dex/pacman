@@ -56,8 +56,8 @@ public:
 	Matrix4<T>& operator-= (const T val);
 	Matrix4<T>& operator*= (const T val);
 
-	T* operator[] (const size_t row);
-	const T* operator[] (const size_t row) const;
+	T* operator[] (const size_t rowIndex);
+	const T* operator[] (const size_t rowIndex) const;
 
 	T* GetRawData();
 	const T* GetRawData() const;

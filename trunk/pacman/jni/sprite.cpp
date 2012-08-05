@@ -6,7 +6,7 @@
 namespace Pacman {
 
 static const Color kDefaultColor = Color::kGreen;
-static const Math::Vector2f kDefaultLeftTopTexCoord = Math::Vector2f(0.0f, 0.0f);
+static const Math::Vector2f kDefaultLeftTopTexCoord = Math::Vector2f::kZero;
 static const Math::Vector2f kDefaultRightTopTexCoord = Math::Vector2f(1.0f, 0.0f);
 static const Math::Vector2f kDefaultLeftBottomTexCoord = Math::Vector2f(0.0f, 1.0f);
 static const Math::Vector2f kDefaultRightBottomTexCoord = Math::Vector2f(1.0f, 1.0f);

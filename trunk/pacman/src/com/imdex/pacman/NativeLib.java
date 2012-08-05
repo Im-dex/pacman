@@ -1,7 +1,9 @@
 package com.imdex.pacman;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -37,6 +39,22 @@ public class NativeLib {
 		try {
 			InputStream is = manager.open(fileName);
 			return BitmapFactory.decodeStream(is);
+		} catch (IOException e) {
+			return null;
+		}
+	}
+	
+	private static ByteBuffer loadAssetFile(String fileName)
+	{
+		AssetManager manager = mContext.getAssets();
+		try {
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			InputStream is = manager.open(fileName);
+			int b = 0;
+			while ((b = is.read()) != -1) {
+				os.write(b);
+			}
+			return ByteBuffer.wrap(os.toByteArray());
 		} catch (IOException e) {
 			return null;
 		}

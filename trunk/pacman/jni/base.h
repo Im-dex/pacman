@@ -28,4 +28,17 @@ bool TestFlag(const T data, const U flag)
 	return (data & static_cast<T>(flag)) == static_cast<T>(flag);
 }*/
 
+// round up the value to next PowerOf Two value
+// ATTENTION!! 32-bit only!
+static FORCEINLINE size_t NextPOT(size_t value)
+{
+    --value;
+    value |= value >> 1;
+    value |= value >> 2;
+    value |= value >> 4;
+    value |= value >> 8;
+    value |= value >> 16;
+    return value + 1;
+}
+
 } // Pacman namespace

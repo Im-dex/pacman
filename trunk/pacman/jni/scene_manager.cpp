@@ -1,5 +1,6 @@
 #include "scene_manager.h"
 #include "error.h"
+#include "scene_node.h"
 
 #include <algorithm>
 
@@ -14,20 +15,14 @@ SceneManager::SceneManager(const float sceneWidth, const float sceneHeigth)
 {
 }
 
-void SceneManager::AttachNode(const SceneNode& node)
+void SceneManager::AttachNode(std::shared_ptr<SceneNode> node)
 {
 	mNodes.push_back(node);
 }
 
-void SceneManager::DetachNode(const SceneNode& node)
+void SceneManager::DetachNode(std::shared_ptr<SceneNode> node)
 {
-	auto iter = std::find_if(mNodes.begin(), mNodes.end(), [&node](const SceneNode& searchNode)
-	{
-		return searchNode.GetId() == node.GetId();
-	});
-
-	PACMAN_CHECK_ERROR(iter != mNodes.end(), ErrorCode::BadArgument);
-	mNodes.erase(iter);
+	mNodes.remove(node);
 }
 
 } // Pacman namespace

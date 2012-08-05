@@ -17,7 +17,13 @@ LOCAL_SRC_FILES := main.cpp\
 				   drawable.cpp\
 				   scene_node.cpp\
 				   scene_manager.cpp\
-				   unique_id.cpp
+				   unique_id.cpp\
+				   timer.cpp\
+				   update_thread.cpp\
+				   map.cpp\
+				   json/json_reader.cpp\
+				   json/json_value.cpp\
+				   json/json_writer.cpp
 LOCAL_LDLIBS    := -llog -lGLESv2 -ljnigraphics
 
 include $(BUILD_SHARED_LIBRARY)

@@ -208,15 +208,15 @@ FORCEINLINE Matrix4<T>& Matrix4<T>::operator*= (const T val)
 }
 
 template <typename T>
-FORCEINLINE T* Matrix4<T>::operator[] (const size_t raw)
+FORCEINLINE T* Matrix4<T>::operator[] (const size_t rowIndex)
 {
-	return mData[index];
+	return mRowData[rowIndex].data();
 }
 
 template <typename T>
-FORCEINLINE const T* Matrix4<T>::operator[] (const size_t raw) const
+FORCEINLINE const T* Matrix4<T>::operator[] (const size_t rowIndex) const
 {
-	return mData[index];
+	return mRowData[rowIndex].data();
 }
 
 template <typename T>
