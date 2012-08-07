@@ -151,9 +151,9 @@ Sprite Map::GenerateSprite(const size_t screenWidth, const size_t screenHeight, 
 	size_t mapWidth = mColumnsCount * mCellSize;
 	size_t mapHeight = mRowsCount * mCellSize;
 
-	const size_t widthRatio = screenWidth / mapWidth;
-	const size_t heightRatio = screenHeight / mapHeight;
-	const size_t ratio = std::min(widthRatio, heightRatio);
+	const float widthRatio = RoundToNearHalf(static_cast<float>(screenWidth) / static_cast<float>(mapWidth));
+	const float heightRatio = RoundToNearHalf(static_cast<float>(screenHeight) / static_cast<float>(mapHeight));
+	const float ratio = std::min(widthRatio, heightRatio);
 
 	// expand to maximum possible size for the current screen
 	mapWidth  *= ratio;

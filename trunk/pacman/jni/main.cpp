@@ -106,7 +106,7 @@ void ResizeViewport(JNIEnv* env, const size_t width, const size_t heigth)
 	map.AttachToScene(sceneManager);
 
 	// texture
-	auto texture = AssetManager::LoadTexture(env, "middle.png", TextureFiltering::Bilinear, TextureRepeat::None);
+	auto texture = AssetManager::LoadTexture(env, "cherry.png", TextureFiltering::Bilinear, TextureRepeat::None);
 
 	shaderProgram2 = std::make_shared<ShaderProgram>(kVertexShader2, kFragmentShader2);
 	shaderProgram2->Link();
