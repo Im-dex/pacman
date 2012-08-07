@@ -54,6 +54,10 @@ Texture2D::Texture2D(const size_t width, const size_t height, const byte_t* data
 		format = GL_RGB;
 		type = GL_UNSIGNED_SHORT_5_6_5;
 		break;
+	case PixelFormat::RGB_888:
+		format = GL_RGB;
+		type = GL_UNSIGNED_BYTE;
+		break;
 	case PixelFormat::RGBA_8888:
 		format = GL_RGBA;
 		type = GL_UNSIGNED_BYTE;

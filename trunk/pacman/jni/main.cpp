@@ -14,6 +14,8 @@
 #include "base.h"
 //#include "update_thread.h"
 
+#include "map.h"
+
 #include <memory>
 #include <numeric>
 #include <unistd.h>
@@ -99,32 +101,26 @@ void ResizeViewport(JNIEnv* env, const size_t width, const size_t heigth)
 	sceneManager->AttachNode(node);
 */
 
+	Map map;
+	map.Load(AssetManager::LoadTextFile(env, "map.json"), width, heigth);
+	map.AttachToScene(sceneManager);
+
 	// texture
-	auto texture = AssetManager::LoadTexture(env, "enemy.png", TextureFiltering::Bilinear, TextureRepeat::None);
+	auto texture = AssetManager::LoadTexture(env, "middle.png", TextureFiltering::Bilinear, TextureRepeat::None);
 
 	shaderProgram2 = std::make_shared<ShaderProgram>(kVertexShader2, kFragmentShader2);
 	shaderProgram2->Link();
 
-	testSprite2 = new Sprite(32.0f, 32.0f, texture, shaderProgram2);
+	testSprite2 = new Sprite(24.0f, 24.0f, texture, shaderProgram2);
 
-	node2 = std::make_shared<SceneNode>(*testSprite2, Math::Vector2f(400.0f, 20.0f));
+	node2 = std::make_shared<SceneNode>(*testSprite2, Math::Vector2f(32.0f, 16.0f));
 	sceneManager->AttachNode(node2);
 
 	timer.Start();
 	startTime = timer.GetMillisec();
-	//uthread.SetNode(node2);
-	//uthread.Start();
 }
 
 static const float speed = 200; // pixels per second
-/*static const uint64_t minTimeInterval = 16;
-static const size_t kMaxFps = 50;
-static const size_t kMaxFrameSkips = 5;
-static const size_t kFramePeriod = 1000 / kMaxFps;*/
-
-/*static uint64_t timeDiff = 0;
-static uint64_t sleepTime = 0;
-static size_t framesSkipped = 0;*/
 
 static float kSmoothDTMillis = 17.5f;
 static float movAverageDTMillis = kSmoothDTMillis;
@@ -137,7 +133,7 @@ static uint64_t lastUpdate = 0;
 
 void DrawFrame(JNIEnv* env)
 {
-	uint64_t cur = timer.GetMillisec();
+/*	uint64_t cur = timer.GetMillisec();
 	float dt = (cur - lastUpdate) / 1000.0f;
 	lastUpdate = cur;
 
@@ -146,41 +142,13 @@ void DrawFrame(JNIEnv* env)
 	{
 		pos.SetX(0.0f);
 		node2->Translate(pos);
-	}
-
-	const float offset_x = speed * dt;
-	LOGI("offset by time: %f, %f", offset_x, dt);
-	node2->Move(Math::Vector2f(offset_x, 0.0f));
-
-	//uthread.Lock();
-	renderer->DrawFrame();
-	//uthread.Unlock();
-	//startTime = timer.GetMillisec();
-
-	/*timeDiff = timer.GetMillisec() - startTime;
-	sleepTime = kFramePeriod - timeDiff;
-
-	if (sleepTime > 0)
-	{
-		usleep(sleepTime * 1000);
-	}
-
-	while (sleepTime < 0 && framesSkipped < kMaxFrameSkips)
-	{
-		pos = node2->GetPosition();
-		if (pos.GetX() >= 800.0f)
-		{
-			pos.SetX(0.0f);
-			node2->Translate(pos);
-		}
-
-		const float offset_x2 = (speed * kFramePeriod) / 1000.0f;
-		//LOGI("offset by time: %f, %llu", offset_x, dt);
-		node2->Move(Math::Vector2f(offset_x2, 0.0f));
-
-		sleepTime += kFramePeriod;
-		framesSkipped++;
 	}*/
+
+	//const float offset_x = speed * dt;
+	//LOGI("offset by time: %f, %f", offset_x, dt);
+	//node2->Move(Math::Vector2f(offset_x, 0.0f));
+
+	renderer->DrawFrame();
 }
 
 void TouchEvent(JNIEnv* env, const size_t event, const float x, const float y)

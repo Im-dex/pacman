@@ -54,7 +54,9 @@ public class NativeLib {
 			while ((b = is.read()) != -1) {
 				os.write(b);
 			}
-			return ByteBuffer.wrap(os.toByteArray());
+			ByteBuffer buffer = ByteBuffer.allocateDirect(os.size());
+			buffer.put(ByteBuffer.wrap(os.toByteArray()));
+			return buffer;
 		} catch (IOException e) {
 			return null;
 		}

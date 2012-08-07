@@ -13,14 +13,16 @@ namespace Pacman {
 
 class SceneNode;
 class Texture2D;
+class SceneManager;
 
-static const size_t kCellTypesCount = 3;
+static const size_t kCellTypesCount = 4;
 
 enum class MapCellType : uint8_t
 {
 	Empty = 0,
 	Wall  = 1,
-	Door  = 2
+	Door  = 2,
+	Space = 3 // out of map area
 };
 
 class Map
@@ -35,7 +37,26 @@ public:
 
 	void Load(const std::string& textData, const size_t screenWidth, const size_t screenHeight);
 
+	void AttachToScene(std::shared_ptr<SceneManager> sceneManager);
+
 private:
+
+	struct NeighborsInfo
+	{
+		MapCellType left;
+		MapCellType right;
+		MapCellType top;
+		MapCellType bottom;
+	};
+
+	struct FullNeighborsInfo
+	{
+		NeighborsInfo directInfo;
+		MapCellType	  leftTop;
+		MapCellType   rightTop;
+		MapCellType   leftBottom;
+		MapCellType   rightBottom;
+	};
 
 	Sprite GenerateSprite(const size_t screenWidth, const size_t screenHeight, Math::Vector2f* position);
 
@@ -44,18 +65,18 @@ private:
 						 	 	 	 	 	   Math::Vector2f* leftTopTexCoord, Math::Vector2f* rightTopTexCoord,
 						 	 	 	 	 	   Math::Vector2f* leftBottomTexCoord, Math::Vector2f* rightBottomTexCoord);
 
-	enum class ReadState
-	{
-		ReadCellWidth,
-		ReadCellHeight,
-		ReadRow,
-		SkipLine
-	};
+	void CleanArtifacts(byte_t* buffer, const size_t textureWidth);
+
+	MapCellType GetCell(const uint8_t rowIndex, const uint8_t columnIndex) const;
+
+	NeighborsInfo GetDirectNeighbors(const uint8_t rowIndex, const uint8_t columnIndex) const;
+	FullNeighborsInfo GetFullNeighbors(const uint8_t rowIndex, const uint8_t columnIndex) const;
 
 	std::vector<MapCellType> mCells;
 	uint8_t 				 mRowsCount;
 	uint8_t 				 mColumnsCount;
 	uint8_t					 mCellSize;
+	uint8_t					 mCellHalf;
 
 	std::shared_ptr<SceneNode> mNode;
 };
