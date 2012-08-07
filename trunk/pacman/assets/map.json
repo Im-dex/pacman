@@ -1,7 +1,7 @@
 // If the map size is greater than a screen size, then exception will be thrown.
 // If the minimim values is used, then the map will be expanded automatically
 {
-	"cellSize": 8,	// minimal value is 8
+	"cellSize": 8,	// minimal value is 8, value must will be POT
 	"rowsCount": 31, 
 	"cells": [
 		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
