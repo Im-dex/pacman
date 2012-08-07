@@ -69,6 +69,7 @@ std::shared_ptr<Texture2D> AssetManager::LoadTexture(JNIEnv* env, const char* na
 									 	 	 	     const TextureRepeat repeat)
 {
 	jobject bitmap = LoadTextureFromAssets(env, name);
+	PACMAN_CHECK_ERROR(bitmap != nullptr, ErrorCode::InvalidResult);
 	AndroidBitmapHolder bitmapHolder(env, bitmap);
 	AndroidBitmapInfo info = bitmapHolder.GetInfo();
 
@@ -94,6 +95,17 @@ std::shared_ptr<Texture2D> AssetManager::LoadTexture(JNIEnv* env, const char* na
 
 	byte_t* pixels = bitmapHolder.LockPixels();
 	return std::make_shared<Texture2D>(info.width, info.height, pixels, filtering, repeat, pixelFormat);
+}
+
+std::string AssetManager::LoadTextFile(JNIEnv* env, const char* name)
+{
+	jobject byteArray = LoadFileFromAssets(env, name);
+	PACMAN_CHECK_ERROR(byteArray != nullptr, ErrorCode::InvalidResult);
+	char* buf = static_cast<char*>(env->GetDirectBufferAddress(byteArray));
+	PACMAN_CHECK_ERROR(buf != nullptr, ErrorCode::InvalidResult);
+	jlong capacity = env->GetDirectBufferCapacity(byteArray);
+
+	return std::string(buf, capacity);
 }
 
 jobject AssetManager::LoadTextureFromAssets(JNIEnv* env, const char* name)

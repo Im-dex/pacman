@@ -4,7 +4,8 @@
 #include <type_traits>
 #include <android/log.h>
 
-//#define ADRENO_PROFILER_COMPATIBILITY
+#define ADRENO_PROFILER_COMPATIBILITY
+#define PACMAN_DEBUG_MAP_TEXTURE
 
 #ifdef __GNUC__
 	#define FORCEINLINE __attribute__((always_inline))
@@ -39,6 +40,11 @@ static FORCEINLINE size_t NextPOT(size_t value)
     value |= value >> 8;
     value |= value >> 16;
     return value + 1;
+}
+
+static FORCEINLINE float RoundToNearHalf(const float value)
+{
+	return static_cast<float>((static_cast<int>(value * 2.0f)) * 0.5f);
 }
 
 } // Pacman namespace

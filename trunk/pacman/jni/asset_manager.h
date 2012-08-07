@@ -5,6 +5,7 @@
 
 #include <jni.h>
 #include <memory>
+#include <string>
 
 namespace Pacman {
 
@@ -20,6 +21,8 @@ public:
 
 	static std::shared_ptr<Texture2D> LoadTexture(JNIEnv* env, const char* name, const TextureFiltering filtering,
 												  const TextureRepeat repeat);
+
+	static std::string LoadTextFile(JNIEnv* env, const char* name);
 
 private:
 

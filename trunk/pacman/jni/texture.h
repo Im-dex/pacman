@@ -26,6 +26,7 @@ enum class PixelFormat
 {
 	None,
 	RGB_565,
+	RGB_888,
 	RGBA_8888,
 	RGBA_4444,
 	A_8
