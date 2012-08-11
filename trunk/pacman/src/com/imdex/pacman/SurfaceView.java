@@ -16,14 +16,31 @@ public class SurfaceView extends GLSurfaceView {
 	private static final boolean DEBUG = false;
 	private static final String TAG = "PACMAN";
 	
-	public SurfaceView(Context context) {
+	private final ErrorReporter mErrorReporter;
+	private boolean mStopRendering = false;
+	
+	public SurfaceView(Context context, ErrorReporter errorReporter) {
 		super(context);
+		mErrorReporter = errorReporter;
+		errorReporter.setGLView(this);
 		init(0, 0, false);
 	}
 
-	public SurfaceView(Context context, int depth, int stencil, boolean translucent) {
+	public SurfaceView(Context context, ErrorReporter errorReporter, int depth, int stencil, boolean translucent) {
 		super(context);
+		mErrorReporter = errorReporter;
+		errorReporter.setGLView(this);
 		init(depth, stencil, translucent);
+	}
+	
+	public void stopRendering() {
+		mStopRendering = true;
+		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+	}
+	
+	public void startRendering() {
+		mStopRendering = false;
+		setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 	}
 	
 	private void init(int depth, int stencil, boolean translucent) {
@@ -240,18 +257,25 @@ public class SurfaceView extends GLSurfaceView {
         
 	}
 	
-	private static class Renderer implements GLSurfaceView.Renderer {
-
+	private class Renderer implements GLSurfaceView.Renderer {
+		
 		public void onDrawFrame(GL10 gl) {
+			if (mStopRendering)
+				return;
 			NativeLib.drawFrame();
 		}
 
 		public void onSurfaceChanged(GL10 gl, int width, int height) {
-			NativeLib.resizeViewport(width, height);
+			try {
+				NativeLib.resizeViewport(width, height);
+			} catch (Exception e) {
+				mErrorReporter.terminateApplication(e.getMessage());
+			}
+			Log.d(TAG, "changed");
 		}
 
 		public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-			NativeLib.init();
+			Log.d(TAG, "Created");
 		}
 		
 	}

@@ -12,6 +12,17 @@ import android.graphics.BitmapFactory;
 
 public class NativeLib {
 
+	// ATTENTION! this values was directly mapped to the native enumerations
+	public static final int SCREEN_SIZE_SMALL  = 0;
+	public static final int SCREEN_SIZE_NORMAL = 1;
+	public static final int SCREEN_SIZE_LARGE  = 2;
+	public static final int SCREEN_SIZE_XLARGE = 3;
+	
+	public static final int SCREEN_DENSITY_LDPI  = 0;
+	public static final int SCREEN_DENSITY_MDPI  = 1;
+	public static final int SCREEN_DENSITY_HDPI  = 2;
+	public static final int SCREEN_DENSITY_XHDPI = 3;
+	
 	public static final int TOUCH_UP = 0;
 	public static final int TOUCH_DOWN = 1;
 	public static final int TOUCH_MOVE = 2;
@@ -22,12 +33,17 @@ public class NativeLib {
 	}
 	
 	private static Context mContext = null;
+	private static ErrorReporter mErrorReporter = null;
 	
 	public static void setContext(Context context) {
 		mContext = context;
 	}
 	
-	public static native void init();
+	public static void setErrorReporter(ErrorReporter errorReporter) {
+		mErrorReporter = errorReporter;
+	}
+	
+	public static native void init(int screenSize, int screenDensity);
 	public static native void deinit();
 	public static native void resizeViewport(int width, int height);
 	public static native void drawFrame();
@@ -63,6 +79,6 @@ public class NativeLib {
 	}
 	
 	private static void terminateApplication() {
-		System.exit(1);
+		mErrorReporter.terminateApplication("Internal error");
 	}
 }

@@ -48,9 +48,21 @@ public:
 
 	void Bind() const;
 
+	size_t GetWidth() const
+	{
+		return mWidth;
+	}
+
+	size_t GetHeight() const
+	{
+		return mHeight;
+	}
+
 private:
 
 	GLuint mTextureHandle;
+	size_t mWidth;
+	size_t mHeight;
 };
 
 } // Pacman namespace
