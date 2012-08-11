@@ -21,6 +21,9 @@ LOCAL_SRC_FILES := main.cpp\
 				   timer.cpp\
 				   update_thread.cpp\
 				   map.cpp\
+				   font_manager.cpp\
+				   jni_utility.cpp\
+				   engine.cpp\
 				   json/json_reader.cpp\
 				   json/json_value.cpp\
 				   json/json_writer.cpp

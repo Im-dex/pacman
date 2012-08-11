@@ -6,27 +6,59 @@ import android.app.Activity;
 public class MainActivity extends Activity {
 
 	private SurfaceView mView;
+	private ErrorReporter mErrorReporter;
+	private ScreenInformation mScreenInformation;
+	private boolean mNormalStart = true;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        NativeLib.setContext(getApplicationContext());
         InputListener inputListener = new InputListener();
-        mView = new SurfaceView(getApplicationContext());
+        mErrorReporter = new ErrorReporter(this);
+    	try {
+			mScreenInformation = new ScreenInformation(this.getResources().getConfiguration(), this.getWindowManager());
+		} catch (Exception e) {
+			mNormalStart = false;
+			mErrorReporter.terminateApplication(e.getMessage());
+			return;
+		}
+    	
+        NativeLib.setContext(getApplicationContext());
+        NativeLib.setErrorReporter(mErrorReporter);
+        
+        mView = new SurfaceView(this, mErrorReporter);
         mView.setOnTouchListener(inputListener);
+        
         setContentView(mView);
     }
     
     @Override
-    public void onPause() {
-    	super.onPause();
-    	mView.onPause();
+    public void onStart() {
+    	super.onStart();
+    	if (mNormalStart)
+    		NativeLib.init(mScreenInformation.screenSize, mScreenInformation.screenDensity);
+    }
+    
+    @Override
+    public void onStop() {
+    	super.onStop();
+    	if (mNormalStart)
+    		NativeLib.deinit();
     }
     
     @Override
     public void onResume() {
     	super.onResume();
-    	mView.onResume();
+    	if (mNormalStart)
+    		mView.onResume();
     }
+    
+    @Override
+    public void onPause() {
+    	super.onPause();
+    	if (mNormalStart)
+    		mView.onPause();
+    }
+
 }

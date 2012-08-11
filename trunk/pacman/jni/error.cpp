@@ -1,5 +1,6 @@
 #include "error.h"
 #include "base.h"
+#include "jni_utility.h"
 
 #include <GLES2/gl2.h>
 #include <exception>
@@ -25,12 +26,14 @@ const char* kErrorDescriptions[] =
 	"Insertion into the container failed",
 	"Java class not found",
 	"Java function not found",
+	"JNI call failed",
 	"Android API call failed",
 	"Failed access timer",
 	"Thread creation failed",
 	"Thread joining failed",
 	"Mutex access failed",
-	"Bad format"
+	"Bad format",
+	"Unsupported device"
 };
 
 class BaseException : public std::exception
@@ -174,20 +177,20 @@ void ErrorHandler::CheckError(const bool err, const ErrorCode errorCode, const c
 	}
 }
 
-void ErrorHandler::Terminate(JNIEnv* env)
+void ErrorHandler::Terminate()
 {
-	jclass cls = env->FindClass("com/imdex/pacman/NativeLib");
-	if (cls != nullptr)
+	try
 	{
-		jmethodID mid = env->GetStaticMethodID(cls, "terminateApplication", "()V");
-		if (mid != nullptr)
-		{
-			env->CallStaticVoidMethod(cls, mid);
-			return;
-		}
+		JNI::CallStaticObjectMethod("com/imdex/pacman/NativeLib", "terminateApplication", "()V");
 	}
-
-	LOGE("Can't terminate application");
+	catch (std::exception& e)
+	{
+		LOGE("Can't terminate application: %s", e.what());
+	}
+	catch(...)
+	{
+		LOGE("Can't terminate application, unknown error");
+	}
 }
 
 } // Pacman namespace

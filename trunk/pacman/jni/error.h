@@ -1,6 +1,5 @@
 #pragma once
 
-#include <jni.h>
 #include <cstdint>
 
 namespace Pacman {
@@ -30,12 +29,14 @@ enum class ErrorCode : uint32_t
 	ContainerInsert,
 	JClassNotFound,
 	JFuncNotFound,
+	JNICallFailed,
 	AndroidAPICallFailed,
 	TimerFailed,
 	CreateThreadFailed,
 	JoinThreadFailed,
 	MutexError,
-	BadFormat
+	BadFormat,
+	UnsupportedDevice
 };
 
 struct ErrorHandler
@@ -44,7 +45,7 @@ struct ErrorHandler
 	static void CleanGLErrors();
 	static void CheckError(const bool err, const ErrorCode errorCode, const char* file, const size_t line,
 						   const char* message = nullptr);
-	static void Terminate(JNIEnv* env);
+	static void Terminate();
 };
 
 } // Pacman namespace

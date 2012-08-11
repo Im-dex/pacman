@@ -15,6 +15,7 @@
 //#include "update_thread.h"
 
 #include "map.h"
+#include "engine.h"
 
 #include <memory>
 #include <numeric>
@@ -33,6 +34,8 @@ std::shared_ptr<SceneNode> node2;
 //UpdateThread uthread;
 Timer timer;
 
+static std::shared_ptr<Engine> gEngine = nullptr;
+
 static const char kVertexShader[] = "attribute vec4 vPosition;"
 									"attribute vec4 vColor;\n"
 									"//uniform mat4 mProjectionMatrix;\n"
@@ -50,6 +53,8 @@ static const char kFragmentShader[] = "precision mediump float;\n"
 							  	  	  "	gl_FragColor = vVertColor;\n"
 							  	  	  "}\n";
 
+#define posisi "vPosition"
+
 static const char kVertexShader2[] = "attribute vec4 vPosition;"
 									 "attribute vec2 vTexCoords;\n"
 									 "uniform mat4 mModelProjectionMatrix;\n"
@@ -66,13 +71,15 @@ static const char kFragmentShader2[] = "precision mediump float;\n"
 							  	  	   "	gl_FragColor = texture2D(colorTexture, vVertTexCoords);\n"
 							  	  	   "}\n";
 
-void Init(JNIEnv* env)
+void Init(const ScreenSize screenSize, const ScreenDensity screenDensity)
 {
+	gEngine = std::make_shared<Engine>(screenSize, screenDensity);
 	renderer = new Renderer();
 }
 
-void DeInit(JNIEnv* env)
+void DeInit()
 {
+	gEngine->Deinit();
 	shaderProgram = nullptr;
 	shaderProgram2 = nullptr;
 	delete testSprite;
@@ -83,14 +90,16 @@ void DeInit(JNIEnv* env)
 
 static uint64_t startTime = 0;
 
-void ResizeViewport(JNIEnv* env, const size_t width, const size_t heigth)
+void ResizeViewport(const size_t width, const size_t heigth)
 {
+	gEngine->Init(width, heigth);
+
 	LOGI("w: %d, h: %d", width, heigth);
 	renderer->Init(width, heigth);
 	sceneManager = std::make_shared<SceneManager>(static_cast<const float>(width), static_cast<const float>(heigth));
 	renderer->SetSceneManager(sceneManager);
 
-
+	AssetManager& assetManager = gEngine->GetAssetManager();
 /*
 	shaderProgram = std::make_shared<ShaderProgram>(kVertexShader, kFragmentShader);
 	shaderProgram->Link();
@@ -102,11 +111,11 @@ void ResizeViewport(JNIEnv* env, const size_t width, const size_t heigth)
 */
 
 	Map map;
-	map.Load(AssetManager::LoadTextFile(env, "map.json"), width, heigth);
+	map.Load(assetManager.LoadTextFileFromRoot("map.json"), width, heigth);
 	map.AttachToScene(sceneManager);
 
 	// texture
-	auto texture = AssetManager::LoadTexture(env, "cherry.png", TextureFiltering::Bilinear, TextureRepeat::None);
+	auto texture = assetManager.LoadTexture("cherry.png", TextureFiltering::Bilinear, TextureRepeat::None);
 
 	shaderProgram2 = std::make_shared<ShaderProgram>(kVertexShader2, kFragmentShader2);
 	shaderProgram2->Link();
@@ -131,7 +140,7 @@ static const float smoothFactor = 0.1f;
 
 static uint64_t lastUpdate = 0;
 
-void DrawFrame(JNIEnv* env)
+void DrawFrame()
 {
 /*	uint64_t cur = timer.GetMillisec();
 	float dt = (cur - lastUpdate) / 1000.0f;
@@ -151,47 +160,52 @@ void DrawFrame(JNIEnv* env)
 	renderer->DrawFrame();
 }
 
-void TouchEvent(JNIEnv* env, const size_t event, const float x, const float y)
+void TouchEvent(const size_t event, const float x, const float y)
 {
 	LOGI("TOUCH!");
 }
 
 //========================================================================================================================
 
-void StdExceptionCatched(std::exception& e, JNIEnv* env)
+void StdExceptionCatched(std::exception& e)
 {
 	LOGE("Exception has been catched: %s", e.what());
-	ErrorHandler::Terminate(env);
+	ErrorHandler::Terminate();
 }
 
-void UnknownExceptionCatched(JNIEnv* env)
+void UnknownExceptionCatched()
 {
 	LOGE("Unknown exception has been catched");
-	ErrorHandler::Terminate(env);
+	ErrorHandler::Terminate();
 }
 
 extern "C"
 {
-    JNIEXPORT void JNICALL Java_com_imdex_pacman_NativeLib_init(JNIEnv * env, jobject obj);
+    JNIEXPORT void JNICALL Java_com_imdex_pacman_NativeLib_init(JNIEnv * env, jobject obj, jint screenSize, jint screenDensity);
     JNIEXPORT void JNICALL Java_com_imdex_pacman_NativeLib_deinit(JNIEnv * env, jobject obj);
     JNIEXPORT void JNICALL Java_com_imdex_pacman_NativeLib_resizeViewport(JNIEnv * env, jobject obj, jint width, jint height);
     JNIEXPORT void JNICALL Java_com_imdex_pacman_NativeLib_drawFrame(JNIEnv * env, jobject obj);
     JNIEXPORT void JNICALL Java_com_imdex_pacman_NativeLib_touchEvent(JNIEnv * env, jobject obj, jint event, jfloat x, jfloat y);
 }
 
-JNIEXPORT void JNICALL Java_com_imdex_pacman_NativeLib_init(JNIEnv* env, jobject obj)
+JNIEXPORT void JNICALL Java_com_imdex_pacman_NativeLib_init(JNIEnv* env, jobject obj, jint screenSize, jint screenDensity)
 {
 	try
 	{
-		Init(env);
+		LOGI("size: %d, dens: %d", screenSize, screenDensity);
+		PACMAN_CHECK_ERROR((screenSize > 0) && (screenSize < kScreenSizesCount), ErrorCode::BadArgument);
+		PACMAN_CHECK_ERROR((screenDensity > 0) && (screenDensity < kScreenDensitiesCount), ErrorCode::BadArgument);
+		const uint8_t screenSize2 = static_cast<uint8_t>(screenSize);
+		const uint8_t screenDensity2 = static_cast<uint8_t>(screenDensity);
+		Init(static_cast<ScreenSize>(screenSize2), static_cast<ScreenDensity>(screenDensity2));
 	}
 	catch (std::exception& e)
 	{
-		StdExceptionCatched(e, env);
+		StdExceptionCatched(e);
 	}
 	catch(...)
 	{
-		UnknownExceptionCatched(env);
+		UnknownExceptionCatched();
 	}
 }
 
@@ -199,15 +213,15 @@ JNIEXPORT void JNICALL Java_com_imdex_pacman_NativeLib_deinit(JNIEnv* env, jobje
 {
 	try
 	{
-		DeInit(env);
+		DeInit();
 	}
 	catch (std::exception& e)
 	{
-		StdExceptionCatched(e, env);
+		StdExceptionCatched(e);
 	}
 	catch(...)
 	{
-		UnknownExceptionCatched(env);
+		UnknownExceptionCatched();
 	}
 }
 
@@ -215,15 +229,15 @@ JNIEXPORT void JNICALL Java_com_imdex_pacman_NativeLib_resizeViewport(JNIEnv* en
 {
 	try
 	{
-		ResizeViewport(env, width, heigth);
+		ResizeViewport(width, heigth);
 	}
 	catch (std::exception& e)
 	{
-		StdExceptionCatched(e, env);
+		StdExceptionCatched(e);
 	}
 	catch(...)
 	{
-		UnknownExceptionCatched(env);
+		UnknownExceptionCatched();
 	}
 }
 
@@ -231,15 +245,15 @@ JNIEXPORT void JNICALL Java_com_imdex_pacman_NativeLib_drawFrame(JNIEnv* env, jo
 {
 	try
 	{
-		DrawFrame(env);
+		DrawFrame();
 	}
 	catch (std::exception& e)
 	{
-		StdExceptionCatched(e, env);
+		StdExceptionCatched(e);
 	}
 	catch(...)
 	{
-		UnknownExceptionCatched(env);
+		UnknownExceptionCatched();
 	}
 }
 
@@ -247,15 +261,15 @@ JNIEXPORT void JNICALL Java_com_imdex_pacman_NativeLib_touchEvent(JNIEnv * env, 
 {
 	try
 	{
-		TouchEvent(env, event, x, y);
+		TouchEvent(event, x, y);
 	}
 	catch (std::exception& e)
 	{
-		StdExceptionCatched(e, env);
+		StdExceptionCatched(e);
 	}
 	catch(...)
 	{
-		UnknownExceptionCatched(env);
+		UnknownExceptionCatched();
 	}
 
 }

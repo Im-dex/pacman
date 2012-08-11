@@ -6,7 +6,9 @@ namespace Pacman {
 Texture2D::Texture2D(const size_t width, const size_t height, const byte_t* data,
 					 const TextureFiltering filtering, const TextureRepeat repeat,
 					 const PixelFormat pixelFormat)
-		 : UniqueIdProvider()
+		 : UniqueIdProvider(),
+		   mWidth(width),
+		   mHeight(height)
 {
 	glGenTextures(1, &mTextureHandle);
 	Bind();

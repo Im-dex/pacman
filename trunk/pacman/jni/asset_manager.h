@@ -3,7 +3,7 @@
 #include "base.h"
 #include "texture.h"
 
-#include <jni.h>
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -13,21 +13,30 @@ class AssetManager
 {
 public:
 
-	AssetManager() = delete;
+	AssetManager();
 	AssetManager(const AssetManager&) = delete;
-	~AssetManager() = delete;
+	~AssetManager() = default;
 
 	AssetManager& operator= (const AssetManager&) = delete;
 
-	static std::shared_ptr<Texture2D> LoadTexture(JNIEnv* env, const char* name, const TextureFiltering filtering,
-												  const TextureRepeat repeat);
+	std::shared_ptr<Texture2D> LoadTexture(const char* name, const TextureFiltering filtering,
+										   const TextureRepeat repeat);
 
-	static std::string LoadTextFile(JNIEnv* env, const char* name);
+	std::string LoadTextFile(const char* name);
+
+	std::string LoadTextFileFromRoot(const char* name);
+
+	uint8_t GetTileSize() const
+	{
+		return mTileSize;
+	}
 
 private:
 
-	static jobject LoadTextureFromAssets(JNIEnv* env, const char* name);
-	static jobject LoadFileFromAssets(JNIEnv* env, const char* name);
+	std::string BuildAssetPath(const char* name);
+
+	uint8_t mTileSize;
+	std::string mAssetFolder;
 };
 
 } // Pacman namespace
