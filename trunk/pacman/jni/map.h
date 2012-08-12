@@ -58,7 +58,7 @@ private:
 		MapCellType   rightBottom;
 	};
 
-	Sprite GenerateSprite(const size_t screenWidth, const size_t screenHeight, Math::Vector2f* position);
+	std::shared_ptr<Sprite> GenerateSprite(const size_t screenWidth, const size_t screenHeight, Math::Vector2f* position);
 
 	std::shared_ptr<Texture2D> GenerateTexture(const size_t textureWidth, const size_t textureHeight,
 						 	 	 	 	 	   const size_t mapWidth, const size_t mapHeight,

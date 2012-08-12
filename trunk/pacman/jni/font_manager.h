@@ -23,7 +23,7 @@ public:
 
 	FontManager& operator= (const FontManager&) = delete;
 
-	Drawable MakeString(const std::string& string, const Color textColor, const Math::Vector2f position) const;
+	std::shared_ptr<IDrawable> MakeString(const std::string& string, const Color textColor, const Math::Vector2f position) const;
 
 private:
 

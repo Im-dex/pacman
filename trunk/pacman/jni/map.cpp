@@ -136,7 +136,7 @@ void Map::Load(const std::string& textData, const size_t screenWidth, const size
 	mColumnsCount = mCells.size() / mRowsCount;
 
 	Math::Vector2f position = Math::Vector2f::kZero;
-	Sprite sprite = GenerateSprite(screenWidth, screenHeight, &position);
+	std::shared_ptr<Sprite> sprite = GenerateSprite(screenWidth, screenHeight, &position);
 
 	mNode = std::make_shared<SceneNode>(sprite, position);
 }
@@ -146,7 +146,7 @@ void Map::AttachToScene(std::shared_ptr<SceneManager> sceneManager)
 	sceneManager->AttachNode(mNode);
 }
 
-Sprite Map::GenerateSprite(const size_t screenWidth, const size_t screenHeight, Math::Vector2f* position)
+std::shared_ptr<Sprite> Map::GenerateSprite(const size_t screenWidth, const size_t screenHeight, Math::Vector2f* position)
 {
 	size_t mapWidth = mColumnsCount * mCellSize;
 	size_t mapHeight = mRowsCount * mCellSize;
@@ -182,8 +182,8 @@ Sprite Map::GenerateSprite(const size_t screenWidth, const size_t screenHeight, 
 	auto shaderProgram = std::make_shared<ShaderProgram>(kMapVertexShader, kMapFragmentShader);
 	shaderProgram->Link();
 
-	return Sprite(mapWidth, mapHeight, leftTopTexCoord, rightTopTexCoord, leftBottomTexCoord,
-				  rightBottomTexCoord, texture, shaderProgram);
+	return std::make_shared<Sprite>(mapWidth, mapHeight, leftTopTexCoord, rightTopTexCoord, leftBottomTexCoord,
+									rightBottomTexCoord, texture, shaderProgram);
 }
 
 std::shared_ptr<Texture2D> Map::GenerateTexture(const size_t textureWidth, const size_t textureHeight,

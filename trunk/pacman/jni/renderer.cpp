@@ -21,8 +21,7 @@ static const char* kModelProjMatrixUniformName = "mModelProjectionMatrix";
 Renderer::Renderer()
 		: mProjection(),
 		  mClearColor(Color::kBlack),
-		  mSceneManager(),
-		  mCurTextureId(UniqueIdProvider::kNull)
+		  mSceneManager()
 {
 }
 
@@ -65,25 +64,22 @@ void Renderer::DrawFrame()
 	}
 }
 
-void Renderer::RenderDrawable(const Drawable& drawable, const Math::Matrix4f modelMatrix)
+void Renderer::RenderDrawable(const std::shared_ptr<IDrawable> drawable, const Math::Matrix4f modelMatrix)
 {
-	auto texture = drawable.GetTexture();
-	auto vertexBuffer = drawable.GetVertexBuffer();
-	auto shaderProgram = drawable.GetShaderProgram();
+	auto texture = drawable->GetTexture();
+	auto vertexBuffer = drawable->GetVertexBuffer();
+	auto shaderProgram = drawable->GetShaderProgram();
 
-	if ((texture != nullptr) && (texture->GetId() != mCurTextureId))
-	{
+	if (texture != nullptr)
 		texture->Bind();
-		mCurTextureId = texture->GetId();
-	}
 
 	shaderProgram->Bind();
 
 	Math::Matrix4f modelProjection = (mProjection * modelMatrix).Transpose();
 	shaderProgram->SetUniform(kModelProjMatrixUniformName, modelProjection);
-	vertexBuffer->Bind(shaderProgram);
-
+	vertexBuffer->Bind();
 	vertexBuffer->Draw();
+	vertexBuffer->Unbind();
 }
 
 } // Pacman namespace
