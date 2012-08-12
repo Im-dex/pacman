@@ -26,7 +26,7 @@ namespace Pacman {
 Renderer* renderer = nullptr;
 std::shared_ptr<SceneManager> sceneManager = nullptr;
 Sprite* testSprite = nullptr;
-Sprite* testSprite2 = nullptr;
+std::shared_ptr<Sprite> testSprite2 = nullptr;
 std::shared_ptr<ShaderProgram> shaderProgram;
 std::shared_ptr<ShaderProgram> shaderProgram2;
 std::shared_ptr<SceneNode> node;
@@ -83,7 +83,7 @@ void DeInit()
 	shaderProgram = nullptr;
 	shaderProgram2 = nullptr;
 	delete testSprite;
-	delete testSprite2;
+	testSprite2 = nullptr;
 	sceneManager = nullptr;
 	delete renderer;
 }
@@ -120,9 +120,9 @@ void ResizeViewport(const size_t width, const size_t heigth)
 	shaderProgram2 = std::make_shared<ShaderProgram>(kVertexShader2, kFragmentShader2);
 	shaderProgram2->Link();
 
-	testSprite2 = new Sprite(24.0f, 24.0f, texture, shaderProgram2);
+	testSprite2 = std::make_shared<Sprite>(24.0f, 24.0f, texture, shaderProgram2);
 
-	node2 = std::make_shared<SceneNode>(*testSprite2, Math::Vector2f(32.0f, 16.0f));
+	node2 = std::make_shared<SceneNode>(testSprite2, Math::Vector2f(32.0f, 16.0f));
 	sceneManager->AttachNode(node2);
 
 	timer.Start();

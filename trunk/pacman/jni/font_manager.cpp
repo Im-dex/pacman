@@ -44,7 +44,7 @@ FontManager::FontManager()
 	mTexture = assetManager.LoadTexture(fontBitmap.c_str(), TextureFiltering::None, TextureRepeat::None);
 }
 
-Drawable FontManager::MakeString(const std::string& string, const Color textColor, const Math::Vector2f position) const
+std::shared_ptr<IDrawable> FontManager::MakeString(const std::string& string, const Color textColor, const Math::Vector2f position) const
 {
 	uint8_t tileSize = Engine::GetInstance()->GetAssetManager().GetTileSize();
 
@@ -52,7 +52,7 @@ Drawable FontManager::MakeString(const std::string& string, const Color textColo
 
 
 	//return Drawable(vertBuf, texture, shader )
-	return Drawable(nullptr, nullptr, nullptr);
+	return nullptr;
 }
 
 } // Pacman namespace

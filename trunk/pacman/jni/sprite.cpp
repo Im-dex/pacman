@@ -6,12 +6,13 @@
 namespace Pacman {
 
 static const Color kDefaultColor = Color::kGreen;
+
 static const Math::Vector2f kDefaultLeftTopTexCoord = Math::Vector2f::kZero;
 static const Math::Vector2f kDefaultRightTopTexCoord = Math::Vector2f(1.0f, 0.0f);
 static const Math::Vector2f kDefaultLeftBottomTexCoord = Math::Vector2f(0.0f, 1.0f);
 static const Math::Vector2f kDefaultRightBottomTexCoord = Math::Vector2f(1.0f, 1.0f);
 
-FORCEINLINE void FillColor(Vertex& vertex, const Color& color)
+static FORCEINLINE void FillColor(ColorVertex& vertex, const Color& color)
 {
 	vertex.r = color.GetRedFloat();
 	vertex.g = color.GetGreenFloat();
@@ -19,7 +20,7 @@ FORCEINLINE void FillColor(Vertex& vertex, const Color& color)
 	vertex.a = color.GetAlphaFloat();
 }
 
-FORCEINLINE void FillTexCoord(Vertex& vertex, const Math::Vector2f texCoord)
+static FORCEINLINE void FillTexCoord(TextureVertex& vertex, const Math::Vector2f texCoord)
 {
 	vertex.u = texCoord.GetX();
 	vertex.v = texCoord.GetY();
@@ -27,58 +28,84 @@ FORCEINLINE void FillTexCoord(Vertex& vertex, const Math::Vector2f texCoord)
 
 //===========================================================================================================
 
-Sprite::Sprite(const float width, const float height, const Color& leftTop, const Color& rightTop,
+Sprite::Sprite(const size_t width, const size_t height, const Color& leftTop, const Color& rightTop,
 			   const Color& leftBottom, const Color& rightBottom, std::shared_ptr<ShaderProgram> shaderProgram)
-	  : Drawable(nullptr, nullptr, shaderProgram)
+	  : mShaderProgram(shaderProgram),
+	    mTexture(nullptr),
+		mVertexBuffer(nullptr)
 {
 	InitByColor(width, height, leftTop, rightTop, leftBottom, rightBottom);
 }
 
-Sprite::Sprite(const float width, const float height, std::shared_ptr<ShaderProgram> shaderProgram)
-	  : Drawable(nullptr, nullptr, shaderProgram)
+Sprite::Sprite(const size_t width, const size_t height, std::shared_ptr<ShaderProgram> shaderProgram)
+	  : mShaderProgram(shaderProgram),
+	    mTexture(nullptr),
+		mVertexBuffer(nullptr)
 {
 	InitByColor(width, height, kDefaultColor, kDefaultColor, kDefaultColor, kDefaultColor);
 }
 
-Sprite::Sprite(const float width, const float height, const Math::Vector2f leftTopTexCoord,
+Sprite::Sprite(const size_t width, const size_t height, const Math::Vector2f leftTopTexCoord,
 			   const Math::Vector2f rightTopTexCoord, const Math::Vector2f leftBottomTexCoord,
 			   const Math::Vector2f rightBottomTexCoord, std::shared_ptr<Texture2D> texture,
 			   std::shared_ptr<ShaderProgram> shaderProgram)
-	  : Drawable(nullptr, texture, shaderProgram)
+	  : mShaderProgram(shaderProgram),
+	    mTexture(texture),
+		mVertexBuffer(nullptr)
 {
 	InitByTexture(width, height, leftTopTexCoord, rightTopTexCoord, leftBottomTexCoord, rightBottomTexCoord);
 }
 
-Sprite::Sprite(const float width, const float height, std::shared_ptr<Texture2D> texture,
+Sprite::Sprite(const size_t width, const size_t height, std::shared_ptr<Texture2D> texture,
 			   std::shared_ptr<ShaderProgram> shaderProgram)
-	  : Drawable(nullptr, texture, shaderProgram)
+	  : mShaderProgram(shaderProgram),
+	    mTexture(texture),
+		mVertexBuffer(nullptr)
 {
 	InitByTexture(width, height, kDefaultLeftTopTexCoord, kDefaultRightTopTexCoord,
 				  kDefaultLeftBottomTexCoord, kDefaultRightBottomTexCoord);
 }
 
-Sprite::SpriteVertexArray Sprite::BuildVertexBuffer(const float spriteWidth, const float spriteHeight)
+std::shared_ptr<VertexBuffer> Sprite::GetVertexBuffer() const
 {
-	SpriteVertexArray vertices = SpriteVertexArray();
+	return mVertexBuffer;
+}
+
+std::shared_ptr<Texture2D> Sprite::GetTexture() const
+{
+	return mTexture;
+}
+
+std::shared_ptr<ShaderProgram> Sprite::GetShaderProgram() const
+{
+	return mShaderProgram;
+}
+
+typename Sprite::BaseData Sprite::BuildBaseData(const size_t spriteWidth, const size_t spriteHeight)
+{
+	VertexPositionArray positions = VertexPositionArray();
+	IndexArray indicies = IndexArray();
 
 	//
 	// First triangle				 |\
-	// 	 	 	 	 	 	 	 	 | \
-	// 	 	 	 	 	 	 	 	 |  \
+	// 	 	 	 	 	 	 	 |	 | \    ^
+	// 	 	 	 	 	 	 	 v	 |  \   |
 	// 	 	 	 	 	 	 	 	 |___\
+	//
+	//								   ->
 
 
 	// left top
-	vertices[0].x = 0.0f;
-	vertices[0].y = 0.0f;
+	positions[0] = Math::Vector2f(0.0f, 0.0f);
+	indicies[0] = 0;
 
 	// left bottom
-	vertices[1].x = 0.0f;
-	vertices[1].y = spriteHeight;
+	positions[1] = Math::Vector2f(0.0f, static_cast<float>(spriteHeight));
+	indicies[1] = 1;
 
 	// right bottom
-	vertices[2].x = spriteWidth;
-	vertices[2].y = spriteHeight;
+	positions[2] = Math::Vector2f(static_cast<float>(spriteWidth), static_cast<float>(spriteHeight));
+	indicies[2] = 2;
 
 	//								____
 	// Second triangle				\ 	|
@@ -88,53 +115,63 @@ Sprite::SpriteVertexArray Sprite::BuildVertexBuffer(const float spriteWidth, con
 
 
 	// left top
-	vertices[3].x = 0.0f;
-	vertices[3].y = 0.0f;
+	indicies[3] = 0;
 
 	// right bottom
-	vertices[4].x = spriteWidth;
-	vertices[4].y = spriteHeight;
+	indicies[4] = 2;
 
 	// right top
-	vertices[5].x = spriteWidth;
-	vertices[5].y = 0.0f;
+	positions[3] = Math::Vector2f(static_cast<float>(spriteWidth), 0.0f);
+	indicies[5] = 3;
 
-	return vertices;
+	return std::make_pair(positions, indicies);
 }
 
-void Sprite::InitByColor(const float width, const float height, const Color& leftTop, const Color& rightTop,
+void Sprite::InitByColor(const size_t width, const size_t height, const Color& leftTop, const Color& rightTop,
 		   	   	  	  	 const Color& leftBottom, const Color& rightBottom)
 {
-	SpriteVertexArray vertices = BuildVertexBuffer(width, height);
+	std::array<ColorVertex, kSpriteVertexCount> vertices;
+	BaseData baseData = BuildBaseData(width, height);
+
+	VertexPositionArray positions = std::get<0>(baseData);
+	IndexArray indices = std::get<1>(baseData);
+
+	for (size_t i = 0; i < kSpriteVertexCount; i++)
+	{
+		vertices[i].x = positions[i].GetX();
+		vertices[i].y = positions[i].GetY();
+	}
 
 	FillColor(vertices[0], leftTop);
 	FillColor(vertices[1], leftBottom);
 	FillColor(vertices[2], rightBottom);
-	FillColor(vertices[3], leftTop);
-	FillColor(vertices[4], rightBottom);
-	FillColor(vertices[5], rightTop);
+	FillColor(vertices[3], rightTop);
 
-	const fvf_t fvf = static_cast<fvf_t>(FVFElement::Position) | static_cast<fvf_t>(FVFElement::Color);
-	auto vertexBuffer = std::make_shared<VertexBuffer>(vertices.data(), kSpriteVerticesCount, fvf);
-	SetVertexBuffer(vertexBuffer);
+	mVertexBuffer = std::make_shared<VertexBuffer>(vertices.data(), indices.data(), kSpriteVertexCount, kSpriteIndexCount, BufferUsage::Static);
 }
 
-void Sprite::InitByTexture(const float width, const float height, const Math::Vector2f leftTopTexCoord,
+void Sprite::InitByTexture(const size_t width, const size_t height, const Math::Vector2f leftTopTexCoord,
 		   	   	    const Math::Vector2f rightTopTexCoord, const Math::Vector2f leftBottomTexCoord,
 		   	   	    const Math::Vector2f rightBottomTexCoord)
 {
-	SpriteVertexArray vertices = BuildVertexBuffer(width, height);
+	std::array<TextureVertex, kSpriteVertexCount> vertices;
+	BaseData baseData = BuildBaseData(width, height);
+
+	VertexPositionArray positions = std::get<0>(baseData);
+	IndexArray indices = std::get<1>(baseData);
+
+	for (size_t i = 0; i < kSpriteVertexCount; i++)
+	{
+		vertices[i].x = positions[i].GetX();
+		vertices[i].y = positions[i].GetY();
+	}
 
 	FillTexCoord(vertices[0], leftTopTexCoord);
 	FillTexCoord(vertices[1], leftBottomTexCoord);
 	FillTexCoord(vertices[2], rightBottomTexCoord);
-	FillTexCoord(vertices[3], leftTopTexCoord);
-	FillTexCoord(vertices[4], rightBottomTexCoord);
-	FillTexCoord(vertices[5], rightTopTexCoord);
+	FillTexCoord(vertices[3], rightTopTexCoord);
 
-	const fvf_t fvf = static_cast<fvf_t>(FVFElement::Position) | static_cast<fvf_t>(FVFElement::TexCoords);
-	auto vertexBuffer = std::make_shared<VertexBuffer>(vertices.data(), kSpriteVerticesCount, fvf);
-	SetVertexBuffer(vertexBuffer);
+	mVertexBuffer = std::make_shared<VertexBuffer>(vertices.data(), indices.data(), kSpriteVertexCount, kSpriteIndexCount, BufferUsage::Static);
 }
 
 } // Pacman namespace

@@ -14,10 +14,8 @@ LOCAL_SRC_FILES := main.cpp\
 				   shader_program.cpp\
 				   texture.cpp\
 				   asset_manager.cpp\
-				   drawable.cpp\
 				   scene_node.cpp\
 				   scene_manager.cpp\
-				   unique_id.cpp\
 				   timer.cpp\
 				   update_thread.cpp\
 				   map.cpp\

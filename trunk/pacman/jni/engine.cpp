@@ -13,10 +13,14 @@ Engine::Engine(const ScreenSize screenSize, const ScreenDensity screenDensity)
 		mFontManager(nullptr)
 {}
 
+Engine::~Engine()
+{
+}
+
 void Engine::Init(const size_t screenWidth, const size_t screenHeight)
 {
-	mAssetManager = std::make_shared<AssetManager>();
-	mFontManager = std::make_shared<FontManager>();
+	mAssetManager = std::unique_ptr<AssetManager>(new AssetManager());
+	mFontManager = std::unique_ptr<FontManager>(new FontManager());
 }
 
 void Engine::Deinit()

@@ -35,7 +35,7 @@ public:
 
 	Engine(const ScreenSize screenSize, const ScreenDensity screenDensity);
 	Engine(const Engine&) = delete;
-	~Engine() = default;
+	~Engine();
 
 	Engine& operator= (const Engine&) = delete;
 
@@ -70,8 +70,8 @@ private:
 	ScreenSize mScreenSize;
 	ScreenDensity mScreenDensity;
 
-	std::shared_ptr<AssetManager> mAssetManager;
-	std::shared_ptr<FontManager>  mFontManager;
+	std::unique_ptr<AssetManager> mAssetManager;
+	std::unique_ptr<FontManager>  mFontManager;
 };
 
 } // Pacman namespace

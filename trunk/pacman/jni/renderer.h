@@ -2,7 +2,6 @@
 
 #include "color.h"
 #include "math/matrix4.h"
-#include "unique_id.h"
 
 #include <memory>
 #include <cstdint>
@@ -10,7 +9,7 @@
 namespace Pacman {
 
 class SceneManager;
-class Drawable;
+class IDrawable;
 
 class Renderer
 {
@@ -38,12 +37,11 @@ public:
 
 private:
 
-	void RenderDrawable(const Drawable& drawable, const Math::Matrix4f modelMatrix);
+	void RenderDrawable(const std::shared_ptr<IDrawable> drawable, const Math::Matrix4f modelMatrix);
 
 	Math::Matrix4f mProjection;
 	Color mClearColor;
 	std::shared_ptr<SceneManager> mSceneManager;
-	uid_t mCurTextureId;
 };
 
 } // Pacman namespace
