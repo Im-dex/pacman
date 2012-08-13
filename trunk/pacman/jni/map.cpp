@@ -178,7 +178,7 @@ std::shared_ptr<Sprite> Map::GenerateSprite(const size_t screenWidth, const size
 	shaderProgram->Link();
 
 	SpriteRegion region(SpriteRegion::Position::kZero, mapWidth, mapHeight);
-	return std::make_shared<Sprite>(region, textureRegion, texture, shaderProgram);
+	return std::make_shared<Sprite>(region, textureRegion, texture, shaderProgram, false);
 }
 
 std::shared_ptr<Texture2D> Map::GenerateTexture(const size_t textureWidth, const size_t textureHeight,

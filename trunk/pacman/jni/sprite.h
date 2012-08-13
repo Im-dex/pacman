@@ -25,14 +25,15 @@ public:
 	Sprite() = delete;
 
 	Sprite(const SpriteRegion& region, const Color& leftTop, const Color& rightTop, const Color& leftBottom,
-		   const Color& rightBottom, std::shared_ptr<ShaderProgram> shaderProgram);
+		   const Color& rightBottom, std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend);
 
-	Sprite(const SpriteRegion& region, std::shared_ptr<ShaderProgram> shaderProgram);
+	Sprite(const SpriteRegion& region, std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend);
 
 	Sprite(const SpriteRegion& region, const TextureRegion& textureRegion, std::shared_ptr<Texture2D> texture,
-		   std::shared_ptr<ShaderProgram> shaderProgram);
+		   std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend);
 
-	Sprite(const SpriteRegion& region, std::shared_ptr<Texture2D> texture, std::shared_ptr<ShaderProgram> shaderProgram);
+	Sprite(const SpriteRegion& region, std::shared_ptr<Texture2D> texture,
+		   std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend);
 
 	Sprite(const Sprite&) = default;
 	~Sprite() = default;
@@ -45,6 +46,8 @@ public:
 
 	virtual std::shared_ptr<ShaderProgram> GetShaderProgram() const;
 
+	virtual bool HasAlphaBlend() const;
+
 private:
 
 	void InitByColor(const SpriteRegion& region, const Color& leftTop, const Color& rightTop,
@@ -55,6 +58,7 @@ private:
 	std::shared_ptr<VertexBuffer> mVertexBuffer;
 	std::shared_ptr<Texture2D> mTexture;
 	std::shared_ptr<ShaderProgram> mShaderProgram;
+	bool mAlphaBlend;
 };
 
 } // Pacman namespace
