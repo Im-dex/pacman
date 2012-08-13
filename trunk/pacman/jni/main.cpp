@@ -120,7 +120,8 @@ void ResizeViewport(const size_t width, const size_t heigth)
 	shaderProgram2 = std::make_shared<ShaderProgram>(kVertexShader2, kFragmentShader2);
 	shaderProgram2->Link();
 
-	testSprite2 = std::make_shared<Sprite>(24.0f, 24.0f, texture, shaderProgram2);
+	SpriteRegion region2(SpriteRegion::Position::kZero, 24, 24);
+	testSprite2 = std::make_shared<Sprite>(region2, texture, shaderProgram2);
 
 	node2 = std::make_shared<SceneNode>(testSprite2, Math::Vector2f(32.0f, 16.0f));
 	sceneManager->AttachNode(node2);

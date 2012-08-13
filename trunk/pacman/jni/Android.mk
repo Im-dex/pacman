@@ -22,6 +22,7 @@ LOCAL_SRC_FILES := main.cpp\
 				   font_manager.cpp\
 				   jni_utility.cpp\
 				   engine.cpp\
+				   resource.cpp\
 				   json/json_reader.cpp\
 				   json/json_value.cpp\
 				   json/json_writer.cpp

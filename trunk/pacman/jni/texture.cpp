@@ -6,7 +6,8 @@ namespace Pacman {
 Texture2D::Texture2D(const size_t width, const size_t height, const byte_t* data,
 					 const TextureFiltering filtering, const TextureRepeat repeat,
 					 const PixelFormat pixelFormat)
-		 : mWidth(width),
+		 : Resource(), 
+		   mWidth(width),
 		   mHeight(height)
 {
 	glGenTextures(1, &mTextureHandle);
@@ -89,6 +90,12 @@ void Texture2D::Bind() const
 {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, mTextureHandle);
+	PACMAN_CHECK_GL_ERROR();
+}
+
+void Texture2D::Unbind() const
+{
+	glBindTexture(GL_TEXTURE_2D, 0);
 	PACMAN_CHECK_GL_ERROR();
 }
 

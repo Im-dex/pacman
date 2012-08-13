@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base.h"
+#include "resource.h"
 #include "math/vector2.h"
 #include "color.h"
 
@@ -38,7 +39,7 @@ struct TextureVertex
 	float u, v; // tex coords
 };
 
-class VertexBuffer
+class VertexBuffer : public Resource
 {
 public:
 

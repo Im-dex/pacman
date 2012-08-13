@@ -9,9 +9,7 @@ namespace Pacman {
 
 static const char* kDefaultFomtConfigName = "font.json";
 
-#define posisi "vPosition"
-
-static const char kVertexShader2[] = "attribute vec4 " posisi ";"
+static const char kVertexShader2[] = "attribute vec4 vPosition;"
 									 "attribute vec2 vTexCoords;\n"
 									 "uniform mat4 mModelProjectionMatrix;\n"
 									 "varying vec2 vVertTexCoords;\n"
@@ -42,16 +40,18 @@ FontManager::FontManager()
 	const std::string fontBitmap = root["font"].asString();
 
 	mTexture = assetManager.LoadTexture(fontBitmap.c_str(), TextureFiltering::None, TextureRepeat::None);
+
+	// shader here
+
+	const uint8_t tileSize = assetManager.GetTileSize();
+	const size_t charsCount = mASCIIend - mASCIIstart;
+	const size_t charsInRow = mTexture->GetWidth() / tileSize;
 }
 
-std::shared_ptr<IDrawable> FontManager::MakeString(const std::string& string, const Color textColor, const Math::Vector2f position) const
+std::shared_ptr<Sprite> FontManager::MakeString(const std::string& string, const Color textColor, const Math::Vector2f position) const
 {
-	uint8_t tileSize = Engine::GetInstance()->GetAssetManager().GetTileSize();
-
 	//const size_t verticesCount = string.size() * k
 
-
-	//return Drawable(vertBuf, texture, shader )
 	return nullptr;
 }
 

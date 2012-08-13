@@ -2,6 +2,7 @@
 
 #include "base.h"
 #include "shader.h"
+#include "resource.h"
 #include "math/vector2.h"
 #include "math/vector3.h"
 #include "math/vector4.h"
@@ -25,7 +26,7 @@ enum class VertexAttributeType
 	Fixed
 };
 
-class ShaderProgram
+class ShaderProgram : public Resource
 {
 public:
 
@@ -41,7 +42,9 @@ public:
 
 	void Link();
 
-	void Bind();
+	void Bind() const;
+
+	void Unbind() const;
 
 	// attrName - attribute name
 	// count - number of values per vertex component

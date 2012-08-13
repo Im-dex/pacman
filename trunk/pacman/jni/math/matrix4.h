@@ -101,6 +101,7 @@ private:
 
 typedef Matrix4<float>  Matrix4f;
 typedef Matrix4<double> Matrix4d;
+typedef Matrix4<size_t> Matrix4s;
 
 } // Math namespace
 } // Pacman namespace

@@ -6,7 +6,8 @@
 namespace Pacman {
 
 ShaderProgram::ShaderProgram(const std::string& vertexShaderSource, const std::string& fragmentShaderSource)
-			 : mVertexShader(ShaderType::VERTEX, vertexShaderSource),
+			 : Resource(),
+			   mVertexShader(ShaderType::VERTEX, vertexShaderSource),
 			   mFragmentShader(ShaderType::FRAGMENT, fragmentShaderSource),
 			   mIsLinked(false),
 			   mAttributeUniformHandles()
@@ -74,9 +75,15 @@ void ShaderProgram::Link()
 	mIsLinked = true;
 }
 
-void ShaderProgram::Bind()
+void ShaderProgram::Bind() const
 {
 	glUseProgram(mProgramHandle);
+	PACMAN_CHECK_GL_ERROR();
+}
+
+void ShaderProgram::Unbind() const
+{
+	glUseProgram(0);
 	PACMAN_CHECK_GL_ERROR();
 }
 

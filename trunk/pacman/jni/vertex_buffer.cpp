@@ -26,7 +26,8 @@ static GLenum ConvertUsage(const BufferUsage usage)
 
 VertexBuffer::VertexBuffer(const Vertex* vertexData, const uint16_t* indexData, const size_t vertexCount,
 						   const size_t indexCount, const BufferUsage usage)
-			: mIndexCount(indexCount),
+			: Resource(),
+			  mIndexCount(indexCount),
 			  mAttributesCount(3)
 {
 	const void* data = static_cast<const void*>(vertexData);
@@ -38,7 +39,8 @@ VertexBuffer::VertexBuffer(const Vertex* vertexData, const uint16_t* indexData, 
 
 VertexBuffer::VertexBuffer(const ColorVertex* vertexData, const uint16_t* indexData, const size_t vertexCount,
 						   const size_t indexCount, const BufferUsage usage)
-			: mIndexCount(indexCount),
+			: Resource(),
+			  mIndexCount(indexCount),
 			  mAttributesCount(2)
 {
 	const void* data = static_cast<const void*>(vertexData);
@@ -49,7 +51,8 @@ VertexBuffer::VertexBuffer(const ColorVertex* vertexData, const uint16_t* indexD
 
 VertexBuffer::VertexBuffer(const TextureVertex* vertexData, const uint16_t* indexData, const size_t vertexCount,
 						   const size_t indexCount, const BufferUsage usage)
-			: mIndexCount(indexCount),
+			: Resource(),
+			  mIndexCount(indexCount),
 			  mAttributesCount(2)
 {
 	const void* data = static_cast<const void*>(vertexData);
