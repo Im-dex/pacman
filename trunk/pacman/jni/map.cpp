@@ -71,7 +71,7 @@ static void FillRegion(byte_t* colorBuffer, const size_t rowWidth, const Region 
 
 	for (size_t i = 0; i < region.GetHeight(); i++)
 	{
-		const size_t bufferOffset = ((i + region.GetY()) * bytesInRow) + (region.GetX() * kColorComponentsCount);
+		const size_t bufferOffset = ((i + region.GetPosY()) * bytesInRow) + (region.GetPosX() * kColorComponentsCount);
 		memcpy(colorBuffer + bufferOffset, row.get(), bytesInRegionRow);
 	}
 }
@@ -79,7 +79,7 @@ static void FillRegion(byte_t* colorBuffer, const size_t rowWidth, const Region 
 // cut cutSize pixels from left
 static FORCEINLINE void CutLeft(Region* region, const size_t cutSize)
 {
-	region->SetX(region->GetX() + cutSize);
+	region->SetPosX(region->GetPosX() + cutSize);
 	region->SetWidth(region->GetWidth() - cutSize);	
 }
 
@@ -92,7 +92,7 @@ static FORCEINLINE void CutRight(Region* region, const size_t cutSize)
 // cut cutSize pixels from top
 static FORCEINLINE void CutTop(Region* region, const size_t cutSize)
 {
-	region->SetY(region->GetY() + cutSize);
+	region->SetPosY(region->GetPosY() + cutSize);
 	region->SetHeight(region->GetHeight() - cutSize);
 }
 
@@ -171,25 +171,18 @@ std::shared_ptr<Sprite> Map::GenerateSprite(const size_t screenWidth, const size
 	*position = Math::Vector2f(leftRightPadding, 0.0f);
 
 	// lets generate!
-	Math::Vector2f leftTopTexCoord = Math::Vector2f::kZero;
-	Math::Vector2f rightTopTexCoord = Math::Vector2f::kZero;
-	Math::Vector2f leftBottomTexCoord = Math::Vector2f::kZero;
-	Math::Vector2f rightBottomTexCoord = Math::Vector2f::kZero;
-
-	auto texture = GenerateTexture(textureWidth, textureHeight, mapWidth, mapHeight, &leftTopTexCoord,
-								   &rightTopTexCoord, &leftBottomTexCoord, &rightBottomTexCoord);
+	TextureRegion textureRegion(Math::Vector2f::kZero, 0.0f, 0.0f);
+	auto texture = GenerateTexture(textureWidth, textureHeight, mapWidth, mapHeight, &textureRegion);
 
 	auto shaderProgram = std::make_shared<ShaderProgram>(kMapVertexShader, kMapFragmentShader);
 	shaderProgram->Link();
 
-	return std::make_shared<Sprite>(mapWidth, mapHeight, leftTopTexCoord, rightTopTexCoord, leftBottomTexCoord,
-									rightBottomTexCoord, texture, shaderProgram);
+	SpriteRegion region(SpriteRegion::Position::kZero, mapWidth, mapHeight);
+	return std::make_shared<Sprite>(region, textureRegion, texture, shaderProgram);
 }
 
 std::shared_ptr<Texture2D> Map::GenerateTexture(const size_t textureWidth, const size_t textureHeight,
-					 	  	  	  	  	  	    const size_t mapWidth, const size_t mapHeight,
-					 	  	  	  	  	  	    Math::Vector2f* leftTopTexCoord, Math::Vector2f* rightTopTexCoord,
-					 	  	  	  	  	  	    Math::Vector2f* leftBottomTexCoord, Math::Vector2f* rightBottomTexCoord)
+					 	  	  	  	  	  	    const size_t mapWidth, const size_t mapHeight, TextureRegion* textureRegion)
 {
 	const size_t bufferSize = textureWidth * textureHeight * kColorComponentsCount;
 	const size_t bytesInRow = textureWidth * kColorComponentsCount;
@@ -203,7 +196,7 @@ std::shared_ptr<Texture2D> Map::GenerateTexture(const size_t textureWidth, const
 		for (size_t j = 0; j < mColumnsCount; j++)
 		{
 			MapCellType cell = GetCell(i, j);
-			Region cellRegion(j * mCellSize, i * mCellSize, mCellSize, mCellSize);
+			Region cellRegion(Region::Position(j * mCellSize, i * mCellSize), mCellSize, mCellSize);
 
 			if (cell == MapCellType::Door)
 			{
@@ -235,11 +228,11 @@ std::shared_ptr<Texture2D> Map::GenerateTexture(const size_t textureWidth, const
 	//
 #ifdef PACMAN_DEBUG_MAP_TEXTURE
 	// fill right align rectangle
-	Region rightRectangle(mapWidth, 0, textureWidth - mapWidth, mapHeight);
+	Region rightRectangle(Region::Position(mapWidth, 0), textureWidth - mapWidth, mapHeight);
 	FillRegion(buffer.get(), textureWidth, rightRectangle, kAlignColor);
 
 	// fill bottom align rectangle
-	Region bottomRectangle(0, mapHeight, textureWidth, textureHeight - mapHeight);
+	Region bottomRectangle(Region::Position(0, mapHeight), textureWidth, textureHeight - mapHeight);
 	FillRegion(buffer.get(), textureWidth, bottomRectangle, kAlignColor);
 
 	//
@@ -247,11 +240,7 @@ std::shared_ptr<Texture2D> Map::GenerateTexture(const size_t textureWidth, const
 	//
 	const float u = static_cast<float>(mapWidth) / static_cast<float>(textureWidth);
 	const float v = static_cast<float>(mapHeight) / static_cast<float>(textureHeight);
-
-	*leftTopTexCoord = Math::Vector2f::kZero;
-	*rightTopTexCoord = Math::Vector2f(u, 0.0f);
-	*leftBottomTexCoord = Math::Vector2f(0.0f, v);
-	*rightBottomTexCoord = Math::Vector2f(u, v);
+	*textureRegion = TextureRegion(Math::Vector2f::kZero, u, v);
 #endif
 
 	//
@@ -275,14 +264,14 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 			if (cell != MapCellType::Wall)
 				continue;
 
-			Region cellRegion(j * mCellSize, i * mCellSize, mCellSize, mCellSize);
+			Region cellRegion(Region::Position(j * mCellSize, i * mCellSize), mCellSize, mCellSize);
 			FullNeighborsInfo neighbors = GetFullNeighbors(i, j);
 
 			if (neighbors.leftTop == MapCellType::Empty &&
 				neighbors.directInfo.left == MapCellType::Wall &&
 				neighbors.directInfo.top == MapCellType::Wall)
 			{
-				Region artifactRegion(cellRegion.GetX(), cellRegion.GetY(), mCellHalf, mCellHalf);
+				Region artifactRegion(cellRegion.GetPosition(), mCellHalf, mCellHalf);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.leftTop));
 			}
 
@@ -290,8 +279,9 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.directInfo.right == MapCellType::Wall &&
 				neighbors.directInfo.top == MapCellType::Wall)
 			{
-				Region artifactRegion(cellRegion.GetX() + cellRegion.GetWidth() - mCellHalf, cellRegion.GetY(),
-									  mCellHalf, mCellHalf);
+				Region::Position pos = cellRegion.GetRightTopPos();
+				pos.SetX(pos.GetX() - mCellHalf);
+				Region artifactRegion(pos, mCellHalf, mCellHalf);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.rightTop));
 			}
 
@@ -299,8 +289,9 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.directInfo.left == MapCellType::Wall &&
 				neighbors.directInfo.bottom == MapCellType::Wall)
 			{
-				Region artifactRegion(cellRegion.GetX(), cellRegion.GetY() + cellRegion.GetHeight() - mCellHalf,
-									  mCellHalf, mCellHalf);
+				Region::Position pos = cellRegion.GetLeftBottomPos();
+				pos.SetY(pos.GetY() - mCellHalf);
+				Region artifactRegion(pos, mCellHalf, mCellHalf);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.leftBottom));
 			}
 
@@ -308,8 +299,10 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.directInfo.right == MapCellType::Wall &&
 				neighbors.directInfo.bottom == MapCellType::Wall)
 			{
-				Region artifactRegion(cellRegion.GetX() + cellRegion.GetWidth() - mCellHalf,
-									  cellRegion.GetY() + cellRegion.GetHeight() - mCellHalf, mCellHalf, mCellHalf);
+				Region::Position pos = cellRegion.GetRightBottomPos();
+				pos.SetX(pos.GetX() - mCellHalf);
+				pos.SetY(pos.GetY() - mCellHalf);
+				Region artifactRegion(pos, mCellHalf, mCellHalf);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.rightBottom));
 			}
 		}

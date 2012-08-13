@@ -100,6 +100,7 @@ FORCEINLINE Vector3<T> operator* (const T val, const Vector3<T>& vec3)
 
 typedef Vector3<float>  Vector3f;
 typedef Vector3<double> Vector3d;
+typedef Vector3<size_t> Vector3s;
 
 } // Math namespace
 } // Pacman namespace

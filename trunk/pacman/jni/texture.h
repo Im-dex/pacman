@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base.h"
+#include "resource.h"
 
 #include <GLES2/gl2.h>
 
@@ -31,7 +32,7 @@ enum class PixelFormat
 	A_8
 };
 
-class Texture2D
+class Texture2D : public Resource
 {
 public:
 
@@ -46,6 +47,8 @@ public:
 	Texture2D& operator= (const Texture2D&) = delete;
 
 	void Bind() const;
+
+	void Unbind() const;
 
 	size_t GetWidth() const
 	{

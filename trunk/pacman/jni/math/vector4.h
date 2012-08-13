@@ -103,6 +103,7 @@ FORCEINLINE Vector4<T> operator* (const T val, const Vector4<T>& vec4)
 
 typedef Vector4<float>  Vector4f;
 typedef Vector4<double> Vector4d;
+typedef Vector4<size_t> Vector4s;
 
 } // Math namespace
 } // Pacman namespace

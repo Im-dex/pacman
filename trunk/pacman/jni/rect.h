@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base.h"
+#include "math/vector2.h"
 
 #include <utility>
 #include <algorithm>
@@ -15,96 +16,76 @@ public:
 
 	static_assert(std::is_arithmetic<T>::value, "Wrong type");
 
+	typedef Math::Vector2<T> Position;
+
 	Rect() = delete;
-	Rect(const T x, const T y, const T width, const T height);
-	Rect(const Rect& other);
-	Rect(Rect&& other);
+	// position - the left top point position
+	Rect(const Position position, const T width, const T height);
+	Rect(const Rect<T>& other);
+	Rect(Rect<T>&& other);
 	~Rect() = default;
 
-	Rect& operator= (const Rect& other);
-	Rect& operator= (Rect&& other);
+	Rect& operator= (const Rect<T>& other);
+	Rect& operator= (Rect<T>&& other);
 
-	void Scale(const float factor);
+	Position GetPosition() const;
+	T GetPosX() const;
+	T GetPosY() const;
+	T GetWidth() const;
+	T GetHeight() const;
 
-	T GetX() const
-	{
-		return mX;
-	}
+	Position GetLeftBottomPos() const;
+	Position GetRightTopPos() const;
+	Position GetRightBottomPos() const;
 
-	T GetY() const
-	{
-		return mY;
-	}
+	T GetLeftBottomPosX() const;
+	T GetLeftBottomPosY() const;
+	T GetRightTopPosX() const;
+	T GetRightTopPosY() const;
+	T GetRightBottomPosX() const;
+	T GetRightBottomPosY() const;
 
-	T GetWidth() const
-	{
-		return mWidth;
-	}
-
-	T GetHeight() const
-	{
-		return mHeight;
-	}
-
-	void SetX(const T x)
-	{
-		mX = x;
-	}
-
-	void SetY(const T y)
-	{
-		mY = y;
-	}
-
-	void SetWidth(const T width)
-	{
-		mWidth = width;
-	}
-
-	void SetHeight(const T height)
-	{
-		mHeight = height;
-	}
+	void SetPosition(Position leftTop);
+	void SetPosX(const T x);
+	void SetPosY(const T y);
+	void SetWidth(const T width);
+	void SetHeight(const T height);
 
 private:
 
-	T mX;
-	T mY;
+	Position mPosition;
 	T mWidth;
 	T mHeight;
 };
 
 template <typename T>
-Rect<T>::Rect(const T x, const T y, const T width, const T height)
-	   : mX(x),
-		 mY(y),
+Rect<T>::Rect(const Rect<T>::Position position, const T width, const T height)
+	   : mPosition(position),
 		 mWidth(width),
 		 mHeight(height)
 {
 }
 
 template <typename T>
-Rect<T>::Rect(const Rect& other)
-	   : mX(other.mX),
-		 mY(other.mY),
+Rect<T>::Rect(const Rect<T>& other)
+	   : mPosition(other.mPosition),
 	     mWidth(other.mWidth),
 		 mHeight(other.mHeight)
 {
 }
 
 template <typename T>
-Rect<T>::Rect(Rect&& other)
+Rect<T>::Rect(Rect<T>&& other)
 {
 	*this = std::move(other);
 }
 
 template <typename T>
-FORCEINLINE Rect<T>& Rect<T>::operator= (const Rect& other)
+FORCEINLINE Rect<T>& Rect<T>::operator= (const Rect<T>& other)
 {
 	if (this != &other)
 	{
-		mX = other.mX;
-		mY = other.mY;
+		mPosition = other.mPosition;
 		mWidth = other.mWidth;
 		mHeight = other.mHeight;
 	}
@@ -113,12 +94,11 @@ FORCEINLINE Rect<T>& Rect<T>::operator= (const Rect& other)
 }
 
 template <typename T>
-FORCEINLINE Rect<T>& Rect<T>::operator= (Rect&& other)
+FORCEINLINE Rect<T>& Rect<T>::operator= (Rect<T>&& other)
 {
 	if (this != &other)
 	{
-		std::swap(mX, other.mX);
-		std::swap(mY, other.mY);
+		std::swap(mPosition, other.mPosition);
 		std::swap(mWidth, other.mWidth);
 		std::swap(mHeight, other.mHeight);
 	}
@@ -127,12 +107,117 @@ FORCEINLINE Rect<T>& Rect<T>::operator= (Rect&& other)
 }
 
 template <typename T>
-FORCEINLINE void Rect<T>::Scale(const float factor)
+FORCEINLINE typename Rect<T>::Position Rect<T>::GetPosition() const
 {
-	mX = static_cast<T>(mX * factor);
-	mY = static_cast<T>(mY * factor);
-	mWidth = static_cast<T>(mWidth * factor);
-	mHeight = static_cast<T>(mHeight * factor);
+	return mPosition;
+}
+
+template <typename T>
+FORCEINLINE T Rect<T>::GetPosX() const
+{
+	return mPosition.GetX();
+}
+
+template <typename T>
+FORCEINLINE T Rect<T>::GetPosY() const
+{
+	return mPosition.GetY();
+}
+
+template <typename T>
+FORCEINLINE T Rect<T>::GetWidth() const
+{
+	return mWidth;
+}
+
+template <typename T>
+FORCEINLINE T Rect<T>::GetHeight() const
+{
+	return mHeight;
+}
+
+template <typename T>
+FORCEINLINE typename Rect<T>::Position Rect<T>::GetLeftBottomPos() const
+{
+	return Math::Vector2<T>(mPosition.GetX(), mPosition.GetY() + mHeight);
+}
+
+template <typename T>
+FORCEINLINE typename Rect<T>::Position Rect<T>::GetRightTopPos() const
+{
+	return Math::Vector2<T>(mPosition.GetX() + mWidth, mPosition.GetY());
+}
+
+template <typename T>
+FORCEINLINE typename Rect<T>::Position Rect<T>::GetRightBottomPos() const
+{
+	return Math::Vector2<T>(mPosition.GetX() + mWidth, mPosition.GetY() + mHeight);
+}
+
+template <typename T>
+FORCEINLINE T Rect<T>::GetLeftBottomPosX() const
+{
+	return GetLeftBottomPos().GetX();
+}
+
+template <typename T>
+FORCEINLINE T Rect<T>::GetLeftBottomPosY() const
+{
+	return GetLeftBottomPos().GetY();
+}
+
+template <typename T>
+FORCEINLINE T Rect<T>::GetRightTopPosX() const
+{
+	return GetRightTopPos().GetX();
+}
+
+template <typename T>
+FORCEINLINE T Rect<T>::GetRightTopPosY() const
+{
+	return GetRightTopPos().GetY();
+}
+
+template <typename T>
+FORCEINLINE T Rect<T>::GetRightBottomPosX() const
+{
+	return GetRightBottomPos().GetX();
+}
+
+template <typename T>
+FORCEINLINE T Rect<T>::GetRightBottomPosY() const
+{
+	return GetRightBottomPos().GetY();
+}
+
+template <typename T>
+FORCEINLINE void Rect<T>::SetPosition(const Rect<T>::Position position)
+{
+	mPosition = position;
+}
+
+template <typename T>
+FORCEINLINE void Rect<T>::SetPosX(const T x)
+{
+	return mPosition.SetX(x);
+}
+
+template <typename T>
+FORCEINLINE void Rect<T>::SetPosY(const T y)
+{
+	return mPosition.SetY(y);
+}
+
+template <typename T>
+FORCEINLINE void Rect<T>::SetWidth(const T width)
+{
+	mWidth = width;
+}
+
+template <typename T>
+FORCEINLINE void Rect<T>::SetHeight(const T height)
+{
+	mHeight = height;
 }
 
 } // Pacmannamespace

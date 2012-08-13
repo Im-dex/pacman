@@ -61,9 +61,7 @@ private:
 	std::shared_ptr<Sprite> GenerateSprite(const size_t screenWidth, const size_t screenHeight, Math::Vector2f* position);
 
 	std::shared_ptr<Texture2D> GenerateTexture(const size_t textureWidth, const size_t textureHeight,
-						 	 	 	 	 	   const size_t mapWidth, const size_t mapHeight,
-						 	 	 	 	 	   Math::Vector2f* leftTopTexCoord, Math::Vector2f* rightTopTexCoord,
-						 	 	 	 	 	   Math::Vector2f* leftBottomTexCoord, Math::Vector2f* rightBottomTexCoord);
+						 	 	 	 	 	   const size_t mapWidth, const size_t mapHeight, TextureRegion* textureRegion);
 
 	void CleanArtifacts(byte_t* buffer, const size_t textureWidth);
 

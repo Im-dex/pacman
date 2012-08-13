@@ -6,9 +6,6 @@
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
-					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 				</extensions>
@@ -18,26 +15,12 @@
 					<folderInfo id="com.android.toolchain.gcc.1559220689.1475061493" name="/" resourcePath="">
 						<toolChain id="com.android.toolchain.gcc.652953264" name="com.android.toolchain.gcc" superClass="com.android.toolchain.gcc">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="com.android.targetPlatform.1801931512" name="Android Platform" osList="all" superClass="com.android.targetPlatform"/>
-							<builder arguments="cygdrive/d/android/ndk/ndk-build" command="d:\cygwin\Cygwin.bat" id="com.android.builder.1550457072" keepEnvironmentInBuildfile="false" managedBuildOn="false" superClass="com.android.builder">
+							<builder arguments="NDK_DEBUG=1" command="ndk-build" id="com.android.builder.1550457072" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Android Builder" superClass="com.android.builder">
 								<outputEntries>
 									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="libs"/>
 								</outputEntries>
 							</builder>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.868036484" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
-							<tool id="com.android.tool.compiler.g++.501765876" name="Android G++" superClass="com.android.tool.compiler.g++">
-								<option id="gnu.cpp.compiler.option.include.paths.694938949" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;D:\android\ndk\platforms\android-8\arch-arm\usr\include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;D:\android\ndk\sources\cxx-stl\gnu-libstdc++\4.6\include&quot;"/>
-								</option>
-								<option id="gnu.cpp.compiler.option.preprocessor.def.423155388" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__GNUC__"/>
-									<listOptionValue builtIn="false" value="__GXX_EXPERIMENTAL_CXX0X__"/>
-								</option>
-								<inputType id="com.android.tool.compiler.g++.input.444709068" superClass="com.android.tool.compiler.g++.input"/>
-							</tool>
-							<tool id="com.android.tool.compiler.c.525593022" name="Android GCC" superClass="com.android.tool.compiler.c">
-								<inputType id="com.android.tool.compiler.c.input.1923193692" superClass="com.android.tool.compiler.c.input"/>
-							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.583039097" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.949374614" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1738191439" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
@@ -47,6 +30,9 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.65930048" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.307475961" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="com.android.gcc.compiler.763018644" name="Android GCC Compiler" superClass="com.android.gcc.compiler">
+								<inputType id="com.android.gcc.inputType.703493282" superClass="com.android.gcc.inputType"/>
 							</tool>
 						</toolChain>
 					</folderInfo>

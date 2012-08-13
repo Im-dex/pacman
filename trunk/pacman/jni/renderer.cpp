@@ -67,7 +67,6 @@ void Renderer::DrawFrame()
 void Renderer::RenderDrawable(const std::shared_ptr<IDrawable> drawable, const Math::Matrix4f modelMatrix)
 {
 	auto texture = drawable->GetTexture();
-	auto vertexBuffer = drawable->GetVertexBuffer();
 	auto shaderProgram = drawable->GetShaderProgram();
 
 	if (texture != nullptr)
@@ -77,9 +76,15 @@ void Renderer::RenderDrawable(const std::shared_ptr<IDrawable> drawable, const M
 
 	Math::Matrix4f modelProjection = (mProjection * modelMatrix).Transpose();
 	shaderProgram->SetUniform(kModelProjMatrixUniformName, modelProjection);
+
+	auto vertexBuffer = drawable->GetVertexBuffer();
 	vertexBuffer->Bind();
 	vertexBuffer->Draw();
 	vertexBuffer->Unbind();
+
+	shaderProgram->Unbind();
+	if (texture != nullptr)
+		texture->Unbind();
 }
 
 } // Pacman namespace

@@ -91,6 +91,7 @@ FORCEINLINE Vector2<T> operator* (const T val, const Vector2<T>& vec2)
 
 typedef Vector2<float>  Vector2f;
 typedef Vector2<double> Vector2d;
+typedef Vector2<size_t> Vector2s;
 
 } // Math namespace
 } // Pacman namespace

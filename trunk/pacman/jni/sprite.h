@@ -1,12 +1,12 @@
 #pragma once
 
 #include "drawable.h"
+#include "rect.h"
 #include "color.h"
 #include "math/vector2.h"
 
 #include <array>
 #include <memory>
-#include <tuple>
 
 namespace Pacman {
 
@@ -15,24 +15,24 @@ class ShaderProgram;
 class VertexBuffer;
 struct Vertex;
 
+typedef Rect<float> TextureRegion;
+typedef Rect<size_t> SpriteRegion;
+
 class Sprite : public IDrawable
 {
 public:
 
 	Sprite() = delete;
 
-	Sprite(const size_t width, const size_t height, const Color& leftTop, const Color& rightTop,
-		   const Color& leftBottom, const Color& rightBottom, std::shared_ptr<ShaderProgram> shaderProgram);
+	Sprite(const SpriteRegion& region, const Color& leftTop, const Color& rightTop, const Color& leftBottom,
+		   const Color& rightBottom, std::shared_ptr<ShaderProgram> shaderProgram);
 
-	Sprite(const size_t width, const size_t height, std::shared_ptr<ShaderProgram> shaderProgram);
+	Sprite(const SpriteRegion& region, std::shared_ptr<ShaderProgram> shaderProgram);
 
-	Sprite(const size_t width, const size_t height, const Math::Vector2f leftTopTexCoord,
-		   const Math::Vector2f rightTopTexCoord, const Math::Vector2f leftBottomTexCoord,
-		   const Math::Vector2f rightBottomTexCoord, std::shared_ptr<Texture2D> texture,
+	Sprite(const SpriteRegion& region, const TextureRegion& textureRegion, std::shared_ptr<Texture2D> texture,
 		   std::shared_ptr<ShaderProgram> shaderProgram);
 
-	Sprite(const size_t width, const size_t height, std::shared_ptr<Texture2D> texture,
-		   std::shared_ptr<ShaderProgram> shaderProgram);
+	Sprite(const SpriteRegion& region, std::shared_ptr<Texture2D> texture, std::shared_ptr<ShaderProgram> shaderProgram);
 
 	Sprite(const Sprite&) = default;
 	~Sprite() = default;
@@ -47,20 +47,10 @@ public:
 
 private:
 
-	enum { kSpriteVertexCount = 4 };
-	enum { kSpriteIndexCount = 6 };
-	typedef std::array<Math::Vector2f, kSpriteVertexCount> VertexPositionArray;
-	typedef std::array<uint16_t, kSpriteIndexCount> IndexArray;
-	typedef std::tuple<VertexPositionArray, IndexArray> BaseData;
-
-	BaseData BuildBaseData(const size_t spriteWidth, const size_t spriteHeight);
-
-	void InitByColor(const size_t width, const size_t height, const Color& leftTop, const Color& rightTop,
+	void InitByColor(const SpriteRegion& region, const Color& leftTop, const Color& rightTop,
 			   	   	 const Color& leftBottom, const Color& rightBottom);
 
-	void InitByTexture(const size_t width, const size_t height, const Math::Vector2f leftTopTexCoord,
-			   	   	   const Math::Vector2f rightTopTexCoord, const Math::Vector2f leftBottomTexCoord,
-			   	   	   const Math::Vector2f rightBottomTexCoord);
+	void InitByTexture(const SpriteRegion& region, const TextureRegion& textureRegion);
 
 	std::shared_ptr<VertexBuffer> mVertexBuffer;
 	std::shared_ptr<Texture2D> mTexture;
