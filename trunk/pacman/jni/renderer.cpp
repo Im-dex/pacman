@@ -41,26 +41,12 @@ void Renderer::DrawFrame()
 				 mClearColor.GetBlueFloat(), mClearColor.GetAlphaFloat());
 	PACMAN_CHECK_GL_ERROR();
 
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 	PACMAN_CHECK_GL_ERROR();
 
-	int i = 0;
 	for (auto node : mSceneManager->GetNodes())
 	{
-		if (i == 1)
-		{
-			glEnable(GL_BLEND);
-			glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		}
-
 		RenderDrawable(node->GetDrawable(), node->GetModelMatrix());
-
-		if (i == 1)
-		{
-			glDisable(GL_BLEND);
-		}
-
-		i++;
 	}
 }
 
@@ -68,10 +54,16 @@ void Renderer::RenderDrawable(const std::shared_ptr<IDrawable> drawable, const M
 {
 	auto texture = drawable->GetTexture();
 	auto shaderProgram = drawable->GetShaderProgram();
+	bool hasAlphaBlend = drawable->HasAlphaBlend();
+
+	if (hasAlphaBlend)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
 
 	if (texture != nullptr)
 		texture->Bind();
-
 	shaderProgram->Bind();
 
 	Math::Matrix4f modelProjection = (mProjection * modelMatrix).Transpose();
@@ -85,6 +77,11 @@ void Renderer::RenderDrawable(const std::shared_ptr<IDrawable> drawable, const M
 	shaderProgram->Unbind();
 	if (texture != nullptr)
 		texture->Unbind();
+
+	if (hasAlphaBlend)
+	{
+		glDisable(GL_BLEND);
+	}
 }
 
 } // Pacman namespace

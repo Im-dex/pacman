@@ -80,36 +80,40 @@ static BaseData BuildBaseData(const SpriteRegion& region)
 //===========================================================================================================
 
 Sprite::Sprite(const SpriteRegion& region, const Color& leftTop, const Color& rightTop, const Color& leftBottom,
-			   const Color& rightBottom, std::shared_ptr<ShaderProgram> shaderProgram)
+			   const Color& rightBottom, std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend)
 	  : mShaderProgram(shaderProgram),
 	    mTexture(nullptr),
-		mVertexBuffer(nullptr)
+		mVertexBuffer(nullptr),
+		mAlphaBlend(alphaBlend)
 {
 	InitByColor(region, leftTop, rightTop, leftBottom, rightBottom);
 }
 
-Sprite::Sprite(const SpriteRegion& region, std::shared_ptr<ShaderProgram> shaderProgram)
+Sprite::Sprite(const SpriteRegion& region, std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend)
 	  : mShaderProgram(shaderProgram),
 	    mTexture(nullptr),
-		mVertexBuffer(nullptr)
+		mVertexBuffer(nullptr),
+		mAlphaBlend(alphaBlend)
 {
 	InitByColor(region, kDefaultColor, kDefaultColor, kDefaultColor, kDefaultColor);
 }
 
-Sprite::Sprite(const SpriteRegion& region, const TextureRegion& textureRegion,
-			   std::shared_ptr<Texture2D> texture, std::shared_ptr<ShaderProgram> shaderProgram)
+Sprite::Sprite(const SpriteRegion& region, const TextureRegion& textureRegion, std::shared_ptr<Texture2D> texture,
+			   std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend)
 	  : mShaderProgram(shaderProgram),
 	    mTexture(texture),
-		mVertexBuffer(nullptr)
+		mVertexBuffer(nullptr),
+		mAlphaBlend(alphaBlend)
 {
 	InitByTexture(region, textureRegion);
 }
 
 Sprite::Sprite(const SpriteRegion& region, std::shared_ptr<Texture2D> texture,
-			   std::shared_ptr<ShaderProgram> shaderProgram)
+			   std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend)
 	  : mShaderProgram(shaderProgram),
 	    mTexture(texture),
-		mVertexBuffer(nullptr)
+		mVertexBuffer(nullptr),
+		mAlphaBlend(alphaBlend)
 {
 	InitByTexture(region, kDefaultRegion);
 }
@@ -127,6 +131,11 @@ std::shared_ptr<Texture2D> Sprite::GetTexture() const
 std::shared_ptr<ShaderProgram> Sprite::GetShaderProgram() const
 {
 	return mShaderProgram;
+}
+
+bool Sprite::HasAlphaBlend() const
+{
+	return mAlphaBlend;
 }
 
 void Sprite::InitByColor(const SpriteRegion& region, const Color& leftTop, const Color& rightTop, 

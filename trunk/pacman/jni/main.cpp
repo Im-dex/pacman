@@ -121,7 +121,7 @@ void ResizeViewport(const size_t width, const size_t heigth)
 	shaderProgram2->Link();
 
 	SpriteRegion region2(SpriteRegion::Position::kZero, 24, 24);
-	testSprite2 = std::make_shared<Sprite>(region2, texture, shaderProgram2);
+	testSprite2 = std::make_shared<Sprite>(region2, texture, shaderProgram2, true);
 
 	node2 = std::make_shared<SceneNode>(testSprite2, Math::Vector2f(32.0f, 16.0f));
 	sceneManager->AttachNode(node2);
