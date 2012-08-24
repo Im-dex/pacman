@@ -16,22 +16,6 @@ namespace Pacman {
 
 typedef Rect<size_t> Region;
 
-static const char kMapVertexShader[] = "attribute vec4 vPosition;"
-									   "attribute vec2 vTexCoords;\n"
-									   "uniform mat4 mModelProjectionMatrix;\n"
-									   "varying vec2 vVertTexCoords;\n"
-									   "void main() {\n"
-									   "	gl_Position = mModelProjectionMatrix * vPosition;\n"
-									   "	vVertTexCoords = vTexCoords;\n"
-									   "}\n";
-
-static const char kMapFragmentShader[] = "precision mediump float;\n"
-									     "uniform sampler2D colorTexture;\n"
-									     "varying vec2 vVertTexCoords;\n"
-							  	  	     "void main() {\n"
-							  	  	     "	gl_FragColor = texture2D(colorTexture, vVertTexCoords);\n"
-							  	  	     "}\n";
-
 static const Color kEmptyColor = Color::kBlack;
 static const Color kWallColor = Color::kBlue;
 static const Color kDoorColor = Color::kWhite;
@@ -136,14 +120,14 @@ void Map::Load(const std::string& textData, const size_t screenWidth, const size
 	mColumnsCount = mCells.size() / mRowsCount;
 
 	Math::Vector2f position = Math::Vector2f::kZero;
-	std::shared_ptr<Sprite> sprite = GenerateSprite(screenWidth, screenHeight, &position);
+	auto sprite = GenerateSprite(screenWidth, screenHeight, &position);
 
 	mNode = std::make_shared<SceneNode>(sprite, position);
 }
 
-void Map::AttachToScene(std::shared_ptr<SceneManager> sceneManager)
+void Map::AttachToScene(SceneManager& sceneManager)
 {
-	sceneManager->AttachNode(mNode);
+	sceneManager.AttachNode(mNode);
 }
 
 std::shared_ptr<Sprite> Map::GenerateSprite(const size_t screenWidth, const size_t screenHeight, Math::Vector2f* position)
@@ -174,7 +158,7 @@ std::shared_ptr<Sprite> Map::GenerateSprite(const size_t screenWidth, const size
 	TextureRegion textureRegion(Math::Vector2f::kZero, 0.0f, 0.0f);
 	auto texture = GenerateTexture(textureWidth, textureHeight, mapWidth, mapHeight, &textureRegion);
 
-	auto shaderProgram = std::make_shared<ShaderProgram>(kMapVertexShader, kMapFragmentShader);
+	auto shaderProgram = std::make_shared<ShaderProgram>(ShaderProgram::kDefaultTextureVertexShader, ShaderProgram::kDefaultTextureFragmentShader);
 	shaderProgram->Link();
 
 	SpriteRegion region(SpriteRegion::Position::kZero, mapWidth, mapHeight);
@@ -182,7 +166,7 @@ std::shared_ptr<Sprite> Map::GenerateSprite(const size_t screenWidth, const size
 }
 
 std::shared_ptr<Texture2D> Map::GenerateTexture(const size_t textureWidth, const size_t textureHeight,
-					 	  	  	  	  	  	    const size_t mapWidth, const size_t mapHeight, TextureRegion* textureRegion)
+		  	 	  	  	  	  	  				const size_t mapWidth, const size_t mapHeight, TextureRegion* textureRegion)
 {
 	const size_t bufferSize = textureWidth * textureHeight * kColorComponentsCount;
 	const size_t bytesInRow = textureWidth * kColorComponentsCount;

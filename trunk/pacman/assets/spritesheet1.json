@@ -1,0 +1,180 @@
+{
+	"image":"spritesheet1.png",
+	"spritelist": [
+		{
+			"name":"cherry",
+			"x":0,
+			"y":0,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"strawberry",
+			"x":0.125,
+			"y":0,
+			"width":0.125,
+			"height":0.25
+		},		
+
+		{
+			"name":"pacman_anim_0",
+			"x":0.25,
+			"y":0,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"pacman_anim_1",
+			"x":0.375,
+			"y":0,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"pacman_anim_2",
+			"x":0.5,
+			"y":0,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"blinky_bottom",
+			"x":0.625,
+			"y":0,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"blinky_left",
+			"x":0.75,
+			"y":0,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"blinky_right",
+			"x":0.875,
+			"y":0,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"blinky_top",
+			"x":0,
+			"y":0.25,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"clyde_bottom",
+			"x":0.125,
+			"y":0.25,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"clyde_left",
+			"x":0.25,
+			"y":0.25,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"clyde_right",
+			"x":0.375,
+			"y":0.25,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"clyde_top",
+			"x":0.5,
+			"y":0.25,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"inky_bottom",
+			"x":0.625,
+			"y":0.25,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"inky_left",
+			"x":0.75,
+			"y":0.25,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"inky_right",
+			"x":0.875,
+			"y":0.25,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"inky_top",
+			"x":0,
+			"y":0.5,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"pinky_bottom",
+			"x":0.125,
+			"y":0.5,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"pinky_left",
+			"x":0.25,
+			"y":0.5,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"pinky_right",
+			"x":0.375,
+			"y":0.5,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"pinky_top",
+			"x":0.5,
+			"y":0.5,
+			"width":0.125,
+			"height":0.25
+		},
+
+		{
+			"name":"enemy_shy",
+			"x":0.625,
+			"y":0.5,
+			"width":0.125,
+			"height":0.25
+		}
+	]
+}

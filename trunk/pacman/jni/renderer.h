@@ -3,12 +3,10 @@
 #include "color.h"
 #include "math/matrix4.h"
 
-#include <memory>
 #include <cstdint>
 
 namespace Pacman {
 
-class SceneManager;
 class IDrawable;
 
 class Renderer
@@ -30,18 +28,24 @@ public:
 		mClearColor = color;
 	}
 
-	void SetSceneManager(const std::shared_ptr<SceneManager> sceneManager)
+	size_t GetViewportWidth() const
 	{
-		mSceneManager = sceneManager;
+		return mViewportWidth;
+	}
+
+	size_t GetViewportHeight() const
+	{
+		return mViewportHeight;
 	}
 
 private:
 
-	void RenderDrawable(const std::shared_ptr<IDrawable> drawable, const Math::Matrix4f modelMatrix);
+	void RenderDrawable(const IDrawable& drawable, const Math::Matrix4f modelMatrix);
 
 	Math::Matrix4f mProjection;
 	Color mClearColor;
-	std::shared_ptr<SceneManager> mSceneManager;
+	size_t mViewportWidth;
+	size_t mViewportHeight;
 };
 
 } // Pacman namespace

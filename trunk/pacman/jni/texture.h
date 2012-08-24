@@ -1,7 +1,6 @@
 #pragma once
 
 #include "base.h"
-#include "resource.h"
 
 #include <GLES2/gl2.h>
 
@@ -32,7 +31,7 @@ enum class PixelFormat
 	A_8
 };
 
-class Texture2D : public Resource
+class Texture2D
 {
 public:
 

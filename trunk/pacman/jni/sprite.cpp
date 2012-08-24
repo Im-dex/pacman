@@ -3,6 +3,7 @@
 #include "error.h"
 #include "texture.h"
 #include "vertex_buffer.h"
+#include "shader_program.h"
 
 #include <tuple>
 
@@ -118,19 +119,19 @@ Sprite::Sprite(const SpriteRegion& region, std::shared_ptr<Texture2D> texture,
 	InitByTexture(region, kDefaultRegion);
 }
 
-std::shared_ptr<VertexBuffer> Sprite::GetVertexBuffer() const
+VertexBuffer& Sprite::GetVertexBuffer() const
 {
-	return mVertexBuffer;
+	return *mVertexBuffer;
 }
 
-std::shared_ptr<Texture2D> Sprite::GetTexture() const
+std::weak_ptr<Texture2D> Sprite::GetTexture() const
 {
 	return mTexture;
 }
 
-std::shared_ptr<ShaderProgram> Sprite::GetShaderProgram() const
+ShaderProgram& Sprite::GetShaderProgram() const
 {
-	return mShaderProgram;
+	return *mShaderProgram;
 }
 
 bool Sprite::HasAlphaBlend() const

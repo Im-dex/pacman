@@ -11,8 +11,7 @@ class SceneManager
 {
 public:
 
-	SceneManager() = delete;
-	SceneManager(const float sceneWidth, const float sceneHeigth);
+	SceneManager() = default;
 	SceneManager(const SceneManager&) = delete;
 	~SceneManager() = default;
 

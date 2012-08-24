@@ -6,15 +6,6 @@
 
 namespace Pacman{
 
-const size_t mSceneTreeDepth = 3;
-
-SceneManager::SceneManager(const float sceneWidth, const float sceneHeigth)
-			: mSceneWidth(sceneWidth),
-			  mSceneHeigth(sceneHeigth),
-			  mNodes()
-{
-}
-
 void SceneManager::AttachNode(std::shared_ptr<SceneNode> node)
 {
 	mNodes.push_back(node);

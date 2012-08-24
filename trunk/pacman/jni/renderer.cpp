@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include "error.h"
+#include "engine.h"
 #include "scene_manager.h"
 #include "scene_node.h"
 #include "drawable.h"
@@ -10,7 +11,7 @@
 #include "base.h"
 
 #include <GLES2/gl2.h>
-//#include <GLES2/gl2ext.h>
+#include <memory>
 
 namespace Pacman {
 
@@ -21,12 +22,16 @@ static const char* kModelProjMatrixUniformName = "mModelProjectionMatrix";
 Renderer::Renderer()
 		: mProjection(),
 		  mClearColor(Color::kBlack),
-		  mSceneManager()
+		  mViewportWidth(0),
+		  mViewportHeight(0)
 {
 }
 
 void Renderer::Init(const size_t viewportWidth, const size_t viewportHeigth)
 {
+	mViewportWidth = viewportWidth;
+	mViewportHeight = viewportHeigth;
+
 	mProjection = Math::Matrix4f::Ortho(0.0f, static_cast<const float>(viewportWidth),
 										static_cast<const float>(viewportHeigth), 0.0f, -1.0f, 1.0f);
 
@@ -44,17 +49,19 @@ void Renderer::DrawFrame()
 	glClear(GL_COLOR_BUFFER_BIT);
 	PACMAN_CHECK_GL_ERROR();
 
-	for (auto node : mSceneManager->GetNodes())
+	SceneManager& sceneManager = GetEngine()->GetSceneManager();
+	for (auto node : sceneManager.GetNodes())
 	{
 		RenderDrawable(node->GetDrawable(), node->GetModelMatrix());
 	}
 }
 
-void Renderer::RenderDrawable(const std::shared_ptr<IDrawable> drawable, const Math::Matrix4f modelMatrix)
+void Renderer::RenderDrawable(const IDrawable& drawable, const Math::Matrix4f modelMatrix)
 {
-	auto texture = drawable->GetTexture();
-	auto shaderProgram = drawable->GetShaderProgram();
-	bool hasAlphaBlend = drawable->HasAlphaBlend();
+	const VertexBuffer& vertexBuffer = drawable.GetVertexBuffer();
+	const ShaderProgram& shaderProgram = drawable.GetShaderProgram();
+	std::weak_ptr<Texture2D> texture = drawable.GetTexture();
+	bool hasAlphaBlend = drawable.HasAlphaBlend();
 
 	if (hasAlphaBlend)
 	{
@@ -62,21 +69,20 @@ void Renderer::RenderDrawable(const std::shared_ptr<IDrawable> drawable, const M
 		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
-	if (texture != nullptr)
-		texture->Bind();
-	shaderProgram->Bind();
+	if (auto texturePtr = texture.lock())
+		texturePtr->Bind();
+	shaderProgram.Bind();
 
 	Math::Matrix4f modelProjection = (mProjection * modelMatrix).Transpose();
-	shaderProgram->SetUniform(kModelProjMatrixUniformName, modelProjection);
+	shaderProgram.SetUniform(kModelProjMatrixUniformName, modelProjection);
 
-	auto vertexBuffer = drawable->GetVertexBuffer();
-	vertexBuffer->Bind();
-	vertexBuffer->Draw();
-	vertexBuffer->Unbind();
+	vertexBuffer.Bind();
+	vertexBuffer.Draw();
+	vertexBuffer.Unbind();
 
-	shaderProgram->Unbind();
-	if (texture != nullptr)
-		texture->Unbind();
+	shaderProgram.Unbind();
+	if (auto texturePtr = texture.lock())
+		texturePtr->Unbind();
 
 	if (hasAlphaBlend)
 	{
