@@ -1,5 +1,5 @@
 #include "font_manager.h"
-#include "json/json.h"
+#include "json_helper.h"
 #include "engine.h"
 #include "asset_manager.h"
 #include "error.h"
@@ -36,10 +36,8 @@ FontManager::FontManager()
 	//AssetManager& assetManager = Engine::GetInstance()->GetAssetManager();
 	//std::string configData = assetManager.LoadTextFileFromRoot(kDefaultFomtConfigName);
 
-	//Json::Value root;
-	//Json::Reader reader;
-	//bool result = reader.parse(configData, root, false);
-	//PACMAN_CHECK_ERROR(result, ErrorCode::BadFormat);
+	//Json::Value root = JsonHelper::ParseJson(configData);
+	//PACMAN_CHECK_ERROR(root != Json::Value::null, ErrorCode::BadFormat);
 
 	//mASCIIstart = static_cast<size_t>(root["ASCIIstart"].asUInt());
 	//mASCIIend = static_cast<size_t>(root["ASCIIend"].asUInt());

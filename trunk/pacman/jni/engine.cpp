@@ -5,7 +5,7 @@
 #include "scene_manager.h"
 #include "renderer.h"
 #include "timer.h"
-#include "json/json.h"
+#include "json_helper.h"
 
 namespace Pacman {
 
@@ -18,14 +18,12 @@ Engine::Engine()
 		mListener(nullptr),
 		mLastTime(0)
 {
-	Json::Value root;
-	Json::Reader reader;
-
 	std::string configData = mAssetManager->LoadTextFile("config.json");
-	bool result = reader.parse(configData, root, false);
-	PACMAN_CHECK_ERROR(result, ErrorCode::BadFormat);
-
-	Json::Value resoution = root["base_resolution"];
+	const Json::Value root = JsonHelper::ParseJson(configData);
+	PACMAN_CHECK_ERROR(root != Json::Value::null, ErrorCode::BadFormat);
+	
+	const Json::Value resoution = root["base_resolution"];
+	PACMAN_CHECK_ERROR(resoution != Json::Value::null, ErrorCode::BadFormat);
 	mBaseWidth = resoution["width"].asUInt();
 	mBaseHeight = resoution["height"].asUInt();
 }
