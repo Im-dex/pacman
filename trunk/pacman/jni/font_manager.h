@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace Pacman {
 
@@ -32,6 +33,7 @@ private:
 	size_t mASCIIend;
 	std::shared_ptr<Texture2D> mTexture;
 	std::shared_ptr<ShaderProgram> mShaderProgram;
+	std::vector<std::shared_ptr<Sprite>> mSprites;
 };
 
 } // Pacman namespace

@@ -43,7 +43,7 @@ public class NativeLib {
 		mErrorReporter = errorReporter;
 	}
 	
-	public static native void init(int screenSize, int screenDensity);
+	public static native void init();
 	public static native void deinit();
 	public static native void resizeViewport(int width, int height);
 	public static native void drawFrame();

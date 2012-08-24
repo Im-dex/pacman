@@ -5,9 +5,56 @@
 
 namespace Pacman {
 
+const std::string ShaderProgram::kDefaultColorVertexShader = "attribute vec4 vPosition;\n"
+															 "attribute vec4 vColor;\n"
+															 "uniform mat4 mModelProjectionMatrix;\n"
+															 "varying vec4 vVertColor;\n"
+															 "void main() {\n"
+															 "    vVertColor = vColor;\n"
+															 "    gl_Position = mModelProjectionMatrix * vPosition;\n"
+															 "}\n";
+
+const std::string ShaderProgram::kDefaultStaticColorVertexShader = "attribute vec4 vPosition;\n"
+																   "attribute vec4 vColor;\n"
+																   "varying vec4 vVertColor;\n"
+																   "void main() {\n"
+																   "    vVertColor = vColor;\n"
+																   "    gl_Position = vPosition;\n"
+																   "}\n";
+
+
+const std::string ShaderProgram::kDefaultColorFragmentShader = "precision mediump float;\n"
+							  	  							   "varying vec4 vVertColor;\n"
+							  	  							   "void main() {\n"
+							  	  							   "    gl_FragColor = vVertColor;\n"
+							  	  							   "}\n";
+
+const std::string ShaderProgram::kDefaultTextureVertexShader = "attribute vec4 vPosition;"
+															   "attribute vec2 vTexCoords;\n"
+															   "uniform mat4 mModelProjectionMatrix;\n"
+															   "varying vec2 vVertTexCoords;\n"
+															   "void main() {\n"
+															   "	gl_Position = mModelProjectionMatrix * vPosition;\n"
+															   "	vVertTexCoords = vTexCoords;\n"
+															   "}\n";
+
+static const std::string kDefaultStaticTextureVertexShader = "attribute vec4 vPosition;"
+															 "attribute vec2 vTexCoords;\n"
+															 "varying vec2 vVertTexCoords;\n"
+															 "void main() {\n"
+															 "    gl_Position = vPosition;\n"
+															 "    vVertTexCoords = vTexCoords;\n"
+															 "}\n";
+
+const std::string ShaderProgram::kDefaultTextureFragmentShader = "precision mediump float;\n"
+															     "uniform sampler2D colorTexture;\n"
+															     "varying vec2 vVertTexCoords;\n"
+							  	  							     "void main() {\n"
+							  	  							     "    gl_FragColor = texture2D(colorTexture, vVertTexCoords);\n"
+							  	  							     "}\n";
+
 ShaderProgram::ShaderProgram(const std::string& vertexShaderSource, const std::string& fragmentShaderSource)
-			 : Resource(),
-			   mVertexShader(ShaderType::VERTEX, vertexShaderSource),
+			 : mVertexShader(ShaderType::VERTEX, vertexShaderSource),
 			   mFragmentShader(ShaderType::FRAGMENT, fragmentShaderSource),
 			   mIsLinked(false),
 			   mAttributeUniformHandles()
@@ -107,7 +154,7 @@ auto ConvertVertexAttributeType(const VertexAttributeType type) -> decltype(GL_F
 }
 
 void ShaderProgram::SetVertexAttribute(const std::string& attrName, const size_t count, const VertexAttributeType attrType,
-									   const size_t offset, const byte_t* data)
+									   const size_t offset, const byte_t* data) const
 {
 	GLint attrHandle = GetLocation(attrName, true);
 	glVertexAttribPointer(attrHandle, count, ConvertVertexAttributeType(attrType), GL_FALSE, offset, data);
@@ -116,70 +163,70 @@ void ShaderProgram::SetVertexAttribute(const std::string& attrName, const size_t
 	PACMAN_CHECK_GL_ERROR();
 }
 
-void ShaderProgram::SetUniform(const std::string& uniformName, const float value)
+void ShaderProgram::SetUniform(const std::string& uniformName, const float value) const
 {
 	GLint uniformHandle = GetLocation(uniformName, false);
 	glUniform1f(uniformHandle, value);
 	PACMAN_CHECK_GL_ERROR();
 }
 
-void ShaderProgram::SetUniform(const std::string& uniformName, const Math::Vector2f& vector)
+void ShaderProgram::SetUniform(const std::string& uniformName, const Math::Vector2f& vector) const
 {
 	GLint uniformHandle = GetLocation(uniformName, false);
 	glUniform2f(uniformHandle, vector.GetX(), vector.GetY());
 	PACMAN_CHECK_GL_ERROR();
 }
 
-void ShaderProgram::SetUniform(const std::string& uniformName, const Math::Vector3f& vector)
+void ShaderProgram::SetUniform(const std::string& uniformName, const Math::Vector3f& vector) const
 {
 	GLint uniformHandle = GetLocation(uniformName, false);
 	glUniform3f(uniformHandle, vector.GetX(), vector.GetY(), vector.GetZ());
 	PACMAN_CHECK_GL_ERROR();
 }
 
-void ShaderProgram::SetUniform(const std::string& uniformName, const Math::Vector4f& vector)
+void ShaderProgram::SetUniform(const std::string& uniformName, const Math::Vector4f& vector) const
 {
 	GLint uniformHandle = GetLocation(uniformName, false);
 	glUniform4f(uniformHandle, vector.GetX(), vector.GetY(), vector.GetZ(), vector.GetW());
 	PACMAN_CHECK_GL_ERROR();
 }
 
-void ShaderProgram::SetUniform(const std::string& uniformName, const int32_t value)
+void ShaderProgram::SetUniform(const std::string& uniformName, const int32_t value) const
 {
 	GLint uniformHandle = GetLocation(uniformName, false);
 	glUniform1i(uniformHandle, value);
 	PACMAN_CHECK_GL_ERROR();
 }
 
-void ShaderProgram::SetUniform(const std::string& uniformName, const Math::Vector2<int32_t>& vector)
+void ShaderProgram::SetUniform(const std::string& uniformName, const Math::Vector2<int32_t>& vector) const
 {
 	GLint uniformHandle = GetLocation(uniformName, false);
 	glUniform2i(uniformHandle, vector.GetX(), vector.GetY());
 	PACMAN_CHECK_GL_ERROR();
 }
 
-void ShaderProgram::SetUniform(const std::string& uniformName, const Math::Vector3<int32_t>& vector)
+void ShaderProgram::SetUniform(const std::string& uniformName, const Math::Vector3<int32_t>& vector) const
 {
 	GLint uniformHandle = GetLocation(uniformName, false);
 	glUniform3i(uniformHandle, vector.GetX(), vector.GetY(), vector.GetZ());
 	PACMAN_CHECK_GL_ERROR();
 }
 
-void ShaderProgram::SetUniform(const std::string& uniformName, const Math::Vector4<int32_t>& vector)
+void ShaderProgram::SetUniform(const std::string& uniformName, const Math::Vector4<int32_t>& vector) const
 {
 	GLint uniformHandle = GetLocation(uniformName, false);
 	glUniform4i(uniformHandle, vector.GetX(), vector.GetY(), vector.GetZ(), vector.GetW());
 	PACMAN_CHECK_GL_ERROR();
 }
 
-void ShaderProgram::SetUniform(const std::string& uniformName, const Math::Matrix4f& matrix)
+void ShaderProgram::SetUniform(const std::string& uniformName, const Math::Matrix4f& matrix) const
 {
 	GLint uniformHandle = GetLocation(uniformName, false);
 	glUniformMatrix4fv(uniformHandle, 1, GL_FALSE, matrix.GetRawData());
 	PACMAN_CHECK_GL_ERROR();
 }
 
-GLint ShaderProgram::GetLocation(const std::string& name, const bool attribute)
+GLint ShaderProgram::GetLocation(const std::string& name, const bool attribute) const
 {
 	auto iter = mAttributeUniformHandles.find(name);
 	if (iter == mAttributeUniformHandles.end())

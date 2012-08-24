@@ -3,25 +3,16 @@
 #include "engine.h"
 #include "error.h"
 #include "color.h"
+#include "texture.h"
 #include "jni_utility.h"
 
 #include <new>
-#include <tuple>
 #include <algorithm>
 #include <memory>
 #include <sstream>
 #include <android/bitmap.h>
 
 namespace Pacman {
-
-static const uint8_t kTileSizes[4][4] = 
-{
-//			   ldpi	   mdpi	   hdpi	  xhdpi
-/* Small */		8,		0,		16,		0,
-/* Normal */	8,		16,		16,		32,
-/* Large */		16,		32,		0,		0,
-/* XLarge */	16,		32,		64,		64
-};
 
 class AndroidBitmapHolder
 {
@@ -78,46 +69,49 @@ private:
 	bool 	mIsLocked;
 };
 
+std::string ApplyMultiplier(const std::string& name, const size_t multiplier)
+{
+	std::ostringstream result;
+	size_t dotPos = name.find_last_of('.');
+	PACMAN_CHECK_ERROR((dotPos != std::string::npos) && (dotPos < name.size()), ErrorCode::BadArgument);
+
+	result << name.substr(0, dotPos); // add name
+	result << '@' << multiplier << "x."; // add multiplier
+	result << name.substr(dotPos + 1, name.size()); // add extension
+
+	return result.str();
+}
+
 jobject LoadBitmapFromAssets(const std::string& name)
 {
 	jstring assetName = JNI::MakeUTF8String(name.c_str());
-	jobject bitmap = JNI::CallStaticObjectMethod("com/imdex/pacman/NativeLib", "loadAssetBitmap",
-												 "(Ljava/lang/String;)Landroid/graphics/Bitmap;", assetName);
-	PACMAN_CHECK_ERROR(bitmap != nullptr, ErrorCode::BadArgument);
-	return bitmap;
+	return JNI::CallStaticObjectMethod("com/imdex/pacman/NativeLib", "loadAssetBitmap",
+									   "(Ljava/lang/String;)Landroid/graphics/Bitmap;", assetName);
 }
 
-jobject LoadFileFromAssets(const char* name)
+jobject LoadFileFromAssets(const std::string& name)
 {
-	jstring assetName = JNI::MakeUTF8String(name);
-	jobject byteBuffer = JNI::CallStaticObjectMethod("com/imdex/pacman/NativeLib", "loadAssetFile",
-													 "(Ljava/lang/String;)Ljava/nio/ByteBuffer;", assetName);
-	PACMAN_CHECK_ERROR(byteBuffer != nullptr, ErrorCode::BadArgument);
-	return byteBuffer;
+	jstring assetName = JNI::MakeUTF8String(name.c_str());
+	return JNI::CallStaticObjectMethod("com/imdex/pacman/NativeLib", "loadAssetFile",
+									   "(Ljava/lang/String;)Ljava/nio/ByteBuffer;", assetName);
 }
 
 //=================================================================================================================
 
-AssetManager::AssetManager()
-{
-	ScreenSize screenSize = Engine::GetInstance()->GetScreenSize();
-	ScreenDensity screenDensity = Engine::GetInstance()->GetScreenDensity();
-	mTileSize = kTileSizes[static_cast<uint8_t>(screenSize)][static_cast<uint8_t>(screenDensity)];
-	PACMAN_CHECK_ERROR(mTileSize != 0, ErrorCode::UnsupportedDevice);
-
-	std::stringstream folderStream("");
-	folderStream << (size_t)mTileSize << "/";
-	mAssetFolder = folderStream.str();
-	LOGI("TileSize: %u, assFol: %s", mTileSize, mAssetFolder.c_str());
-}
-
-std::shared_ptr<Texture2D> AssetManager::LoadTexture(const char* name, const TextureFiltering filtering,
+std::shared_ptr<Texture2D> AssetManager::LoadTexture(const std::string& name, const TextureFiltering filtering,
 									 	 	 	     const TextureRepeat repeat)
 {
 	JNIEnv* env = JNI::GetEnv();
 
-	jobject bitmap = LoadBitmapFromAssets(BuildAssetPath(name));
-	PACMAN_CHECK_ERROR(bitmap != nullptr, ErrorCode::InvalidResult);
+	std::string finalName = name;
+	if (mMultiplier > 0)
+		finalName = ApplyMultiplier(name, mMultiplier);
+
+	jobject bitmap = LoadBitmapFromAssets(finalName); // try to load bitmap with multiplier
+	if ((bitmap == nullptr) && (mMultiplier > 0))
+		bitmap = LoadBitmapFromAssets(name); // after try base
+	PACMAN_CHECK_ERROR(bitmap != nullptr, ErrorCode::BadArgument);
+
 	AndroidBitmapHolder bitmapHolder(env, bitmap);
 	AndroidBitmapInfo info = bitmapHolder.GetInfo();
 
@@ -145,28 +139,17 @@ std::shared_ptr<Texture2D> AssetManager::LoadTexture(const char* name, const Tex
 	return std::make_shared<Texture2D>(info.width, info.height, pixels, filtering, repeat, pixelFormat);
 }
 
-std::string AssetManager::LoadTextFile(const char* name)
-{
-	return LoadTextFileFromRoot(BuildAssetPath(name).c_str());
-}
-
-std::string AssetManager::LoadTextFileFromRoot(const char* name)
+std::string AssetManager::LoadTextFile(const std::string& name)
 {
 	JNIEnv* env = JNI::GetEnv();
 
 	jobject byteArray = LoadFileFromAssets(name);
-	PACMAN_CHECK_ERROR(byteArray != nullptr, ErrorCode::InvalidResult);
+	PACMAN_CHECK_ERROR(byteArray != nullptr, ErrorCode::BadArgument);
 	char* buf = static_cast<char*>(env->GetDirectBufferAddress(byteArray));
 	PACMAN_CHECK_ERROR(buf != nullptr, ErrorCode::InvalidResult);
 	jlong capacity = env->GetDirectBufferCapacity(byteArray);
 
 	return std::string(buf, capacity);
 }
-
-std::string AssetManager::BuildAssetPath(const char* name)
-{
-	return mAssetFolder + name;
-}
-
 
 } // Pacman namespace

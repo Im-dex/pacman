@@ -4,6 +4,7 @@
 #include "math/matrix4.h"
 #include "drawable.h"
 
+#include <list>
 #include <memory>
 
 namespace Pacman {
@@ -19,9 +20,9 @@ public:
 
 	StaticSceneNode& operator= (const StaticSceneNode&) = default;
 
-	std::shared_ptr<IDrawable> GetDrawable() const
+	IDrawable& GetDrawable() const
 	{
-		return mDrawable;
+		return *mDrawable;
 	}
 
 private:
@@ -42,11 +43,6 @@ public:
 
 	Math::Matrix4f GetModelMatrix() const;
 
-	void Translate(const Math::Vector2f position)
-	{
-		mPosition = position;
-	}
-
 	Math::Vector2f GetPosition() const
 	{
 		return mPosition;
@@ -57,9 +53,15 @@ public:
 		mPosition += offset;
 	}
 
+	void Translate(const Math::Vector2f position)
+	{
+		mPosition = position;
+	}
+
 private:
 	
 	Math::Vector2f mPosition;
+	std::list<SceneNode> mChilds;
 };
 
 } // Pacman namespace

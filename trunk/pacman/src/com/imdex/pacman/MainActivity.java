@@ -7,8 +7,6 @@ public class MainActivity extends Activity {
 
 	private SurfaceView mView;
 	private ErrorReporter mErrorReporter;
-	private ScreenInformation mScreenInformation;
-	private boolean mNormalStart = true;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -16,13 +14,6 @@ public class MainActivity extends Activity {
         
         InputListener inputListener = new InputListener();
         mErrorReporter = new ErrorReporter(this);
-    	try {
-			mScreenInformation = new ScreenInformation(this.getResources().getConfiguration(), this.getWindowManager());
-		} catch (Exception e) {
-			mNormalStart = false;
-			mErrorReporter.terminateApplication(e.getMessage());
-			return;
-		}
     	
         NativeLib.setContext(getApplicationContext());
         NativeLib.setErrorReporter(mErrorReporter);
@@ -36,29 +27,25 @@ public class MainActivity extends Activity {
     @Override
     public void onStart() {
     	super.onStart();
-    	if (mNormalStart)
-    		NativeLib.init(mScreenInformation.screenSize, mScreenInformation.screenDensity);
+    	NativeLib.init();
     }
     
     @Override
     public void onStop() {
     	super.onStop();
-    	if (mNormalStart)
-    		NativeLib.deinit();
+    	NativeLib.deinit();
     }
     
     @Override
     public void onResume() {
     	super.onResume();
-    	if (mNormalStart)
-    		mView.onResume();
+    	mView.onResume();
     }
     
     @Override
     public void onPause() {
     	super.onPause();
-    	if (mNormalStart)
-    		mView.onPause();
+    	mView.onPause();
     }
 
 }

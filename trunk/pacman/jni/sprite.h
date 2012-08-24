@@ -40,11 +40,11 @@ public:
 
 	Sprite& operator= (const Sprite&) = default;
 
-	virtual std::shared_ptr<VertexBuffer> GetVertexBuffer() const;
+	virtual VertexBuffer& GetVertexBuffer() const;
 
-	virtual std::shared_ptr<Texture2D> GetTexture() const;
+	virtual std::weak_ptr<Texture2D> GetTexture() const;
 
-	virtual std::shared_ptr<ShaderProgram> GetShaderProgram() const;
+	virtual ShaderProgram& GetShaderProgram() const;
 
 	virtual bool HasAlphaBlend() const;
 
