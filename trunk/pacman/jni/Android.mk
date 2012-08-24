@@ -7,6 +7,7 @@ LOCAL_CFLAGS    := -Werror -std=gnu++0x -Wno-psabi -fexceptions
 LOCAL_SRC_FILES := main.cpp\
 				   renderer.cpp\
 				   sprite.cpp\
+				   spritesheet.cpp\
 				   color.cpp\
 				   vertex_buffer.cpp\
 				   error.cpp\
@@ -21,6 +22,7 @@ LOCAL_SRC_FILES := main.cpp\
 				   map.cpp\
 				   font_manager.cpp\
 				   jni_utility.cpp\
+				   json_helper.cpp\
 				   engine.cpp\
 				   game.cpp\
 				   json/json_reader.cpp\

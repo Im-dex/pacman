@@ -5,7 +5,7 @@
 #include "scene_node.h"
 #include "shader_program.h"
 #include "texture.h"
-#include "json/json.h"
+#include "json_helper.h"
 #include "scene_manager.h"
 #include "rect.h"
 
@@ -99,16 +99,19 @@ Map::Map()
 
 void Map::Load(const std::string& textData, const size_t screenWidth, const size_t screenHeight)
 {
-	Json::Value root;
-	Json::Reader reader;
-	bool result = reader.parse(textData, root, false);
-	PACMAN_CHECK_ERROR(result, ErrorCode::BadFormat);
+	const Json::Value root = JsonHelper::ParseJson(textData);
+	PACMAN_CHECK_ERROR(root != Json::Value::null, ErrorCode::BadFormat);
 
 	mCellSize = static_cast<const uint8_t>(root["cellSize"].asUInt());
 	mCellHalf = mCellSize / 2;
 	mRowsCount = static_cast<const uint8_t>(root["rowsCount"].asUInt());
 
 	const Json::Value cells = root["cells"];
+	PACMAN_CHECK_ERROR(cells != Json::Value::null, ErrorCode::BadFormat);
+	PACMAN_CHECK_ERROR(mCells.size() % mRowsCount == 0, ErrorCode::BadFormat);
+
+	mColumnsCount = mCells.size() / mRowsCount;
+
 	for (size_t i = 0; i < cells.size(); i++)
 	{
 		uint8_t value = static_cast<uint8_t>(cells[i].asUInt());
@@ -116,12 +119,8 @@ void Map::Load(const std::string& textData, const size_t screenWidth, const size
 		mCells.push_back(static_cast<MapCellType>(value));
 	}
 
-	PACMAN_CHECK_ERROR(mCells.size() % mRowsCount == 0, ErrorCode::BadFormat);
-	mColumnsCount = mCells.size() / mRowsCount;
-
 	Math::Vector2f position = Math::Vector2f::kZero;
 	auto sprite = GenerateSprite(screenWidth, screenHeight, &position);
-
 	mNode = std::make_shared<SceneNode>(sprite, position);
 }
 
