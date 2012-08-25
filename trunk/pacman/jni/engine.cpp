@@ -20,12 +20,17 @@ Engine::Engine()
 {
 	std::string configData = mAssetManager->LoadTextFile("config.json");
 	const Json::Value root = JsonHelper::ParseJson(configData);
-	PACMAN_CHECK_ERROR(root != Json::Value::null, ErrorCode::BadFormat);
+	PACMAN_CHECK_ERROR(root.isObject(), ErrorCode::BadFormat);
 	
 	const Json::Value resoution = root["base_resolution"];
-	PACMAN_CHECK_ERROR(resoution != Json::Value::null, ErrorCode::BadFormat);
-	mBaseWidth = resoution["width"].asUInt();
-	mBaseHeight = resoution["height"].asUInt();
+	PACMAN_CHECK_ERROR(resoution.isObject(), ErrorCode::BadFormat);
+	
+	const Json::Value width = resoution["width"];
+	const Json::Value height = resoution["height"];
+	PACMAN_CHECK_ERROR(width.isNumeric() && height.isNumeric(), ErrorCode::BadFormat);
+
+	mBaseWidth = width.asUInt();
+	mBaseHeight = height.asUInt();
 }
 
 Engine::~Engine()

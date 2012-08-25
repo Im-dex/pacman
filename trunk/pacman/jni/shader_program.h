@@ -29,19 +29,6 @@ class ShaderProgram
 {
 public:
 
-	// attrs: position, color; uniforms: modelView
-	static const std::string kDefaultColorVertexShader;
-	// attrs: position, color; uniforms: none
-	static const std::string kDefaultStaticColorVertexShader;
-	// varying: color
-	static const std::string kDefaultColorFragmentShader;
-	// attrs: position, texcoords; uniforms: modelView
-	static const std::string kDefaultTextureVertexShader;
-	// attrs: position, texcoords; uniforms: none
-	static const std::string kDefaultStaticTextureVertexShader;
-	// varying: texcoords
-	static const std::string kDefaultTextureFragmentShader;
-
 	ShaderProgram() = delete;
 	ShaderProgram(const std::string& vertexShaderSource, const std::string& fragmentShaderSource);
 	ShaderProgram(const ShaderProgram&) = delete;

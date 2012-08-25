@@ -2,8 +2,10 @@
 #include "base.h"
 #include "error.h"
 #include "color.h"
+#include "engine.h"
 #include "scene_node.h"
 #include "shader_program.h"
+#include "asset_manager.h"
 #include "texture.h"
 #include "json_helper.h"
 #include "scene_manager.h"
@@ -100,22 +102,29 @@ Map::Map()
 void Map::Load(const std::string& textData, const size_t screenWidth, const size_t screenHeight)
 {
 	const Json::Value root = JsonHelper::ParseJson(textData);
-	PACMAN_CHECK_ERROR(root != Json::Value::null, ErrorCode::BadFormat);
+	PACMAN_CHECK_ERROR(root.isObject(), ErrorCode::BadFormat);
 
-	mCellSize = static_cast<const uint8_t>(root["cellSize"].asUInt());
+	const Json::Value rowsCount = root["rowsCount"];
+	PACMAN_CHECK_ERROR(rowsCount.isNumeric(), ErrorCode::BadFormat);
+
+	mCellSize = 8;
 	mCellHalf = mCellSize / 2;
-	mRowsCount = static_cast<const uint8_t>(root["rowsCount"].asUInt());
+	mRowsCount = static_cast<const uint8_t>(rowsCount.asUInt());
 
 	const Json::Value cells = root["cells"];
-	PACMAN_CHECK_ERROR(cells != Json::Value::null, ErrorCode::BadFormat);
-	PACMAN_CHECK_ERROR(mCells.size() % mRowsCount == 0, ErrorCode::BadFormat);
+	PACMAN_CHECK_ERROR(cells.isArray(), ErrorCode::BadFormat);
+	PACMAN_CHECK_ERROR(cells.size() % mRowsCount == 0, ErrorCode::BadFormat);
 
 	mColumnsCount = mCells.size() / mRowsCount;
 
 	for (size_t i = 0; i < cells.size(); i++)
 	{
-		uint8_t value = static_cast<uint8_t>(cells[i].asUInt());
+		const Json::Value cell = cells[i];
+		PACMAN_CHECK_ERROR(cell.isNumeric(), ErrorCode::BadFormat);
+
+		uint8_t value = static_cast<uint8_t>(cell.asUInt());
 		PACMAN_CHECK_ERROR(value < kCellTypesCount, ErrorCode::BadFormat);
+
 		mCells.push_back(static_cast<MapCellType>(value));
 	}
 
@@ -153,12 +162,14 @@ std::shared_ptr<Sprite> Map::GenerateSprite(const size_t screenWidth, const size
 	const size_t leftRightPadding = (screenWidth - mapWidth) / 2;
 	*position = Math::Vector2f(leftRightPadding, 0.0f);
 
+
+
 	// lets generate!
 	TextureRegion textureRegion(Math::Vector2f::kZero, 0.0f, 0.0f);
-	auto texture = GenerateTexture(textureWidth, textureHeight, mapWidth, mapHeight, &textureRegion);
+	std::shared_ptr<Texture2D> texture = GenerateTexture(textureWidth, textureHeight, mapWidth, mapHeight, &textureRegion);
 
-	auto shaderProgram = std::make_shared<ShaderProgram>(ShaderProgram::kDefaultTextureVertexShader, ShaderProgram::kDefaultTextureFragmentShader);
-	shaderProgram->Link();
+	AssetManager& assetManager = GetEngine()->GetAssetManager();
+	std::shared_ptr<ShaderProgram> shaderProgram = assetManager.LoadShaderProgram(AssetManager::kDefaultTextureVertexShader, AssetManager::kDefaultTextureFragmentShader);
 
 	SpriteRegion region(SpriteRegion::Position::kZero, mapWidth, mapHeight);
 	return std::make_shared<Sprite>(region, textureRegion, texture, shaderProgram, false);

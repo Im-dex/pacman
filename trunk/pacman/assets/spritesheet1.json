@@ -1,8 +1,11 @@
 {
 	"image":"spritesheet1.png",
-	"spritelist": [
+	"list": [
 		{
 			"name":"cherry",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0,
 			"y":0,
 			"width":0.125,
@@ -11,6 +14,9 @@
 
 		{
 			"name":"strawberry",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.125,
 			"y":0,
 			"width":0.125,
@@ -19,6 +25,9 @@
 
 		{
 			"name":"pacman_anim_0",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.25,
 			"y":0,
 			"width":0.125,
@@ -27,6 +36,9 @@
 
 		{
 			"name":"pacman_anim_1",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.375,
 			"y":0,
 			"width":0.125,
@@ -35,6 +47,9 @@
 
 		{
 			"name":"pacman_anim_2",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.5,
 			"y":0,
 			"width":0.125,
@@ -43,6 +58,9 @@
 
 		{
 			"name":"blinky_bottom",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.625,
 			"y":0,
 			"width":0.125,
@@ -51,6 +69,9 @@
 
 		{
 			"name":"blinky_left",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.75,
 			"y":0,
 			"width":0.125,
@@ -59,6 +80,9 @@
 
 		{
 			"name":"blinky_right",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.875,
 			"y":0,
 			"width":0.125,
@@ -67,6 +91,9 @@
 
 		{
 			"name":"blinky_top",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0,
 			"y":0.25,
 			"width":0.125,
@@ -75,6 +102,9 @@
 
 		{
 			"name":"clyde_bottom",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.125,
 			"y":0.25,
 			"width":0.125,
@@ -83,6 +113,9 @@
 
 		{
 			"name":"clyde_left",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.25,
 			"y":0.25,
 			"width":0.125,
@@ -91,6 +124,9 @@
 
 		{
 			"name":"clyde_right",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.375,
 			"y":0.25,
 			"width":0.125,
@@ -99,6 +135,9 @@
 
 		{
 			"name":"clyde_top",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.5,
 			"y":0.25,
 			"width":0.125,
@@ -107,6 +146,9 @@
 
 		{
 			"name":"inky_bottom",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.625,
 			"y":0.25,
 			"width":0.125,
@@ -115,6 +157,9 @@
 
 		{
 			"name":"inky_left",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.75,
 			"y":0.25,
 			"width":0.125,
@@ -123,6 +168,9 @@
 
 		{
 			"name":"inky_right",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.875,
 			"y":0.25,
 			"width":0.125,
@@ -131,6 +179,9 @@
 
 		{
 			"name":"inky_top",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0,
 			"y":0.5,
 			"width":0.125,
@@ -139,6 +190,9 @@
 
 		{
 			"name":"pinky_bottom",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.125,
 			"y":0.5,
 			"width":0.125,
@@ -147,6 +201,9 @@
 
 		{
 			"name":"pinky_left",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.25,
 			"y":0.5,
 			"width":0.125,
@@ -155,6 +212,9 @@
 
 		{
 			"name":"pinky_right",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.375,
 			"y":0.5,
 			"width":0.125,
@@ -163,6 +223,9 @@
 
 		{
 			"name":"pinky_top",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.5,
 			"y":0.5,
 			"width":0.125,
@@ -171,6 +234,9 @@
 
 		{
 			"name":"enemy_shy",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
 			"x":0.625,
 			"y":0.5,
 			"width":0.125,
