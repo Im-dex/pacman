@@ -19,6 +19,8 @@ public:
 	typedef Math::Vector2<T> Position;
 
 	Rect() = delete;
+	// x, y - position
+	Rect(const T x, const T y, const T width, const T height);
 	// position - the left top point position
 	Rect(const Position position, const T width, const T height);
 	Rect(const Rect<T>& other);
@@ -57,6 +59,14 @@ private:
 	T mWidth;
 	T mHeight;
 };
+
+template <typename T>
+Rect<T>::Rect(const T x, const T y, const T width, const T height)
+	: mPosition(x, y),
+	  mWidth(width),
+	  mHeight(height)
+{
+}
 
 template <typename T>
 Rect<T>::Rect(const Rect<T>::Position position, const T width, const T height)

@@ -4,6 +4,7 @@
 #include "error.h"
 #include "color.h"
 #include "texture.h"
+#include "shader_program.h"
 #include "jni_utility.h"
 
 #include <new>
@@ -13,6 +14,13 @@
 #include <android/bitmap.h>
 
 namespace Pacman {
+
+const std::string AssetManager::kDefaultColorVertexShader = "def_color_shader.vs";
+const std::string AssetManager::kDefaultStaticColorVertexShader = "def_static_color_shader.vs";
+const std::string AssetManager::kDefaultColorFragmentShader = "def_color_fragment.fs";
+const std::string AssetManager::kDefaultTextureVertexShader = "def_texture_shader.vs";
+const std::string AssetManager::kDefaultStaticTextureVertexShader = "def_static_texture_shader.vs";
+const std::string AssetManager::kDefaultTextureFragmentShader = "def_texture_shader.fs";
 
 class AndroidBitmapHolder
 {
@@ -137,6 +145,27 @@ std::shared_ptr<Texture2D> AssetManager::LoadTexture(const std::string& name, co
 
 	byte_t* pixels = bitmapHolder.LockPixels();
 	return std::make_shared<Texture2D>(info.width, info.height, pixels, filtering, repeat, pixelFormat);
+}
+
+std::shared_ptr<ShaderProgram> AssetManager::LoadShaderProgram(const std::string& vertexShaderName, const std::string& fragmentShaderName)
+{
+	auto iter = mShaderPrograms.find(vertexShaderName + fragmentShaderName);
+	if (iter != mShaderPrograms.end())
+	{
+		std::shared_ptr<ShaderProgram> shader = iter->second.lock();
+		if (shader != nullptr)
+			return shader;
+		else
+			mShaderPrograms.erase(iter);
+	}
+
+	std::string vertexShader = LoadTextFile(vertexShaderName);
+	std::string fragmentShader = LoadTextFile(fragmentShaderName);
+	PACMAN_CHECK_ERROR((vertexShader.size() > 0) && (fragmentShader.size() > 0), ErrorCode::BadArgument);
+	std::shared_ptr<ShaderProgram> shader = std::make_shared<ShaderProgram>(vertexShader, fragmentShader);
+	shader->Link();
+	mShaderPrograms.insert(std::make_pair(vertexShaderName + fragmentShaderName, shader));
+	return shader;
 }
 
 std::string AssetManager::LoadTextFile(const std::string& name)

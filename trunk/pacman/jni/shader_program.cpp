@@ -5,54 +5,6 @@
 
 namespace Pacman {
 
-const std::string ShaderProgram::kDefaultColorVertexShader = "attribute vec4 vPosition;\n"
-															 "attribute vec4 vColor;\n"
-															 "uniform mat4 mModelProjectionMatrix;\n"
-															 "varying vec4 vVertColor;\n"
-															 "void main() {\n"
-															 "    vVertColor = vColor;\n"
-															 "    gl_Position = mModelProjectionMatrix * vPosition;\n"
-															 "}\n";
-
-const std::string ShaderProgram::kDefaultStaticColorVertexShader = "attribute vec4 vPosition;\n"
-																   "attribute vec4 vColor;\n"
-																   "varying vec4 vVertColor;\n"
-																   "void main() {\n"
-																   "    vVertColor = vColor;\n"
-																   "    gl_Position = vPosition;\n"
-																   "}\n";
-
-
-const std::string ShaderProgram::kDefaultColorFragmentShader = "precision mediump float;\n"
-							  	  							   "varying vec4 vVertColor;\n"
-							  	  							   "void main() {\n"
-							  	  							   "    gl_FragColor = vVertColor;\n"
-							  	  							   "}\n";
-
-const std::string ShaderProgram::kDefaultTextureVertexShader = "attribute vec4 vPosition;"
-															   "attribute vec2 vTexCoords;\n"
-															   "uniform mat4 mModelProjectionMatrix;\n"
-															   "varying vec2 vVertTexCoords;\n"
-															   "void main() {\n"
-															   "	gl_Position = mModelProjectionMatrix * vPosition;\n"
-															   "	vVertTexCoords = vTexCoords;\n"
-															   "}\n";
-
-static const std::string kDefaultStaticTextureVertexShader = "attribute vec4 vPosition;"
-															 "attribute vec2 vTexCoords;\n"
-															 "varying vec2 vVertTexCoords;\n"
-															 "void main() {\n"
-															 "    gl_Position = vPosition;\n"
-															 "    vVertTexCoords = vTexCoords;\n"
-															 "}\n";
-
-const std::string ShaderProgram::kDefaultTextureFragmentShader = "precision mediump float;\n"
-															     "uniform sampler2D colorTexture;\n"
-															     "varying vec2 vVertTexCoords;\n"
-							  	  							     "void main() {\n"
-							  	  							     "    gl_FragColor = texture2D(colorTexture, vVertTexCoords);\n"
-							  	  							     "}\n";
-
 ShaderProgram::ShaderProgram(const std::string& vertexShaderSource, const std::string& fragmentShaderSource)
 			 : mVertexShader(ShaderType::VERTEX, vertexShaderSource),
 			   mFragmentShader(ShaderType::FRAGMENT, fragmentShaderSource),

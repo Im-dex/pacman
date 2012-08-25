@@ -2,25 +2,28 @@
 
 #include <string>
 #include <memory>
+#include <unordered_map>
 
 namespace Pacman {
 
-class Texture2D;
+class Sprite;
 
 class SpriteSheet
 {
 public:
 
 	SpriteSheet() = delete;
-	SpriteSheet(const std::string& description, std::shared_ptr<Texture2D> texture);
+	SpriteSheet(const std::string& description);
 	SpriteSheet(const SpriteSheet&) = default;
 	~SpriteSheet() = default;
 
 	SpriteSheet& operator= (const SpriteSheet&) = default;
 
+	std::shared_ptr<Sprite> GetSprite(const std::string& name);
+
 private:
 
-	std::shared_ptr<Texture2D> mTexture;
+	std::unordered_map<std::string, std::shared_ptr<Sprite>> mSprites;
 };
 
 } // Pacman namespace

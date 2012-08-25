@@ -8,6 +8,7 @@
 #include "shader_program.h"
 #include "scene_node.h"
 #include "texture.h"
+#include "spritesheet.h"
 
 #include <memory>
 
@@ -47,6 +48,8 @@ void Game::OnLoad()
 	Map map;
 	map.Load(assetManager.LoadTextFile("map.json"), renderer.GetViewportWidth(), renderer.GetViewportHeight());
 	map.AttachToScene(sceneManager);
+
+	SpriteSheet spriteSheet("spritesheet1.json");
 
 	// texture
 	/*auto texture = assetManager.LoadTexture("cherry.png", TextureFiltering::Bilinear, TextureRepeat::None);
