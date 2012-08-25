@@ -29,9 +29,9 @@ SpriteSheet::SpriteSheet(const std::string& description)
 		PACMAN_CHECK_ERROR(spriteObject.isObject(), ErrorCode::BadFormat);
 
 		const Json::Value name = spriteObject["name"];
-		const Json::Value vs = root["vs"];
-		const Json::Value fs = root["fs"];
-		const Json::Value alphaBlend = root["alpha_blend"];
+		const Json::Value vs = spriteObject["vs"];
+		const Json::Value fs = spriteObject["fs"];
+		const Json::Value alphaBlend = spriteObject["alpha_blend"];
 		const Json::Value x = spriteObject["x"];
 		const Json::Value y = spriteObject["y"];
 		const Json::Value width = spriteObject["width"];

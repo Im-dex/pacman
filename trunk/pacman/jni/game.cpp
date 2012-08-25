@@ -49,7 +49,11 @@ void Game::OnLoad()
 	map.Load(assetManager.LoadTextFile("map.json"), renderer.GetViewportWidth(), renderer.GetViewportHeight());
 	map.AttachToScene(sceneManager);
 
-	SpriteSheet spriteSheet("spritesheet1.json");
+	std::string spritesheetData = assetManager.LoadTextFile("spritesheet1.json");
+	SpriteSheet spriteSheet(spritesheetData);
+	std::shared_ptr<Sprite> sprite = spriteSheet.GetSprite("enemy_shy");
+	std::shared_ptr<SceneNode> node = std::make_shared<SceneNode>(sprite, Math::Vector2f(32.0f, 16.0f));
+	sceneManager.AttachNode(node);
 
 	// texture
 	/*auto texture = assetManager.LoadTexture("cherry.png", TextureFiltering::Bilinear, TextureRepeat::None);
