@@ -6,6 +6,7 @@
 #include "scene_node.h"
 #include "shader_program.h"
 #include "asset_manager.h"
+#include "renderer.h"
 #include "texture.h"
 #include "json_helper.h"
 #include "scene_manager.h"
@@ -15,6 +16,8 @@
 #include <algorithm>
 
 namespace Pacman {
+
+static const size_t kBaseCellSize = 8;
 
 typedef Rect<size_t> Region;
 
@@ -90,16 +93,7 @@ static FORCEINLINE void CutBottom(Region* region, const size_t cutSize)
 
 //============================================================================================================================================
 
-Map::Map()
-   : mCells(),
-     mRowsCount(0),
-     mColumnsCount(0),
-     mCellSize(0),
-     mNode()
-{
-}
-
-void Map::Load(const std::string& textData, const size_t screenWidth, const size_t screenHeight)
+Map::Map(const std::string& textData)
 {
 	const Json::Value root = JsonHelper::ParseJson(textData);
 	PACMAN_CHECK_ERROR(root.isObject(), ErrorCode::BadFormat);
@@ -107,15 +101,15 @@ void Map::Load(const std::string& textData, const size_t screenWidth, const size
 	const Json::Value rowsCount = root["rowsCount"];
 	PACMAN_CHECK_ERROR(rowsCount.isNumeric(), ErrorCode::BadFormat);
 
-	mCellSize = 8;
-	mCellHalf = mCellSize / 2;
+	size_t multiplier = GetEngine()->GetAssetManager().GetMultiplier();
+
+	mCellSize = kBaseCellSize * multiplier;
+	mCellQuarter = mCellSize / 4;
 	mRowsCount = static_cast<const uint8_t>(rowsCount.asUInt());
 
 	const Json::Value cells = root["cells"];
 	PACMAN_CHECK_ERROR(cells.isArray(), ErrorCode::BadFormat);
 	PACMAN_CHECK_ERROR(cells.size() % mRowsCount == 0, ErrorCode::BadFormat);
-
-	mColumnsCount = mCells.size() / mRowsCount;
 
 	for (size_t i = 0; i < cells.size(); i++)
 	{
@@ -128,9 +122,10 @@ void Map::Load(const std::string& textData, const size_t screenWidth, const size
 		mCells.push_back(static_cast<MapCellType>(value));
 	}
 
-	Math::Vector2f position = Math::Vector2f::kZero;
-	auto sprite = GenerateSprite(screenWidth, screenHeight, &position);
-	mNode = std::make_shared<SceneNode>(sprite, position);
+	mColumnsCount = mCells.size() / mRowsCount;
+
+	std::shared_ptr<Sprite> sprite = GenerateSprite();
+	mNode = std::make_shared<SceneNode>(sprite, Math::Vector2f::kZero);
 }
 
 void Map::AttachToScene(SceneManager& sceneManager)
@@ -138,19 +133,14 @@ void Map::AttachToScene(SceneManager& sceneManager)
 	sceneManager.AttachNode(mNode);
 }
 
-std::shared_ptr<Sprite> Map::GenerateSprite(const size_t screenWidth, const size_t screenHeight, Math::Vector2f* position)
+std::shared_ptr<Sprite> Map::GenerateSprite()
 {
-	size_t mapWidth = mColumnsCount * mCellSize;
-	size_t mapHeight = mRowsCount * mCellSize;
+	Renderer& renderer = GetEngine()->GetRenderer();
+	const size_t viewportWidth = renderer.GetViewportWidth();
+	const size_t viewportHeight = renderer.GetViewportHeight();
 
-	const float widthRatio = RoundToNearHalf(static_cast<float>(screenWidth) / static_cast<float>(mapWidth));
-	const float heightRatio = RoundToNearHalf(static_cast<float>(screenHeight) / static_cast<float>(mapHeight));
-	const float ratio = std::min(widthRatio, heightRatio);
-
-	// expand to maximum possible size for the current screen
-	mapWidth  *= ratio;
-	mapHeight *= ratio;
-	mCellSize *= ratio;
+	const size_t mapWidth = mColumnsCount * mCellSize;
+	const size_t mapHeight = mRowsCount * mCellSize;
 
 	// expand to POT --> TODO: check that device supports this texture size  <--
 	const size_t textureWidth = NextPOT(mapWidth);
@@ -159,10 +149,9 @@ std::shared_ptr<Sprite> Map::GenerateSprite(const size_t screenWidth, const size
 	// calc padding and size
 	// horizontal padding - always center
 	// vertical padding always on top
-	const size_t leftRightPadding = (screenWidth - mapWidth) / 2;
-	*position = Math::Vector2f(leftRightPadding, 0.0f);
-
-
+	const size_t leftRightPadding = (viewportWidth - mapWidth) / 2;
+	const size_t topBottomPadding = (viewportHeight - mapHeight) / 2;
+	Math::Vector2s position = Math::Vector2s(leftRightPadding, topBottomPadding);
 
 	// lets generate!
 	TextureRegion textureRegion(Math::Vector2f::kZero, 0.0f, 0.0f);
@@ -171,7 +160,7 @@ std::shared_ptr<Sprite> Map::GenerateSprite(const size_t screenWidth, const size
 	AssetManager& assetManager = GetEngine()->GetAssetManager();
 	std::shared_ptr<ShaderProgram> shaderProgram = assetManager.LoadShaderProgram(AssetManager::kDefaultTextureVertexShader, AssetManager::kDefaultTextureFragmentShader);
 
-	SpriteRegion region(SpriteRegion::Position::kZero, mapWidth, mapHeight);
+	SpriteRegion region(position, mapWidth, mapHeight);
 	return std::make_shared<Sprite>(region, textureRegion, texture, shaderProgram, false);
 }
 
@@ -195,20 +184,20 @@ std::shared_ptr<Texture2D> Map::GenerateTexture(const size_t textureWidth, const
 			if (cell == MapCellType::Door)
 			{
 				// cut the ghost house door height
-				CutTop(&cellRegion, mCellHalf);
-				CutBottom(&cellRegion, mCellHalf);
+				CutTop(&cellRegion, mCellQuarter);
+				CutBottom(&cellRegion, mCellQuarter);
 			} 
 			else if (cell == MapCellType::Wall)
 			{
 				NeighborsInfo neighbors = GetDirectNeighbors(i, j);
 				if (neighbors.left == MapCellType::Empty) // cut left side
-					CutLeft(&cellRegion, mCellHalf);
+					CutLeft(&cellRegion, mCellQuarter);
 				if (neighbors.right == MapCellType::Empty) // cut right side
-					CutRight(&cellRegion, mCellHalf);
+					CutRight(&cellRegion, mCellQuarter);
 				if (neighbors.top == MapCellType::Empty) // cut top side
-					CutTop(&cellRegion, mCellHalf);
+					CutTop(&cellRegion, mCellQuarter);
 				if (neighbors.bottom == MapCellType::Empty) // cut bottom side
-					CutBottom(&cellRegion, mCellHalf);
+					CutBottom(&cellRegion, mCellQuarter);
 			}
 
 			FillRegion(buffer.get(), textureWidth, cellRegion, GetColor(cell));
@@ -265,7 +254,7 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.directInfo.left == MapCellType::Wall &&
 				neighbors.directInfo.top == MapCellType::Wall)
 			{
-				Region artifactRegion(cellRegion.GetPosition(), mCellHalf, mCellHalf);
+				Region artifactRegion(cellRegion.GetPosition(), mCellQuarter, mCellQuarter);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.leftTop));
 			}
 
@@ -274,8 +263,8 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.directInfo.top == MapCellType::Wall)
 			{
 				Region::Position pos = cellRegion.GetRightTopPos();
-				pos.SetX(pos.GetX() - mCellHalf);
-				Region artifactRegion(pos, mCellHalf, mCellHalf);
+				pos.SetX(pos.GetX() - mCellQuarter);
+				Region artifactRegion(pos, mCellQuarter, mCellQuarter);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.rightTop));
 			}
 
@@ -284,8 +273,8 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.directInfo.bottom == MapCellType::Wall)
 			{
 				Region::Position pos = cellRegion.GetLeftBottomPos();
-				pos.SetY(pos.GetY() - mCellHalf);
-				Region artifactRegion(pos, mCellHalf, mCellHalf);
+				pos.SetY(pos.GetY() - mCellQuarter);
+				Region artifactRegion(pos, mCellQuarter, mCellQuarter);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.leftBottom));
 			}
 
@@ -294,9 +283,9 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.directInfo.bottom == MapCellType::Wall)
 			{
 				Region::Position pos = cellRegion.GetRightBottomPos();
-				pos.SetX(pos.GetX() - mCellHalf);
-				pos.SetY(pos.GetY() - mCellHalf);
-				Region artifactRegion(pos, mCellHalf, mCellHalf);
+				pos.SetX(pos.GetX() - mCellQuarter);
+				pos.SetY(pos.GetY() - mCellQuarter);
+				Region artifactRegion(pos, mCellQuarter, mCellQuarter);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.rightBottom));
 			}
 		}

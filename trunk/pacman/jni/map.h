@@ -29,13 +29,11 @@ class Map
 {
 public:
 
-	Map();
+	Map(const std::string& textData);
 	Map(const Map&) = delete;
 	~Map() = default;
 
 	Map& operator= (const Map&) = delete;
-
-	void Load(const std::string& textData, const size_t screenWidth, const size_t screenHeight);
 
 	void AttachToScene(SceneManager& sceneManager);
 
@@ -58,7 +56,7 @@ private:
 		MapCellType   rightBottom;
 	};
 
-	std::shared_ptr<Sprite> GenerateSprite(const size_t screenWidth, const size_t screenHeight, Math::Vector2f* position);
+	std::shared_ptr<Sprite> GenerateSprite();
 
 	std::shared_ptr<Texture2D> GenerateTexture(const size_t textureWidth, const size_t textureHeight,
 						 	 	 	 		   const size_t mapWidth, const size_t mapHeight, TextureRegion* textureRegion);
@@ -74,7 +72,7 @@ private:
 	uint8_t 				 mRowsCount;
 	uint8_t 				 mColumnsCount;
 	uint8_t					 mCellSize;
-	uint8_t					 mCellHalf;
+	uint8_t					 mCellQuarter;
 
 	std::shared_ptr<SceneNode> mNode;
 };

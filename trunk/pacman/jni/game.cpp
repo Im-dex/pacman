@@ -3,7 +3,6 @@
 #include "engine.h"
 #include "asset_manager.h"
 #include "scene_manager.h"
-#include "renderer.h"
 #include "map.h"
 #include "shader_program.h"
 #include "scene_node.h"
@@ -32,7 +31,6 @@ void Game::OnLoad()
 {
 	Engine* engine = GetEngine();
 	AssetManager& assetManager = engine->GetAssetManager();
-	Renderer& renderer = engine->GetRenderer();
 	SceneManager& sceneManager = engine->GetSceneManager();
 
 	/*
@@ -45,8 +43,7 @@ void Game::OnLoad()
 	sceneManager->AttachNode(node);
 */
 
-	Map map;
-	map.Load(assetManager.LoadTextFile("map.json"), renderer.GetViewportWidth(), renderer.GetViewportHeight());
+	Map map(assetManager.LoadTextFile("map.json"));
 	map.AttachToScene(sceneManager);
 
 	std::string spritesheetData = assetManager.LoadTextFile("spritesheet1.json");
