@@ -49,6 +49,11 @@ public:
 		mMultiplier = multiplier;
 	}
 
+	size_t GetMultiplier() const
+	{
+		return mMultiplier;
+	}
+
 private:
 	
 	size_t mMultiplier;
