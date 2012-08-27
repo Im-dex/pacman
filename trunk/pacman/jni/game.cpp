@@ -48,8 +48,9 @@ void Game::OnLoad()
 
 	std::string spritesheetData = assetManager.LoadTextFile("spritesheet1.json");
 	SpriteSheet spriteSheet(spritesheetData);
-	std::shared_ptr<Sprite> sprite = spriteSheet.GetSprite("enemy_shy");
-	std::shared_ptr<SceneNode> node = std::make_shared<SceneNode>(sprite, Math::Vector2f(32.0f, 16.0f));
+	size_t actorsSize = map.GetCellSize() + (map.GetCellSize() / 2);
+	std::shared_ptr<Sprite> sprite = spriteSheet.MakeSprite("cherry", SpriteRegion(0, 0, actorsSize, actorsSize));
+	std::shared_ptr<SceneNode> node = std::make_shared<SceneNode>(sprite, Math::Vector2f(40.0f, 100.0f));
 	sceneManager.AttachNode(node);
 
 	// texture
