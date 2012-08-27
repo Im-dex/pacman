@@ -54,7 +54,7 @@ SpriteSheet::SpriteSheet(const std::string& description)
 		float heightValue = height.asDouble();
 
 		SpriteRegion spriteRegion(0, 0, texture->GetWidth() * widthValue, texture->GetHeight() * heightValue);
-		TextureRegion textureRegion(xValue, yValue, widthValue - xValue, heightValue - yValue);
+		TextureRegion textureRegion(xValue, yValue, widthValue, heightValue);
 		std::shared_ptr<ShaderProgram> shaderProgram = assetManager.LoadShaderProgram(vsValue, fsValue);
 		std::shared_ptr<Sprite> sprite = std::make_shared<Sprite>(spriteRegion, textureRegion, texture, shaderProgram, alphaBlendValue);
 		mSprites.insert(std::make_pair(nameValue, sprite));
