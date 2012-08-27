@@ -37,6 +37,11 @@ public:
 
 	void AttachToScene(SceneManager& sceneManager);
 
+	size_t GetCellSize() const
+	{
+		return mCellSize;
+	}
+
 private:
 
 	struct NeighborsInfo
