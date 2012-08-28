@@ -19,6 +19,7 @@ LOCAL_SRC_FILES := main.cpp\
 				   scene_manager.cpp\
 				   timer.cpp\
 				   update_thread.cpp\
+				   frame_animator.cpp\
 				   map.cpp\
 				   font_manager.cpp\
 				   jni_utility.cpp\

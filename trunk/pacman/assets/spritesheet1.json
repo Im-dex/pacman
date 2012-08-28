@@ -234,7 +234,7 @@
 		},
 
 		{
-			"name":"enemy_shy",
+			"name":"enemy_scared",
 			"vs":"def_texture_shader.vs",
 			"fs":"def_texture_shader.fs",
 			"alpha_blend":true,
