@@ -8,6 +8,7 @@
 namespace Pacman {
 
 class SceneNode;
+class FrameAnimator;
 
 class Game : public IEngineListener
 {
@@ -28,6 +29,7 @@ public:
 private:
 
 	std::shared_ptr<SceneNode> mPacmanNode;
+	std::shared_ptr<FrameAnimator> mPacmanAnimator;
 };
 
 } // Pacman namespace

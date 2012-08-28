@@ -60,7 +60,7 @@ void Engine::OnDrawFrame()
 	//mLastTime = curTime;
 
 	if (mListener != nullptr)
-		mListener->OnUpdate(0);
+		mListener->OnUpdate(kSkipTicks);
 	mRenderer->DrawFrame();
 
 	//const uint64_t curTime = mTimer->GetMillisec();

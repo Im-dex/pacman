@@ -8,6 +8,7 @@
 #include "scene_node.h"
 #include "texture.h"
 #include "spritesheet.h"
+#include "frame_animator.h"
 
 #include <memory>
 
@@ -49,8 +50,21 @@ void Game::OnLoad()
 	std::string spritesheetData = assetManager.LoadTextFile("spritesheet1.json");
 	SpriteSheet spriteSheet(spritesheetData);
 	size_t actorsSize = map.GetCellSize() + (map.GetCellSize() / 2);
-	std::shared_ptr<Sprite> sprite = spriteSheet.MakeSprite("pacman_anim_1", SpriteRegion(0, 0, actorsSize, actorsSize));
-	mPacmanNode = std::make_shared<SceneNode>(sprite, Math::Vector2f(68.0f, 144.0f));
+
+	std::shared_ptr<Sprite> sprite_pacman_0 = spriteSheet.MakeSprite("pacman_anim_0", SpriteRegion(0, 0, actorsSize, actorsSize));
+	std::shared_ptr<Sprite> sprite_pacman_1 = spriteSheet.MakeSprite("pacman_anim_1", SpriteRegion(0, 0, actorsSize, actorsSize));
+	std::shared_ptr<Sprite> sprite_pacman_2 = spriteSheet.MakeSprite("pacman_anim_2", SpriteRegion(0, 0, actorsSize, actorsSize));
+	
+	std::vector<std::shared_ptr<Sprite>> frames;
+	frames.reserve(5);
+	frames.push_back(sprite_pacman_0);
+	frames.push_back(sprite_pacman_1);
+	frames.push_back(sprite_pacman_2);
+	frames.push_back(sprite_pacman_1);
+	frames.push_back(sprite_pacman_0);
+	
+	mPacmanAnimator = std::make_shared<FrameAnimator>(frames, 100);
+	mPacmanNode = std::make_shared<SceneNode>(mPacmanAnimator, Math::Vector2f(68.0f, 144.0f));
 	sceneManager.AttachNode(mPacmanNode);
 
 	// texture
@@ -73,6 +87,8 @@ void Game::OnUnload()
 
 void Game::OnUpdate(const uint64_t dt)
 {
+	mPacmanAnimator->Update(dt);
+
 	if (mPacmanNode->GetPosition().GetX() > 400.0f)
 		mPacmanNode->Translate(Math::Vector2f(68.0f, 144.0f));
 	mPacmanNode->Move(Math::Vector2f(5.0f, 0.0f));
