@@ -49,9 +49,9 @@ void Game::OnLoad()
 	std::string spritesheetData = assetManager.LoadTextFile("spritesheet1.json");
 	SpriteSheet spriteSheet(spritesheetData);
 	size_t actorsSize = map.GetCellSize() + (map.GetCellSize() / 2);
-	std::shared_ptr<Sprite> sprite = spriteSheet.MakeSprite("cherry", SpriteRegion(0, 0, actorsSize, actorsSize));
-	std::shared_ptr<SceneNode> node = std::make_shared<SceneNode>(sprite, Math::Vector2f(40.0f, 100.0f));
-	sceneManager.AttachNode(node);
+	std::shared_ptr<Sprite> sprite = spriteSheet.MakeSprite("pacman_anim_1", SpriteRegion(0, 0, actorsSize, actorsSize));
+	mPacmanNode = std::make_shared<SceneNode>(sprite, Math::Vector2f(68.0f, 144.0f));
+	sceneManager.AttachNode(mPacmanNode);
 
 	// texture
 	/*auto texture = assetManager.LoadTexture("cherry.png", TextureFiltering::Bilinear, TextureRepeat::None);
@@ -73,7 +73,11 @@ void Game::OnUnload()
 
 void Game::OnUpdate(const uint64_t dt)
 {
-
+	if (mPacmanNode->GetPosition().GetX() > 400.0f)
+		mPacmanNode->Translate(Math::Vector2f(68.0f, 144.0f));
+	mPacmanNode->Move(Math::Vector2f(5.0f, 0.0f));
+	Math::Vector2f pos = mPacmanNode->GetPosition();
+	LOGI("x: %f, y: %f", pos.GetX(), pos.GetY());
 }
 
 } // Pacman namespace
