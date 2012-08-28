@@ -16,68 +16,68 @@ static std::shared_ptr<Pacman::Game> gGame = nullptr;
 
 void OnPacmanApplicationStart()
 {
-	gGame = std::make_shared<Pacman::Game>();
-	Pacman::GetEngine()->SetListener(gGame);
+    gGame = std::make_shared<Pacman::Game>();
+    Pacman::GetEngine()->SetListener(gGame);
 }
 
 void OnPacmanApplicationEnd()
 {
-	Pacman::GetEngine()->SetListener(nullptr);
-	gGame = nullptr;
+    Pacman::GetEngine()->SetListener(nullptr);
+    gGame = nullptr;
 }
 
 namespace Pacman {
 
 void Game::OnLoad()
 {
-	Engine* engine = GetEngine();
-	AssetManager& assetManager = engine->GetAssetManager();
-	SceneManager& sceneManager = engine->GetSceneManager();
+    Engine* engine = GetEngine();
+    AssetManager& assetManager = engine->GetAssetManager();
+    SceneManager& sceneManager = engine->GetSceneManager();
 
-	/*
-	shaderProgram = std::make_shared<ShaderProgram>(kVertexShader, kFragmentShader);
-	shaderProgram->Link();
+    /*
+    shaderProgram = std::make_shared<ShaderProgram>(kVertexShader, kFragmentShader);
+    shaderProgram->Link();
 
-	testSprite = new Sprite(100.0f, 100.0f, Color::kRed, Color::kGreen, Color::kBlue, Color::kRed, shaderProgram);
+    testSprite = new Sprite(100.0f, 100.0f, Color::kRed, Color::kGreen, Color::kBlue, Color::kRed, shaderProgram);
 
-	node = std::make_shared<SceneNode>(*testSprite, Math::Vector2f(100.0f, 50.0f));
-	sceneManager->AttachNode(node);
+    node = std::make_shared<SceneNode>(*testSprite, Math::Vector2f(100.0f, 50.0f));
+    sceneManager->AttachNode(node);
 */
 
-	Map map(assetManager.LoadTextFile("map.json"));
-	map.AttachToScene(sceneManager);
+    Map map(assetManager.LoadTextFile("map.json"));
+    map.AttachToScene(sceneManager);
 
-	std::string spritesheetData = assetManager.LoadTextFile("spritesheet1.json");
-	SpriteSheet spriteSheet(spritesheetData);
-	size_t actorsSize = map.GetCellSize() + (map.GetCellSize() / 2);
+    std::string spritesheetData = assetManager.LoadTextFile("spritesheet1.json");
+    SpriteSheet spriteSheet(spritesheetData);
+    size_t actorsSize = map.GetCellSize() + (map.GetCellSize() / 2);
 
-	std::shared_ptr<Sprite> sprite_pacman_0 = spriteSheet.MakeSprite("pacman_anim_0", SpriteRegion(0, 0, actorsSize, actorsSize));
-	std::shared_ptr<Sprite> sprite_pacman_1 = spriteSheet.MakeSprite("pacman_anim_1", SpriteRegion(0, 0, actorsSize, actorsSize));
-	std::shared_ptr<Sprite> sprite_pacman_2 = spriteSheet.MakeSprite("pacman_anim_2", SpriteRegion(0, 0, actorsSize, actorsSize));
-	
-	std::vector<std::shared_ptr<Sprite>> frames;
-	frames.reserve(5);
-	frames.push_back(sprite_pacman_0);
-	frames.push_back(sprite_pacman_1);
-	frames.push_back(sprite_pacman_2);
-	frames.push_back(sprite_pacman_1);
-	frames.push_back(sprite_pacman_0);
-	
-	mPacmanAnimator = std::make_shared<FrameAnimator>(frames, 100);
-	mPacmanNode = std::make_shared<SceneNode>(mPacmanAnimator, Math::Vector2f(68.0f, 144.0f));
-	sceneManager.AttachNode(mPacmanNode);
+    std::shared_ptr<Sprite> sprite_pacman_0 = spriteSheet.MakeSprite("pacman_anim_0", SpriteRegion(0, 0, actorsSize, actorsSize));
+    std::shared_ptr<Sprite> sprite_pacman_1 = spriteSheet.MakeSprite("pacman_anim_1", SpriteRegion(0, 0, actorsSize, actorsSize));
+    std::shared_ptr<Sprite> sprite_pacman_2 = spriteSheet.MakeSprite("pacman_anim_2", SpriteRegion(0, 0, actorsSize, actorsSize));
+    
+    std::vector<std::shared_ptr<Sprite>> frames;
+    frames.reserve(5);
+    frames.push_back(sprite_pacman_0);
+    frames.push_back(sprite_pacman_1);
+    frames.push_back(sprite_pacman_2);
+    frames.push_back(sprite_pacman_1);
+    frames.push_back(sprite_pacman_0);
+    
+    mPacmanAnimator = std::make_shared<FrameAnimator>(frames, 100);
+    mPacmanNode = std::make_shared<SceneNode>(mPacmanAnimator, Math::Vector2f(68.0f, 144.0f));
+    sceneManager.AttachNode(mPacmanNode);
 
-	// texture
-	/*auto texture = assetManager.LoadTexture("cherry.png", TextureFiltering::Bilinear, TextureRepeat::None);
+    // texture
+    /*auto texture = assetManager.LoadTexture("cherry.png", TextureFiltering::Bilinear, TextureRepeat::None);
 
-	auto shaderProgram2 = std::make_shared<ShaderProgram>(ShaderProgram::kDefaultTextureVertexShader, ShaderProgram::kDefaultTextureFragmentShader);
-	shaderProgram2->Link();
+    auto shaderProgram2 = std::make_shared<ShaderProgram>(ShaderProgram::kDefaultTextureVertexShader, ShaderProgram::kDefaultTextureFragmentShader);
+    shaderProgram2->Link();
 
-	SpriteRegion region2(SpriteRegion::Position::kZero, 24, 24);
-	auto testSprite2 = std::make_shared<Sprite>(region2, texture, shaderProgram2, true);
+    SpriteRegion region2(SpriteRegion::Position::kZero, 24, 24);
+    auto testSprite2 = std::make_shared<Sprite>(region2, texture, shaderProgram2, true);
 
-	auto node2 = std::make_shared<SceneNode>(testSprite2, Math::Vector2f(32.0f, 16.0f));
-	sceneManager.AttachNode(node2);*/
+    auto node2 = std::make_shared<SceneNode>(testSprite2, Math::Vector2f(32.0f, 16.0f));
+    sceneManager.AttachNode(node2);*/
 }
 
 void Game::OnUnload()
@@ -87,13 +87,13 @@ void Game::OnUnload()
 
 void Game::OnUpdate(const uint64_t dt)
 {
-	mPacmanAnimator->Update(dt);
+    mPacmanAnimator->Update(dt);
 
-	if (mPacmanNode->GetPosition().GetX() > 400.0f)
-		mPacmanNode->Translate(Math::Vector2f(68.0f, 144.0f));
-	mPacmanNode->Move(Math::Vector2f(5.0f, 0.0f));
-	Math::Vector2f pos = mPacmanNode->GetPosition();
-	LOGI("x: %f, y: %f", pos.GetX(), pos.GetY());
+    if (mPacmanNode->GetPosition().GetX() > 400.0f)
+        mPacmanNode->Translate(Math::Vector2f(68.0f, 144.0f));
+    mPacmanNode->Move(Math::Vector2f(5.0f, 0.0f));
+    Math::Vector2f pos = mPacmanNode->GetPosition();
+    LOGI("x: %f, y: %f", pos.GetX(), pos.GetY());
 }
 
 } // Pacman namespace
