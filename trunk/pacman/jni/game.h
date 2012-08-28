@@ -27,7 +27,7 @@ public:
 
 private:
 
-	//std::shared_ptr<SceneNode> m
+	std::shared_ptr<SceneNode> mPacmanNode;
 };
 
 } // Pacman namespace

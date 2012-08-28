@@ -7,6 +7,8 @@
 #include "timer.h"
 #include "json_helper.h"
 
+#include <unistd.h>
+
 namespace Pacman {
 
 Engine::Engine()
@@ -49,15 +51,23 @@ void Engine::Init(const size_t screenWidth, const size_t screenHeight)
 	mLastTime = mTimer->GetMillisec();
 }
 
+static const size_t kFramesPerSecond = 25;
+static const size_t kSkipTicks = 1000 / kFramesPerSecond;
+
 void Engine::OnDrawFrame()
 {
-	const uint64_t curTime = mTimer->GetMillisec();
-	const uint64_t dt = curTime - mLastTime;
-	mLastTime = curTime;
+	//const uint64_t dt = curTime - mLastTime;
+	//mLastTime = curTime;
 
 	if (mListener != nullptr)
-		mListener->OnUpdate(dt);
+		mListener->OnUpdate(0);
 	mRenderer->DrawFrame();
+
+	//const uint64_t curTime = mTimer->GetMillisec();
+	mLastTime += kSkipTicks;
+	size_t sleepTime = mLastTime - mTimer->GetMillisec();
+	if (sleepTime >= 0)
+		usleep(sleepTime * 1000);
 
 	//mLastTime = mTimer->GetMillisec();
 }
