@@ -24,7 +24,6 @@ typedef Rect<size_t> Region;
 static const Color kEmptyColor = Color::kBlack;
 static const Color kWallColor = Color::kBlue;
 static const Color kDoorColor = Color::kWhite;
-static const Color kSpaceColor = Color::kBlack;
 static const Color kAlignColor = Color::kRed;
 
 static const size_t kColorComponentsCount = 3; // RGB
@@ -39,8 +38,6 @@ static FORCEINLINE Color GetColor(const MapCellType type)
 		return kWallColor;
 	case MapCellType::Door:
 		return kDoorColor;
-	case MapCellType::Space:
-		return kSpaceColor;
 	}
 }
 
@@ -304,25 +301,25 @@ typename Map::NeighborsInfo Map::GetDirectNeighbors(const uint8_t rowIndex, cons
 
 	// left
 	if (columnIndex == 0)
-		info.left = MapCellType::Space;
+		info.left = MapCellType::Empty;
 	else
 		info.left = GetCell(rowIndex, columnIndex - 1);
 
 	// right
 	if (columnIndex >= (mColumnsCount - 1))
-		info.right = MapCellType::Space;
+		info.right = MapCellType::Empty;
 	else
 		info.right = GetCell(rowIndex, columnIndex + 1);
 
 	// top
 	if (rowIndex == 0)
-		info.top = MapCellType::Space;
+		info.top = MapCellType::Empty;
 	else
 		info.top = GetCell(rowIndex - 1, columnIndex);
 
 	// bottom
 	if (rowIndex >= (mRowsCount - 1))
-		info.bottom = MapCellType::Space;
+		info.bottom = MapCellType::Empty;
 	else
 		info.bottom = GetCell(rowIndex + 1, columnIndex);
 
@@ -335,26 +332,26 @@ typename Map::FullNeighborsInfo Map::GetFullNeighbors(const uint8_t rowIndex, co
 	info.directInfo = GetDirectNeighbors(rowIndex, columnIndex);
 
 	// left top
-	if (columnIndex == 0 || rowIndex == 0)
-		info.leftTop = MapCellType::Space;
+	if ((columnIndex == 0) || (rowIndex == 0))
+		info.leftTop = MapCellType::Empty;
 	else
 		info.leftTop = GetCell(rowIndex - 1, columnIndex - 1);
 
 	// right top
-	if (columnIndex >= (mColumnsCount - 1) || rowIndex == 0)
-		info.rightTop = MapCellType::Space;
+	if ((columnIndex >= (mColumnsCount - 1)) || (rowIndex == 0))
+		info.rightTop = MapCellType::Empty;
 	else
 		info.rightTop = GetCell(rowIndex - 1, columnIndex + 1);
 
 	// left bottom
-	if (columnIndex == 0 || rowIndex >= (mRowsCount - 1))
-		info.leftBottom = MapCellType::Space;
+	if ((columnIndex == 0) || (rowIndex >= (mRowsCount - 1)))
+		info.leftBottom = MapCellType::Empty;
 	else
 		info.leftBottom = GetCell(rowIndex + 1, columnIndex - 1);
 
 	// right bottom
-	if (columnIndex >= (mColumnsCount - 1) || rowIndex >= (mRowsCount - 1))
-		info.rightBottom = MapCellType::Space;
+	if ((columnIndex >= (mColumnsCount - 1)) || (rowIndex >= (mRowsCount - 1)))
+		info.rightBottom = MapCellType::Empty;
 	else
 		info.rightBottom = GetCell(rowIndex + 1, columnIndex + 1);
 

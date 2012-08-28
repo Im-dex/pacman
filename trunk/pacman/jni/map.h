@@ -15,15 +15,14 @@ class SceneNode;
 class Texture2D;
 class SceneManager;
 
-static const size_t kCellTypesCount = 4;
-
 enum class MapCellType : uint8_t
 {
 	Empty = 0,
 	Wall  = 1,
-	Door  = 2,
-	Space = 3 // out of map area
+	Door  = 2
 };
+
+static const size_t kCellTypesCount = 3;
 
 class Map
 {
@@ -55,7 +54,7 @@ private:
 	struct FullNeighborsInfo
 	{
 		NeighborsInfo directInfo;
-		MapCellType	  leftTop;
+		MapCellType   leftTop;
 		MapCellType   rightTop;
 		MapCellType   leftBottom;
 		MapCellType   rightBottom;
