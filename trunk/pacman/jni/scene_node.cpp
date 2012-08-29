@@ -4,13 +4,8 @@
 
 namespace Pacman {
 
-StaticSceneNode::StaticSceneNode(const std::shared_ptr<IDrawable> drawable)
-		: mDrawable(drawable)
-{
-}
-
 SceneNode::SceneNode(const std::shared_ptr<IDrawable> drawable, const Math::Vector2f position)
-	: StaticSceneNode(drawable),
+	: mDrawable(drawable),
 	  mPosition(position)
 {
 }
