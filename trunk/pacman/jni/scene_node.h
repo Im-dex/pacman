@@ -4,33 +4,12 @@
 #include "math/matrix4.h"
 #include "drawable.h"
 
-#include <list>
+//#include <list>
 #include <memory>
 
 namespace Pacman {
 
-class StaticSceneNode
-{
-public:
-
-	StaticSceneNode() = delete;
-	StaticSceneNode(const std::shared_ptr<IDrawable> drawable);
-	StaticSceneNode(const StaticSceneNode&) = default;
-	virtual ~StaticSceneNode() {}
-
-	StaticSceneNode& operator= (const StaticSceneNode&) = default;
-
-	IDrawable& GetDrawable() const
-	{
-		return *mDrawable;
-	}
-
-private:
-
-	std::shared_ptr<IDrawable> mDrawable;
-};
-
-class SceneNode : public StaticSceneNode
+class SceneNode
 {
 public:
 
@@ -42,6 +21,11 @@ public:
 	SceneNode& operator= (const SceneNode&) = default;
 
 	Math::Matrix4f GetModelMatrix() const;
+
+    IDrawable& GetDrawable() const
+    {
+        return *mDrawable;
+    }
 
 	Math::Vector2f GetPosition() const
 	{
@@ -60,8 +44,9 @@ public:
 
 private:
 	
-	Math::Vector2f mPosition;
-	std::list<SceneNode> mChilds;
+	Math::Vector2f             mPosition;
+    std::shared_ptr<IDrawable> mDrawable;
+	//std::list<SceneNode> mChilds;
 };
 
 } // Pacman namespace

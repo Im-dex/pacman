@@ -25,12 +25,12 @@ LOCAL_SRC_FILES := main.cpp\
                    jni_utility.cpp\
                    json_helper.cpp\
                    engine.cpp\
-                   game.cpp\
 				   mutex.cpp\
                    input_manager.cpp\
                    json/json_reader.cpp\
                    json/json_value.cpp\
-                   json/json_writer.cpp
+                   json/json_writer.cpp\
+				   game/game.cpp
 LOCAL_LDLIBS    := -llog -lGLESv2 -ljnigraphics
 
 include $(BUILD_SHARED_LIBRARY)
