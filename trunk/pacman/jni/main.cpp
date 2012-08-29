@@ -40,9 +40,9 @@ void DrawFrame()
 	gEngine->OnDrawFrame();
 }
 
-void TouchEvent(const size_t event, const float x, const float y)
+void TouchEvent(const int event, const float x, const float y)
 {
-	gEngine->OnTouch();
+	gEngine->OnTouch(event, x, y);
 }
 
 //========================================================================================================================

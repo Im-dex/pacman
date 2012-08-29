@@ -3,6 +3,7 @@
 #include "engine.h"
 #include "asset_manager.h"
 #include "scene_manager.h"
+#include "input_manager.h"
 #include "map.h"
 #include "shader_program.h"
 #include "scene_node.h"
@@ -33,6 +34,9 @@ void Game::OnLoad()
     Engine* engine = GetEngine();
     AssetManager& assetManager = engine->GetAssetManager();
     SceneManager& sceneManager = engine->GetSceneManager();
+    InputManager& inputManager = engine->GetInputManager();
+
+    inputManager.SetListener(gGame);
 
     /*
     shaderProgram = std::make_shared<ShaderProgram>(kVertexShader, kFragmentShader);
@@ -82,7 +86,10 @@ void Game::OnLoad()
 
 void Game::OnUnload()
 {
+    Engine* engine = GetEngine();
+    InputManager& inputManager = engine->GetInputManager();
 
+    inputManager.SetListener(nullptr);
 }
 
 void Game::OnUpdate(const uint64_t dt)
@@ -93,7 +100,32 @@ void Game::OnUpdate(const uint64_t dt)
         mPacmanNode->Translate(Math::Vector2f(68.0f, 144.0f));
     mPacmanNode->Move(Math::Vector2f(5.0f, 0.0f));
     Math::Vector2f pos = mPacmanNode->GetPosition();
-    LOGI("x: %f, y: %f", pos.GetX(), pos.GetY());
+    //LOGI("x: %f, y: %f", pos.GetX(), pos.GetY());
+}
+
+void Game::OnGesture(const GestureType gestureType)
+{
+    switch (gestureType)
+    {
+    case GestureType::LeftSwipe:
+        LOGI("Left swipe");
+        break;
+    case GestureType::RightSwipe:
+        LOGI("Right swipe");
+        break;
+    case GestureType::TopSwipe:
+        LOGI("Top swipe");
+        break;
+    case GestureType::BottomSwipe:
+        LOGI("Bottom swipe");
+        break;
+    case GestureType::None:
+        LOGI("Empty swipe");
+        break;
+    default:
+        LOGI("Unknown swipe");
+        break;
+    }
 }
 
 } // Pacman namespace
