@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine.h"
+#include "engine_listeners.h"
 
 #include <cstdint>
 #include <memory>
@@ -10,7 +10,7 @@ namespace Pacman {
 class SceneNode;
 class FrameAnimator;
 
-class Game : public IEngineListener
+class Game : public IEngineListener, public IGestureListener
 {
 public:
 
@@ -25,6 +25,8 @@ public:
 	virtual void OnUnload();
 
 	virtual void OnUpdate(const uint64_t dt);
+
+    virtual void OnGesture(const GestureType gestureType);
 
 private:
 

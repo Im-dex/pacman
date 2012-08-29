@@ -23,7 +23,7 @@ public class NativeLib {
 	public static final int SCREEN_DENSITY_HDPI  = 2;
 	public static final int SCREEN_DENSITY_XHDPI = 3;
 	
-	public static final int TOUCH_UP = 0;
+	public static final int TOUCH_UP   = 0;
 	public static final int TOUCH_DOWN = 1;
 	public static final int TOUCH_MOVE = 2;
 	

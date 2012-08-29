@@ -15,7 +15,10 @@ public class InputListener implements OnTouchListener, OnKeyListener {
 	}
 
 	public boolean onTouch(View v, MotionEvent event) {
-		return NativeLib.touchEvent(ConvertAction(event), event.getX(), event.getY());
+		int convertedAction = ConvertAction(event);
+		if (convertedAction < 0)
+			return false;
+		return NativeLib.touchEvent(convertedAction, event.getX(), event.getY());
 	}
 	
 	private int ConvertAction(MotionEvent event) {

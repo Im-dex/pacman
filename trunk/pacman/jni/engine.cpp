@@ -4,6 +4,7 @@
 #include "font_manager.h"
 #include "scene_manager.h"
 #include "renderer.h"
+#include "input_manager.h"
 #include "timer.h"
 #include "json_helper.h"
 
@@ -16,6 +17,7 @@ Engine::Engine()
 	    mFontManager(new FontManager()),
 		mSceneManager(new SceneManager()),
 		mRenderer(new Renderer()),
+        mInputManager(new InputManager()),
 		mTimer(new Timer()),
 		mListener(nullptr),
 		mLastTime(0)
@@ -56,25 +58,24 @@ static const size_t kSkipTicks = 1000 / kFramesPerSecond;
 
 void Engine::OnDrawFrame()
 {
-	//const uint64_t dt = curTime - mLastTime;
-	//mLastTime = curTime;
-
+    mInputManager->Update();
 	if (mListener != nullptr)
 		mListener->OnUpdate(kSkipTicks);
 	mRenderer->DrawFrame();
 
-	//const uint64_t curTime = mTimer->GetMillisec();
 	mLastTime += kSkipTicks;
 	size_t sleepTime = mLastTime - mTimer->GetMillisec();
 	if (sleepTime >= 0)
 		usleep(sleepTime * 1000);
-
-	//mLastTime = mTimer->GetMillisec();
 }
 
-void Engine::OnTouch()
+void Engine::OnTouch(const int event, const float x, const float y)
 {
-	LOGI("TOUCH!");
+    PACMAN_CHECK_ERROR((event >= 0) && (event < kTouchEventsCount), ErrorCode::BadArgument);
+
+    const uint8_t u8event = static_cast<const uint8_t>(event);
+    const TouchInfo info = { static_cast<TouchEvent>(u8event), x, y };
+	mInputManager->PushInfo(info);
 }
 
 void Engine::Deinit()

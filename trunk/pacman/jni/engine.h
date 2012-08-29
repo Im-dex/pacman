@@ -1,5 +1,7 @@
 #pragma once
 
+#include "engine_listeners.h"
+
 #include <memory>
 #include <cstdint>
 #include <cassert>
@@ -10,19 +12,8 @@ class AssetManager;
 class FontManager;
 class SceneManager;
 class Renderer;
-class Game;
+class InputManager;
 class Timer;
-
-class IEngineListener
-{
-public:
-
-	virtual void OnLoad() = 0;
-
-	virtual void OnUnload() = 0;
-
-	virtual void OnUpdate(const uint64_t dt) = 0;
-};
 
 class Engine
 {
@@ -38,7 +29,7 @@ public:
 
 	void OnDrawFrame();
 
-	void OnTouch();
+	void OnTouch(const int event, const float x, const float y);
 
 	void Deinit();
 
@@ -71,12 +62,19 @@ public:
 		return *mRenderer;
 	}
 
+    InputManager& GetInputManager()
+    {
+        assert(mInputManager != nullptr);
+        return *mInputManager;
+    }
+
 private:
 
 	std::unique_ptr<AssetManager> mAssetManager;
 	std::unique_ptr<FontManager>  mFontManager;
 	std::unique_ptr<SceneManager> mSceneManager;
 	std::unique_ptr<Renderer>	  mRenderer;
+    std::unique_ptr<InputManager> mInputManager;
 	std::unique_ptr<Timer>		  mTimer;
 	
 	std::shared_ptr<IEngineListener> mListener;
