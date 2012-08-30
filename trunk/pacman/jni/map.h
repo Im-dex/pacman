@@ -24,6 +24,23 @@ enum class MapCellType : uint8_t
 
 static const size_t kCellTypesCount = 3;
 
+struct MapNeighborsInfo
+{
+    MapCellType left;
+    MapCellType right;
+    MapCellType top;
+    MapCellType bottom;
+};
+
+struct FullMapNeighborsInfo
+{
+    MapNeighborsInfo directInfo;
+    MapCellType      leftTop;
+    MapCellType      rightTop;
+    MapCellType      leftBottom;
+    MapCellType      rightBottom;
+};
+
 class Map
 {
 public:
@@ -36,34 +53,39 @@ public:
 
 	void AttachToScene(SceneManager& sceneManager);
 
+    MapCellType GetCell(const size_t rowIndex, const size_t columnIndex) const;
+
+    MapCellType GetCell(const Math::Vector2s& cellIndices) const;
+
+    // return position of the cell center
+    Math::Vector2s GetCellPosition(const size_t rowIndex, const size_t columnIndex) const;
+
+    Math::Vector2s GetCellPosition(const Math::Vector2s& cellIndices) const;
+
+    MapNeighborsInfo GetDirectNeighbors(const uint8_t rowIndex, const uint8_t columnIndex) const;
+
+    MapNeighborsInfo GetDirectNeighbors(const Math::Vector2s& cellIndices) const;
+
+    FullMapNeighborsInfo GetFullNeighbors(const uint8_t rowIndex, const uint8_t columnIndex) const;
+
+    FullMapNeighborsInfo GetFullNeighbors(const Math::Vector2s& cellIndices) const;
+
 	size_t GetCellSize() const
 	{
 		return mCellSize;
 	}
 
-    // return position of the cell center
-    Math::Vector2s GetCellPosition(const size_t rowIndex, const size_t columnIndex);
+    size_t GetRowsCont() const
+    {
+        return mRowsCount;
+    }
 
-    Math::Vector2s GetCellPosition(const Math::Vector2s& cellIndices);
+    size_t GetColumnsCount() const
+    {
+        return mColumnsCount;
+    }
 
 private:
-
-	struct NeighborsInfo
-	{
-		MapCellType left;
-		MapCellType right;
-		MapCellType top;
-		MapCellType bottom;
-	};
-
-	struct FullNeighborsInfo
-	{
-		NeighborsInfo directInfo;
-		MapCellType   leftTop;
-		MapCellType   rightTop;
-		MapCellType   leftBottom;
-		MapCellType   rightBottom;
-	};
 
     void ParseJsonData(const std::string& data);
 
@@ -72,13 +94,6 @@ private:
 	std::shared_ptr<Texture2D> GenerateTexture(TextureRegion* textureRegion);
 
 	void CleanArtifacts(byte_t* buffer, const size_t textureWidth);
-
-    MapCellType GetCell(const size_t rowIndex, const size_t columnIndex) const;
-
-	MapCellType GetCell(const Math::Vector2s& cellIndices) const;
-
-	NeighborsInfo GetDirectNeighbors(const uint8_t rowIndex, const uint8_t columnIndex) const;
-	FullNeighborsInfo GetFullNeighbors(const uint8_t rowIndex, const uint8_t columnIndex) const;
 
 	std::vector<MapCellType> mCells;
     Rect<size_t>             mRect;
