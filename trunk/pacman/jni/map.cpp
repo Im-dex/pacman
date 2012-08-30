@@ -101,7 +101,8 @@ Map::Map(const std::string& textData)
     size_t multiplier = engine->GetAssetManager().GetMultiplier();
 
     mCellSize = kBaseCellSize * multiplier;
-    mCellQuarter = mCellSize / 4;
+    mCellSizeHalf = mCellSize / 2;
+    mCellSizeQuarter = mCellSize / 4;
     
     const size_t viewportWidth = renderer.GetViewportWidth();
     const size_t viewportHeight = renderer.GetViewportHeight();
@@ -131,7 +132,7 @@ Math::Vector2s Map::GetCellPosition(const size_t rowIndex, const size_t columnIn
 
 Math::Vector2s Map::GetCellPosition(const Math::Vector2s& cell)
 {
-    return mRect.GetPosition() + (cell * mCellSize);
+    return mRect.GetPosition() + (cell * mCellSize) + mCellSizeHalf;
 }
 
 void Map::ParseJsonData(const std::string& data)
@@ -198,20 +199,20 @@ std::shared_ptr<Texture2D> Map::GenerateTexture(TextureRegion* textureRegion)
 			if (cell == MapCellType::Door)
 			{
 				// cut the ghost house door height
-				CutTop(&cellRegion, mCellQuarter);
-				CutBottom(&cellRegion, mCellQuarter);
+				CutTop(&cellRegion, mCellSizeQuarter);
+				CutBottom(&cellRegion, mCellSizeQuarter);
 			} 
 			else if (cell == MapCellType::Wall)
 			{
 				NeighborsInfo neighbors = GetDirectNeighbors(i, j);
 				if (neighbors.left == MapCellType::Empty) // cut left side
-					CutLeft(&cellRegion, mCellQuarter);
+					CutLeft(&cellRegion, mCellSizeQuarter);
 				if (neighbors.right == MapCellType::Empty) // cut right side
-					CutRight(&cellRegion, mCellQuarter);
+					CutRight(&cellRegion, mCellSizeQuarter);
 				if (neighbors.top == MapCellType::Empty) // cut top side
-					CutTop(&cellRegion, mCellQuarter);
+					CutTop(&cellRegion, mCellSizeQuarter);
 				if (neighbors.bottom == MapCellType::Empty) // cut bottom side
-					CutBottom(&cellRegion, mCellQuarter);
+					CutBottom(&cellRegion, mCellSizeQuarter);
 			}
 
 			FillRegion(buffer.get(), textureWidth, cellRegion, GetColor(cell));
@@ -268,7 +269,7 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.directInfo.left == MapCellType::Wall &&
 				neighbors.directInfo.top == MapCellType::Wall)
 			{
-				Region artifactRegion(cellRegion.GetPosition(), mCellQuarter, mCellQuarter);
+				Region artifactRegion(cellRegion.GetPosition(), mCellSizeQuarter, mCellSizeQuarter);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.leftTop));
 			}
 
@@ -277,8 +278,8 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.directInfo.top == MapCellType::Wall)
 			{
 				Region::Position pos = cellRegion.GetRightTopPos();
-				pos.SetX(pos.GetX() - mCellQuarter);
-				Region artifactRegion(pos, mCellQuarter, mCellQuarter);
+				pos.SetX(pos.GetX() - mCellSizeQuarter);
+				Region artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.rightTop));
 			}
 
@@ -287,8 +288,8 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.directInfo.bottom == MapCellType::Wall)
 			{
 				Region::Position pos = cellRegion.GetLeftBottomPos();
-				pos.SetY(pos.GetY() - mCellQuarter);
-				Region artifactRegion(pos, mCellQuarter, mCellQuarter);
+				pos.SetY(pos.GetY() - mCellSizeQuarter);
+				Region artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.leftBottom));
 			}
 
@@ -297,9 +298,9 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.directInfo.bottom == MapCellType::Wall)
 			{
 				Region::Position pos = cellRegion.GetRightBottomPos();
-				pos.SetX(pos.GetX() - mCellQuarter);
-				pos.SetY(pos.GetY() - mCellQuarter);
-				Region artifactRegion(pos, mCellQuarter, mCellQuarter);
+				pos.SetX(pos.GetX() - mCellSizeQuarter);
+				pos.SetY(pos.GetY() - mCellSizeQuarter);
+				Region artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.rightBottom));
 			}
 		}

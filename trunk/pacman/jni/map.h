@@ -41,6 +41,7 @@ public:
 		return mCellSize;
 	}
 
+    // return position of the cell center
     Math::Vector2s GetCellPosition(const size_t rowIndex, const size_t columnIndex);
 
     Math::Vector2s GetCellPosition(const Math::Vector2s& cellIndices);
@@ -84,7 +85,8 @@ private:
 	uint8_t 				 mRowsCount;
 	uint8_t 				 mColumnsCount;
 	uint8_t					 mCellSize;
-	uint8_t					 mCellQuarter;
+    uint8_t                  mCellSizeHalf;
+	uint8_t					 mCellSizeQuarter;
 
 	std::shared_ptr<SceneNode> mNode;
 };
