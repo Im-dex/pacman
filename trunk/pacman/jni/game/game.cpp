@@ -27,6 +27,9 @@ void OnPacmanApplicationEnd()
     gGame = nullptr;
 }
 
+static size_t startTmp = 0;
+static size_t startTmp2 = 0;
+
 namespace Pacman {
 
 void Game::OnLoad()
@@ -68,8 +71,10 @@ void Game::OnLoad()
     frames.push_back(sprite_pacman_0);
     
     mPacmanAnimator = std::make_shared<FrameAnimator>(frames, 100);
-    auto pos = map.GetCellPosition(0, 0);
-    mPacmanNode = std::make_shared<SceneNode>(mPacmanAnimator, Math::Vector2f((float)pos.GetX(), (float)pos.GetY()));
+    auto pos = map.GetCellPosition(1, 1);
+    startTmp = pos.GetX() - actorsSize/2;
+    startTmp2 = pos.GetY() - actorsSize/2;
+    mPacmanNode = std::make_shared<SceneNode>(mPacmanAnimator, Math::Vector2f((float)pos.GetX() - actorsSize/2, (float)pos.GetY() - actorsSize/2));
     sceneManager.AttachNode(mPacmanNode);
 
     // texture
@@ -98,7 +103,7 @@ void Game::OnUpdate(const uint64_t dt)
     mPacmanAnimator->Update(dt);
 
     if (mPacmanNode->GetPosition().GetX() > 400.0f)
-        mPacmanNode->Translate(Math::Vector2f(68.0f, 144.0f));
+        mPacmanNode->Translate(Math::Vector2f((float)startTmp, (float)startTmp2));
     mPacmanNode->Move(Math::Vector2f(5.0f, 0.0f));
     Math::Vector2f pos = mPacmanNode->GetPosition();
     //LOGI("x: %f, y: %f", pos.GetX(), pos.GetY());
