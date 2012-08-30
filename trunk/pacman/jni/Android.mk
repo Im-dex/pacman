@@ -30,7 +30,8 @@ LOCAL_SRC_FILES := main.cpp\
                    json/json_reader.cpp\
                    json/json_value.cpp\
                    json/json_writer.cpp\
-				   game/game.cpp
+				   game/game.cpp\
+				   game/actor.cpp
 LOCAL_LDLIBS    := -llog -lGLESv2 -ljnigraphics
 
 include $(BUILD_SHARED_LIBRARY)
