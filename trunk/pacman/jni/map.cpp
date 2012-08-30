@@ -125,14 +125,98 @@ void Map::AttachToScene(SceneManager& sceneManager)
 	sceneManager.AttachNode(mNode);
 }
 
-Math::Vector2s Map::GetCellPosition(const size_t rowIndex, const size_t columnIndex)
+MapCellType Map::GetCell(const size_t rowIndex, const size_t columnIndex) const
+{
+    return GetCell(Math::Vector2s(rowIndex, columnIndex));
+}
+
+MapCellType Map::GetCell(const Math::Vector2s& cellIndices) const
+{
+    PACMAN_CHECK_ERROR((cellIndices.GetX() <= mRowsCount) && (cellIndices.GetY() <= mColumnsCount), ErrorCode::BadArgument);
+    return mCells[(cellIndices.GetX() * mColumnsCount) + cellIndices.GetY()];
+}
+
+Math::Vector2s Map::GetCellPosition(const size_t rowIndex, const size_t columnIndex) const
 {
     return GetCellPosition(Math::Vector2s(rowIndex, columnIndex));
 }
 
-Math::Vector2s Map::GetCellPosition(const Math::Vector2s& cell)
+Math::Vector2s Map::GetCellPosition(const Math::Vector2s& cell) const
 {
     return mRect.GetPosition() + (cell * mCellSize) + mCellSizeHalf;
+}
+
+MapNeighborsInfo Map::GetDirectNeighbors(const uint8_t rowIndex, const uint8_t columnIndex) const
+{
+    return GetDirectNeighbors(Math::Vector2s(rowIndex, columnIndex));
+}
+
+MapNeighborsInfo Map::GetDirectNeighbors(const Math::Vector2s& cellIndices) const
+{
+    MapNeighborsInfo info;
+
+    // left
+    if (cellIndices.GetY() == 0)
+        info.left = MapCellType::Empty;
+    else
+        info.left = GetCell(cellIndices.GetX(), cellIndices.GetY() - 1);
+
+    // right
+    if (cellIndices.GetY() >= (mColumnsCount - 1))
+        info.right = MapCellType::Empty;
+    else
+        info.right = GetCell(cellIndices.GetX(), cellIndices.GetY() + 1);
+
+    // top
+    if (cellIndices.GetX() == 0)
+        info.top = MapCellType::Empty;
+    else
+        info.top = GetCell(cellIndices.GetX() - 1, cellIndices.GetY());
+
+    // bottom
+    if (cellIndices.GetX() >= (mRowsCount - 1))
+        info.bottom = MapCellType::Empty;
+    else
+        info.bottom = GetCell(cellIndices.GetX() + 1, cellIndices.GetY());
+
+    return info;
+}
+
+FullMapNeighborsInfo Map::GetFullNeighbors(const uint8_t rowIndex, const uint8_t columnIndex) const
+{
+    return GetFullNeighbors(Math::Vector2s(rowIndex, columnIndex));
+}
+
+FullMapNeighborsInfo Map::GetFullNeighbors(const Math::Vector2s& cellIndices) const
+{
+    FullMapNeighborsInfo info;
+    info.directInfo = GetDirectNeighbors(cellIndices.GetX(), cellIndices.GetY());
+
+    // left top
+    if ((cellIndices.GetY() == 0) || (cellIndices.GetX() == 0))
+        info.leftTop = MapCellType::Empty;
+    else
+        info.leftTop = GetCell(cellIndices.GetX() - 1, cellIndices.GetY() - 1);
+
+    // right top
+    if ((cellIndices.GetY() >= (mColumnsCount - 1)) || (cellIndices.GetX() == 0))
+        info.rightTop = MapCellType::Empty;
+    else
+        info.rightTop = GetCell(cellIndices.GetX() - 1, cellIndices.GetY() + 1);
+
+    // left bottom
+    if ((cellIndices.GetY() == 0) || (cellIndices.GetX() >= (mRowsCount - 1)))
+        info.leftBottom = MapCellType::Empty;
+    else
+        info.leftBottom = GetCell(cellIndices.GetX() + 1, cellIndices.GetY() - 1);
+
+    // right bottom
+    if ((cellIndices.GetY() >= (mColumnsCount - 1)) || (cellIndices.GetX() >= (mRowsCount - 1)))
+        info.rightBottom = MapCellType::Empty;
+    else
+        info.rightBottom = GetCell(cellIndices.GetX() + 1, cellIndices.GetY() + 1);
+
+    return info;
 }
 
 void Map::ParseJsonData(const std::string& data)
@@ -204,7 +288,7 @@ std::shared_ptr<Texture2D> Map::GenerateTexture(TextureRegion* textureRegion)
 			} 
 			else if (cell == MapCellType::Wall)
 			{
-				NeighborsInfo neighbors = GetDirectNeighbors(i, j);
+				MapNeighborsInfo neighbors = GetDirectNeighbors(i, j);
 				if (neighbors.left == MapCellType::Empty) // cut left side
 					CutLeft(&cellRegion, mCellSizeQuarter);
 				if (neighbors.right == MapCellType::Empty) // cut right side
@@ -263,7 +347,7 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				continue;
 
 			Region cellRegion(Region::Position(j * mCellSize, i * mCellSize), mCellSize, mCellSize);
-			FullNeighborsInfo neighbors = GetFullNeighbors(i, j);
+			FullMapNeighborsInfo neighbors = GetFullNeighbors(i, j);
 
 			if (neighbors.leftTop == MapCellType::Empty &&
 				neighbors.directInfo.left == MapCellType::Wall &&
@@ -305,80 +389,6 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 			}
 		}
 	}
-}
-
-MapCellType Map::GetCell(const size_t rowIndex, const size_t columnIndex) const
-{
-    return GetCell(Math::Vector2s(rowIndex, columnIndex));
-}
-
-MapCellType Map::GetCell(const Math::Vector2s& cellIndices) const
-{
-	PACMAN_CHECK_ERROR((cellIndices.GetX() <= mRowsCount) && (cellIndices.GetY() <= mColumnsCount), ErrorCode::BadArgument);
-	return mCells[(cellIndices.GetX() * mColumnsCount) + cellIndices.GetY()];
-}
-
-typename Map::NeighborsInfo Map::GetDirectNeighbors(const uint8_t rowIndex, const uint8_t columnIndex) const
-{
-	NeighborsInfo info;
-
-	// left
-	if (columnIndex == 0)
-		info.left = MapCellType::Empty;
-	else
-		info.left = GetCell(rowIndex, columnIndex - 1);
-
-	// right
-	if (columnIndex >= (mColumnsCount - 1))
-		info.right = MapCellType::Empty;
-	else
-		info.right = GetCell(rowIndex, columnIndex + 1);
-
-	// top
-	if (rowIndex == 0)
-		info.top = MapCellType::Empty;
-	else
-		info.top = GetCell(rowIndex - 1, columnIndex);
-
-	// bottom
-	if (rowIndex >= (mRowsCount - 1))
-		info.bottom = MapCellType::Empty;
-	else
-		info.bottom = GetCell(rowIndex + 1, columnIndex);
-
-	return info;
-}
-
-typename Map::FullNeighborsInfo Map::GetFullNeighbors(const uint8_t rowIndex, const uint8_t columnIndex) const
-{
-	FullNeighborsInfo info;
-	info.directInfo = GetDirectNeighbors(rowIndex, columnIndex);
-
-	// left top
-	if ((columnIndex == 0) || (rowIndex == 0))
-		info.leftTop = MapCellType::Empty;
-	else
-		info.leftTop = GetCell(rowIndex - 1, columnIndex - 1);
-
-	// right top
-	if ((columnIndex >= (mColumnsCount - 1)) || (rowIndex == 0))
-		info.rightTop = MapCellType::Empty;
-	else
-		info.rightTop = GetCell(rowIndex - 1, columnIndex + 1);
-
-	// left bottom
-	if ((columnIndex == 0) || (rowIndex >= (mRowsCount - 1)))
-		info.leftBottom = MapCellType::Empty;
-	else
-		info.leftBottom = GetCell(rowIndex + 1, columnIndex - 1);
-
-	// right bottom
-	if ((columnIndex >= (mColumnsCount - 1)) || (rowIndex >= (mRowsCount - 1)))
-		info.rightBottom = MapCellType::Empty;
-	else
-		info.rightBottom = GetCell(rowIndex + 1, columnIndex + 1);
-
-	return info;
 }
 
 } // Pacman namespace
