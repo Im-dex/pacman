@@ -68,7 +68,8 @@ void Game::OnLoad()
     frames.push_back(sprite_pacman_0);
     
     mPacmanAnimator = std::make_shared<FrameAnimator>(frames, 100);
-    mPacmanNode = std::make_shared<SceneNode>(mPacmanAnimator, Math::Vector2f(68.0f, 144.0f));
+    auto pos = map.GetCellPosition(0, 0);
+    mPacmanNode = std::make_shared<SceneNode>(mPacmanAnimator, Math::Vector2f((float)pos.GetX(), (float)pos.GetY()));
     sceneManager.AttachNode(mPacmanNode);
 
     // texture

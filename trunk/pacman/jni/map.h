@@ -41,6 +41,10 @@ public:
 		return mCellSize;
 	}
 
+    Math::Vector2s GetCellPosition(const size_t rowIndex, const size_t columnIndex);
+
+    Math::Vector2s GetCellPosition(const Math::Vector2s& cellIndices);
+
 private:
 
 	struct NeighborsInfo
@@ -60,19 +64,23 @@ private:
 		MapCellType   rightBottom;
 	};
 
+    void ParseJsonData(const std::string& data);
+
 	std::shared_ptr<Sprite> GenerateSprite();
 
-	std::shared_ptr<Texture2D> GenerateTexture(const size_t textureWidth, const size_t textureHeight,
-						 	 	 	 		   const size_t mapWidth, const size_t mapHeight, TextureRegion* textureRegion);
+	std::shared_ptr<Texture2D> GenerateTexture(TextureRegion* textureRegion);
 
 	void CleanArtifacts(byte_t* buffer, const size_t textureWidth);
 
-	MapCellType GetCell(const uint8_t rowIndex, const uint8_t columnIndex) const;
+    MapCellType GetCell(const size_t rowIndex, const size_t columnIndex) const;
+
+	MapCellType GetCell(const Math::Vector2s& cellIndices) const;
 
 	NeighborsInfo GetDirectNeighbors(const uint8_t rowIndex, const uint8_t columnIndex) const;
 	FullNeighborsInfo GetFullNeighbors(const uint8_t rowIndex, const uint8_t columnIndex) const;
 
 	std::vector<MapCellType> mCells;
+    Rect<size_t>             mRect;
 	uint8_t 				 mRowsCount;
 	uint8_t 				 mColumnsCount;
 	uint8_t					 mCellSize;
