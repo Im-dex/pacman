@@ -1,4 +1,7 @@
 #include "game.h"
+
+#include <memory>
+
 #include "main.h"
 #include "engine.h"
 #include "asset_manager.h"
@@ -10,10 +13,7 @@
 #include "texture.h"
 #include "spritesheet.h"
 #include "frame_animator.h"
-
 #include "actors_manager.h"
-
-#include <memory>
 
 static std::shared_ptr<Pacman::Game> gGame = nullptr;
 
@@ -43,7 +43,8 @@ void Game::OnLoad()
 
     inputManager.SetListener(gGame);
 
-    std::shared_ptr<Map> map = std::make_shared<Map>(assetManager.LoadTextFile("map.json"));
+    std::vector<DotType> dotsInfo;
+    std::shared_ptr<Map> map = std::make_shared<Map>(assetManager.LoadTextFile("map.json"), dotsInfo);
     map->AttachToScene(sceneManager);
 
     std::string spritesheetData = assetManager.LoadTextFile("spritesheet1.json");

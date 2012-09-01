@@ -1,7 +1,6 @@
 #pragma once
 
 #include "base.h"
-#include "math/vector2.h"
 #include "color.h"
 
 #include <GLES2/gl2.h>
@@ -15,9 +14,9 @@ static const size_t kMaxVertexAttributesCount = 3;
 
 enum class BufferUsage
 {
-	Static,
-	Dynamic,
-	Stream
+    Static,
+    Dynamic,
+    Stream
 };
 
 struct Vertex
@@ -45,13 +44,13 @@ public:
 
 	VertexBuffer() = delete;
 	explicit VertexBuffer(const std::vector<Vertex>& vertexData, const std::vector<uint16_t>& indexData,
-                          const BufferUsage usage);
+                          const BufferUsage vertexBufferUsage, const BufferUsage indexBufferUsage);
 
 	explicit VertexBuffer(const std::vector<ColorVertex>& vertexData, const std::vector<uint16_t>& indexData,
-						  const BufferUsage usage);
+						  const BufferUsage vertexBufferUsage, const BufferUsage indexBufferUsage);
 
 	explicit VertexBuffer(const std::vector<TextureVertex>& vertexData, const std::vector<uint16_t>& indexData,
-						  const BufferUsage usage);
+						  const BufferUsage vertexBufferUsage, const BufferUsage indexBufferUsage);
 
 	VertexBuffer(const VertexBuffer&) = delete;
 	~VertexBuffer();
@@ -64,9 +63,33 @@ public:
 
 	void Draw() const;
 
+    std::vector<byte_t>& LockVertexData();
+
+    void UnlockVertexData();
+
+    std::vector<uint16_t>& LockIndexData();
+
+    void UnlockIndexData();
+
+    size_t GetVertexCount() const
+    {
+        return mVertexCount;
+    }
+
+    size_t GetIndexCount() const
+    {
+        return mIndexCount;
+    }
+
+    size_t GetAttributesCount() const
+    {
+        return mAttributesCount;
+    }
+
 private:
 
-	void Init(const byte_t* vertexData, const size_t vertexDataSize, const std::vector<uint16_t>& indexData, const BufferUsage usage);
+	void Init(const byte_t* vertexData, const size_t vertexDataSize, const std::vector<uint16_t>& indexData,
+              const BufferUsage vertexBufferUsage, const BufferUsage indexBufferUsage);
 
 	struct VertexAttribute
 	{
@@ -88,8 +111,13 @@ private:
 		std::array<GLuint, 2> mBuffers;
 	};
 
-	size_t mIndexCount;
-	size_t mAttributesCount;
+	size_t                mIndexCount;
+    size_t                mVertexCount;
+	size_t                mAttributesCount;
+    bool                  mVertexDataLocked;
+    bool                  mIndexDataLocked;
+    std::vector<byte_t>   mVertexCache;
+    std::vector<uint16_t> mIndexCache;
 	VertexAttributesArray mVertexAttributes;
 };
 

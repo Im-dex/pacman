@@ -1,0 +1,6 @@
+{
+	"startRow":1,
+	"startColumn":1,
+	"direction":"right",
+	"speed":1 // cells in second
+}

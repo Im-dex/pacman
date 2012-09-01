@@ -28,16 +28,17 @@ public:
 
 	InstancedSprite(const SpriteRegion& region, const Color& leftTop, const Color& rightTop, const Color& leftBottom,
 		            const Color& rightBottom, std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend,
-                    const std::vector<SpritePosition>& positions);
+                    const std::vector<SpritePosition>& positions, const bool instanceHideEnabled);
 
 	InstancedSprite(const SpriteRegion& region, std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend,
-                    const std::vector<SpritePosition>& positions);
+                    const std::vector<SpritePosition>& positions, const bool instanceHideEnabled);
 
 	InstancedSprite(const SpriteRegion& region, const TextureRegion& textureRegion, std::shared_ptr<Texture2D> texture,
-		            std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend, const std::vector<SpritePosition>& positions);
+		            std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend, const std::vector<SpritePosition>& positions,
+                    const bool instanceHideEnabled);
 
 	InstancedSprite(const SpriteRegion& region, std::shared_ptr<Texture2D> texture, std::shared_ptr<ShaderProgram> shaderProgram,
-                    const bool alphaBlend, const std::vector<SpritePosition>& positions);
+                    const bool alphaBlend, const std::vector<SpritePosition>& positions, const bool instanceHideEnabled);
 
 	InstancedSprite(const InstancedSprite&) = default;
 	~InstancedSprite() = default;

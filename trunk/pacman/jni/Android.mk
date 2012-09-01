@@ -21,7 +21,6 @@ LOCAL_SRC_FILES := main.cpp\
                    timer.cpp\
                    update_thread.cpp\
                    frame_animator.cpp\
-                   map.cpp\
                    font_manager.cpp\
                    jni_utility.cpp\
                    json_helper.cpp\
@@ -34,6 +33,8 @@ LOCAL_SRC_FILES := main.cpp\
 				   game/game.cpp\
 				   game/actor.cpp\
 				   game/actors_manager.cpp\
+				   game/map.cpp\
+				   game/dots_grid.cpp\
 				   game/pacman.cpp
 LOCAL_LDLIBS    := -llog -lGLESv2 -ljnigraphics
 

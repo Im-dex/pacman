@@ -1,13 +1,13 @@
 #pragma once
 
-#include "base.h"
-#include "math/vector2.h"
-#include "sprite.h"
-
 #include <vector>
 #include <cstdint>
 #include <memory>
 #include <string>
+
+#include "base.h"
+#include "math/vector2.h"
+#include "sprite.h"
 
 namespace Pacman {
 
@@ -56,7 +56,7 @@ class Map
 {
 public:
 
-	Map(const std::string& textData);
+	Map(const std::string& textData, std::vector<DotType>& dotsInfo);
 	Map(const Map&) = delete;
 	~Map() = default;
 
@@ -97,7 +97,7 @@ public:
 
 private:
 
-    void ParseJsonData(const std::string& data);
+    void ParseJsonData(const std::string& data, std::vector<DotType>& dotsInfo);
 
 	std::shared_ptr<Sprite> GenerateSprite();
 
@@ -106,7 +106,6 @@ private:
 	void CleanArtifacts(byte_t* buffer, const size_t textureWidth);
 
 	std::vector<MapCellType> mCells;
-    std::vector<DotType>     mDots;
     SpriteRegion             mRect;
 	uint16_t 				 mRowsCount;
 	uint16_t 				 mColumnsCount;

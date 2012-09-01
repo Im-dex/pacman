@@ -22,6 +22,7 @@ const char* kErrorDescriptions[] =
 	"Bad pixel format",
 
 	"Invalid result",
+    "Invalid state",
 	"Bad argument",
     "Bad cast",
 	"Insertion into the container failed",
