@@ -24,38 +24,38 @@ static GLenum ConvertUsage(const BufferUsage usage)
 
 //================================================================================================================================
 
-VertexBuffer::VertexBuffer(const Vertex* vertexData, const uint16_t* indexData, const size_t vertexCount,
-						   const size_t indexCount, const BufferUsage usage)
-			: mIndexCount(indexCount),
+VertexBuffer::VertexBuffer(const std::vector<Vertex>& vertexData, const std::vector<uint16_t>& indexData,
+						   const BufferUsage usage)
+			: mIndexCount(indexData.size()),
 			  mAttributesCount(3)
 {
-	const void* data = static_cast<const void*>(vertexData);
-	Init(static_cast<const byte_t*>(data), indexData, sizeof(Vertex) * vertexCount, indexCount, usage);
-	mVertexAttributes[0] = VertexAttribute(2, sizeof(Vertex), 0); // attrib #1
-	mVertexAttributes[1] = VertexAttribute(4, sizeof(Vertex), offsetof(Vertex, r)); // attrib #2
-	mVertexAttributes[2] = VertexAttribute(2, sizeof(Vertex), offsetof(Vertex, u)); // attrib #3
+	const void* data = static_cast<const void*>(&vertexData.front());
+	Init(static_cast<const byte_t*>(data), sizeof(Vertex) * vertexData.size(), indexData, usage);
+    mVertexAttributes[0] = { 2, sizeof(Vertex), 0, GL_UNSIGNED_SHORT }; // attrib #1
+    mVertexAttributes[1] = { 4, sizeof(Vertex), offsetof(Vertex, r), GL_FLOAT }; // attrib #2
+    mVertexAttributes[2] = { 2, sizeof(Vertex), offsetof(Vertex, u), GL_FLOAT }; // attrib #3
 }
 
-VertexBuffer::VertexBuffer(const ColorVertex* vertexData, const uint16_t* indexData, const size_t vertexCount,
-						   const size_t indexCount, const BufferUsage usage)
-			: mIndexCount(indexCount),
+VertexBuffer::VertexBuffer(const std::vector<ColorVertex>& vertexData, const std::vector<uint16_t>& indexData,
+						   const BufferUsage usage)
+			: mIndexCount(indexData.size()),
 			  mAttributesCount(2)
 {
-	const void* data = static_cast<const void*>(vertexData);
-	Init(static_cast<const byte_t*>(data), indexData, sizeof(ColorVertex) * vertexCount, indexCount, usage);
-	mVertexAttributes[0] = VertexAttribute(2, sizeof(ColorVertex), 0); // attrib #1
-	mVertexAttributes[1] = VertexAttribute(4, sizeof(ColorVertex), offsetof(ColorVertex, r)); // attrib #2
+	const void* data = static_cast<const void*>(&vertexData.front());
+	Init(static_cast<const byte_t*>(data), sizeof(ColorVertex) * vertexData.size(), indexData, usage);
+    mVertexAttributes[0] = { 2, sizeof(ColorVertex), 0, GL_UNSIGNED_SHORT }; // attrib #1
+    mVertexAttributes[1] = { 4, sizeof(ColorVertex), offsetof(ColorVertex, r), GL_FLOAT }; // attrib #2
 }
 
-VertexBuffer::VertexBuffer(const TextureVertex* vertexData, const uint16_t* indexData, const size_t vertexCount,
-						   const size_t indexCount, const BufferUsage usage)
-			: mIndexCount(indexCount),
+VertexBuffer::VertexBuffer(const std::vector<TextureVertex>& vertexData, const std::vector<uint16_t>& indexData,
+						   const BufferUsage usage)
+			: mIndexCount(indexData.size()),
 			  mAttributesCount(2)
 {
-	const void* data = static_cast<const void*>(vertexData);
-	Init(static_cast<const byte_t*>(data), indexData, sizeof(TextureVertex) * vertexCount, indexCount, usage);
-	mVertexAttributes[0] = VertexAttribute(2, sizeof(TextureVertex), 0); // attrib #1
-	mVertexAttributes[1] = VertexAttribute(2, sizeof(TextureVertex), offsetof(TextureVertex, u)); // attrib #2
+	const void* data = static_cast<const void*>(&vertexData.front());
+	Init(static_cast<const byte_t*>(data), sizeof(TextureVertex) * vertexData.size(), indexData, usage);
+    mVertexAttributes[0] = { 2, sizeof(TextureVertex), 0, GL_UNSIGNED_SHORT }; // attrib #1
+    mVertexAttributes[1] = { 2, sizeof(TextureVertex), offsetof(TextureVertex, u), GL_FLOAT }; // attrib #2
 }
 
 VertexBuffer::~VertexBuffer()
@@ -74,7 +74,7 @@ void VertexBuffer::Bind() const
 	{
 		VertexAttribute attribute = mVertexAttributes[i];
 
-		glVertexAttribPointer(i, attribute.mComponentsCount, GL_FLOAT, GL_FALSE, attribute.mStride, reinterpret_cast<GLvoid*>(attribute.mBeginStride));
+		glVertexAttribPointer(i, attribute.mComponentsCount, attribute.mType, GL_FALSE, attribute.mStride, reinterpret_cast<GLvoid*>(attribute.mBeginStride));
 		glEnableVertexAttribArray(i);
 		PACMAN_CHECK_GL_ERROR();
 	}
@@ -101,7 +101,7 @@ void VertexBuffer::Draw() const
 	PACMAN_CHECK_GL_ERROR();
 }
 
-void VertexBuffer::Init(const byte_t* vertexData, const uint16_t* indexData, const size_t vertexDataSize, const size_t indexCount, const BufferUsage usage)
+void VertexBuffer::Init(const byte_t* vertexData, const size_t vertexDataSize, const std::vector<uint16_t>& indexData, const BufferUsage usage)
 {
 	GLenum glUsage = ConvertUsage(usage);
 
@@ -115,7 +115,7 @@ void VertexBuffer::Init(const byte_t* vertexData, const uint16_t* indexData, con
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
 	PACMAN_CHECK_GL_ERROR();
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * indexCount, static_cast<const void*>(indexData), glUsage);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * indexData.size(), static_cast<const void*>(&indexData.front()), glUsage);
 	PACMAN_CHECK_GL_ERROR();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }

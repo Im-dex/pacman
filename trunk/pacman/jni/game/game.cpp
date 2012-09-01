@@ -50,10 +50,16 @@ void Game::OnLoad()
     SpriteSheet spriteSheet(spritesheetData);
     size_t actorsSize = map->GetCellSize() + (map->GetCellSize() / 2);
 
+    size_t dotSize = map->GetCellSize() / 2;
+
     std::shared_ptr<Sprite> sprite_pacman_0 = spriteSheet.MakeSprite("pacman_anim_0", SpriteRegion(0, 0, actorsSize, actorsSize));
     std::shared_ptr<Sprite> sprite_pacman_1 = spriteSheet.MakeSprite("pacman_anim_1", SpriteRegion(0, 0, actorsSize, actorsSize));
     std::shared_ptr<Sprite> sprite_pacman_2 = spriteSheet.MakeSprite("pacman_anim_2", SpriteRegion(0, 0, actorsSize, actorsSize));
     
+    std::shared_ptr<Sprite> dot = spriteSheet.MakeSprite("dot", SpriteRegion(0, 0, dotSize, dotSize));
+    auto node = std::make_shared<SceneNode>(dot, Math::Vector2f(100.f, 200.f));
+    sceneManager.AttachNode(node);
+
     std::vector<std::shared_ptr<Sprite>> frames;
     frames.reserve(5);
     frames.push_back(sprite_pacman_0);
@@ -63,7 +69,7 @@ void Game::OnLoad()
     frames.push_back(sprite_pacman_0);
     
     mPacmanAnimator = std::make_shared<FrameAnimator>(frames, 100);
-    auto pos = map->GetCellPosition(1, 1);
+    auto pos = map->GetCellCenterPos(1, 1);
     startTmp = pos.GetX() - actorsSize/2;
     startTmp2 = pos.GetY() - actorsSize/2;
     mPacmanNode = std::make_shared<SceneNode>(mPacmanAnimator, Math::Vector2f((float)pos.GetX() - actorsSize/2, (float)pos.GetY() - actorsSize/2));

@@ -2,6 +2,8 @@
 #include "map.h"
 #include "actor.h"
 
+#include <cstdint>
+
 namespace Pacman {
 
 static Math::Vector2f CalcOffset(const ActorMoveDirection direction, const size_t speed, const uint64_t dt)
@@ -43,17 +45,17 @@ void ActorsManager::Update(const uint64_t dt)
 {
     for (auto actorPtr : mActors)
     {
-        Math::Vector2s cellIndices = actorPtr->GetMapCellIndices();
+        CellIndex index = actorPtr->GetMapCellIndex();
 
         ActorMoveDirection nextDirection = actorPtr->GetNextDirection();
-        if ((nextDirection != ActorMoveDirection::None) && IsDirectionPossible(nextDirection, cellIndices))
+        if ((nextDirection != ActorMoveDirection::None) && IsDirectionPossible(nextDirection, index))
         {
             actorPtr->SetDirection(nextDirection);
             actorPtr->SetNextDirection(ActorMoveDirection::None);
         }
 
         ActorMoveDirection direction = actorPtr->GetDirection();
-        if ((direction == ActorMoveDirection::None) || !IsDirectionPossible(direction, cellIndices))
+        if ((direction == ActorMoveDirection::None) || !IsDirectionPossible(direction, index))
             continue;
 
         size_t speed = actorPtr->GetSpeed();
@@ -61,9 +63,9 @@ void ActorsManager::Update(const uint64_t dt)
     }
 }
 
-bool ActorsManager::IsDirectionPossible(const ActorMoveDirection direction, const Math::Vector2s& cellIndices) const
+bool ActorsManager::IsDirectionPossible(const ActorMoveDirection direction, const CellIndex& index) const
 {
-    MapNeighborsInfo neighbors = mMap->GetDirectNeighbors(cellIndices);
+    MapNeighborsInfo neighbors = mMap->GetDirectNeighbors(index);
 
     switch (direction)
     {

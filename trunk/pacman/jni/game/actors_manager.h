@@ -1,10 +1,10 @@
 #pragma once
 
-#include "math/vector2.h"
-
 #include <memory>
 #include <list>
 #include <cstdint>
+
+#include "map.h"
 
 namespace Pacman {
 
@@ -31,7 +31,7 @@ public:
 
 private:
 
-    bool IsDirectionPossible(const ActorMoveDirection direction, const Math::Vector2s& cellIndices) const;
+    bool IsDirectionPossible(const ActorMoveDirection direction, const CellIndex& index) const;
 
     std::shared_ptr<Map>              mMap;
     std::list<std::shared_ptr<Actor>> mActors;

@@ -17,7 +17,7 @@ namespace Pacman {
 
 const std::string AssetManager::kDefaultColorVertexShader = "def_color_shader.vs";
 const std::string AssetManager::kDefaultStaticColorVertexShader = "def_static_color_shader.vs";
-const std::string AssetManager::kDefaultColorFragmentShader = "def_color_fragment.fs";
+const std::string AssetManager::kDefaultColorFragmentShader = "def_color_shader.fs";
 const std::string AssetManager::kDefaultTextureVertexShader = "def_texture_shader.vs";
 const std::string AssetManager::kDefaultStaticTextureVertexShader = "def_static_texture_shader.vs";
 const std::string AssetManager::kDefaultTextureFragmentShader = "def_texture_shader.fs";
