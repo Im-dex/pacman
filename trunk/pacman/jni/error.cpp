@@ -23,6 +23,7 @@ const char* kErrorDescriptions[] =
 
 	"Invalid result",
 	"Bad argument",
+    "Bad cast",
 	"Insertion into the container failed",
 	"Java class not found",
 	"Java function not found",
@@ -171,10 +172,10 @@ void ErrorHandler::CleanGLErrors()
 
 void ErrorHandler::CheckError(const bool err, const ErrorCode errorCode, const char* file, const size_t line, const char* message)
 {
-	if (!err)
-	{
-		throw Exception(errorCode, file, line, FixEmptyString(message));
-	}
+    if (!err)
+    {
+	    throw Exception(errorCode, file, line, FixEmptyString(message));
+    }
 }
 
 void ErrorHandler::Terminate()

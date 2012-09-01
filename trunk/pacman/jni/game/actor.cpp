@@ -3,9 +3,9 @@
 
 namespace Pacman {
 
-Actor::Actor(std::shared_ptr<SceneNode> node, const Math::Vector2s& startCellIndices,
+Actor::Actor(std::shared_ptr<SceneNode> node, const CellIndex& startIndex,
              const ActorMoveDirection startDirection, const size_t moveSpeed)
-     : mMapCellIndices(startCellIndices),
+     : mMapCellIndex(startIndex),
        mDirection(startDirection),
        mNextDirection(ActorMoveDirection::None),
        mSpeed(moveSpeed),

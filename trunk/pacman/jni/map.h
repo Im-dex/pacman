@@ -24,6 +24,15 @@ enum class MapCellType : uint8_t
 
 static const size_t kCellTypesCount = 3;
 
+enum class DotType : uint8_t
+{
+    None  = 0,
+    Small = 3,
+    Big   = 4
+};
+
+static const size_t kDotTypesCount = 2;
+
 struct MapNeighborsInfo
 {
     MapCellType left;
@@ -41,6 +50,8 @@ struct FullMapNeighborsInfo
     MapCellType      rightBottom;
 };
 
+typedef Math::Vector2<uint16_t> CellIndex;
+
 class Map
 {
 public:
@@ -53,34 +64,33 @@ public:
 
 	void AttachToScene(SceneManager& sceneManager);
 
-    MapCellType GetCell(const size_t rowIndex, const size_t columnIndex) const;
+    MapCellType GetCell(const uint16_t rowIndex, const uint16_t columnIndex) const;
 
-    MapCellType GetCell(const Math::Vector2s& cellIndices) const;
+    MapCellType GetCell(const CellIndex& index) const;
 
-    // return position of the cell center
-    Math::Vector2s GetCellPosition(const size_t rowIndex, const size_t columnIndex) const;
+    SpritePosition GetCellCenterPos(const uint16_t rowIndex, const uint16_t columnIndex) const;
 
-    Math::Vector2s GetCellPosition(const Math::Vector2s& cellIndices) const;
+    SpritePosition GetCellCenterPos(const CellIndex& index) const;
 
-    MapNeighborsInfo GetDirectNeighbors(const uint8_t rowIndex, const uint8_t columnIndex) const;
+    MapNeighborsInfo GetDirectNeighbors(const uint16_t rowIndex, const uint16_t columnIndex) const;
 
-    MapNeighborsInfo GetDirectNeighbors(const Math::Vector2s& cellIndices) const;
+    MapNeighborsInfo GetDirectNeighbors(const CellIndex& index) const;
 
-    FullMapNeighborsInfo GetFullNeighbors(const uint8_t rowIndex, const uint8_t columnIndex) const;
+    FullMapNeighborsInfo GetFullNeighbors(const uint16_t rowIndex, const uint16_t columnIndex) const;
 
-    FullMapNeighborsInfo GetFullNeighbors(const Math::Vector2s& cellIndices) const;
+    FullMapNeighborsInfo GetFullNeighbors(const CellIndex& index) const;
 
-	size_t GetCellSize() const
+	uint16_t GetCellSize() const
 	{
 		return mCellSize;
 	}
 
-    size_t GetRowsCont() const
+    uint16_t GetRowsCont() const
     {
         return mRowsCount;
     }
 
-    size_t GetColumnsCount() const
+    uint16_t GetColumnsCount() const
     {
         return mColumnsCount;
     }
@@ -96,12 +106,13 @@ private:
 	void CleanArtifacts(byte_t* buffer, const size_t textureWidth);
 
 	std::vector<MapCellType> mCells;
-    Rect<size_t>             mRect;
-	uint8_t 				 mRowsCount;
-	uint8_t 				 mColumnsCount;
-	uint8_t					 mCellSize;
-    uint8_t                  mCellSizeHalf;
-	uint8_t					 mCellSizeQuarter;
+    std::vector<DotType>     mDots;
+    SpriteRegion             mRect;
+	uint16_t 				 mRowsCount;
+	uint16_t 				 mColumnsCount;
+	uint16_t				 mCellSize;
+    uint16_t                 mCellSizeHalf;
+	uint16_t				 mCellSizeQuarter;
 
 	std::shared_ptr<SceneNode> mNode;
 };

@@ -26,6 +26,7 @@ enum class ErrorCode : uint32_t
 
 	InvalidResult,
 	BadArgument,
+    BadCast,
 	ContainerInsert,
 	JClassNotFound,
 	JFuncNotFound,

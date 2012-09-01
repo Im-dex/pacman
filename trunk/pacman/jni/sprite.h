@@ -1,22 +1,8 @@
 #pragma once
 
-#include "drawable.h"
-#include "rect.h"
-#include "color.h"
-#include "math/vector2.h"
-
-#include <array>
-#include <memory>
+#include "instanced_sprite.h"
 
 namespace Pacman {
-
-class Texture2D;
-class ShaderProgram;
-class VertexBuffer;
-struct Vertex;
-
-typedef Rect<float> TextureRegion;
-typedef Rect<size_t> SpriteRegion;
 
 class Sprite : public IDrawable
 {
@@ -50,15 +36,7 @@ public:
 
 private:
 
-	void InitByColor(const SpriteRegion& region, const Color& leftTop, const Color& rightTop,
-			   	   	 const Color& leftBottom, const Color& rightBottom);
-
-	void InitByTexture(const SpriteRegion& region, const TextureRegion& textureRegion);
-
-	std::shared_ptr<VertexBuffer> mVertexBuffer;
-	std::shared_ptr<Texture2D> mTexture;
-	std::shared_ptr<ShaderProgram> mShaderProgram;
-	bool mAlphaBlend;
+    InstancedSprite mInstancedSprite;
 };
 
 } // Pacman namespace

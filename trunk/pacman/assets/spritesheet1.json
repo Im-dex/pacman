@@ -242,6 +242,17 @@
 			"y":0.5,
 			"width":0.125,
 			"height":0.25
+		},
+
+		{
+			"name":"dot",
+			"vs":"def_texture_shader.vs",
+			"fs":"def_texture_shader.fs",
+			"alpha_blend":true,
+			"x":0.75,
+			"y":0.71875,
+			"width":0.015625,
+			"height":0.03125
 		}
 	]
 }

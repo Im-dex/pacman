@@ -1,8 +1,8 @@
 #pragma once
 
-#include "math/vector2.h"
-
 #include <memory>
+
+#include "map.h"
 
 namespace Pacman {
 
@@ -22,7 +22,7 @@ class Actor
 public:
 
     Actor() = delete;
-    Actor(std::shared_ptr<SceneNode> node, const Math::Vector2s& startCellIndices,
+    Actor(std::shared_ptr<SceneNode> node, const CellIndex& startIndex,
           const ActorMoveDirection startDirection, const size_t moveSpeed);
     Actor(const Actor&) = default;
     virtual ~Actor() {}
@@ -33,9 +33,9 @@ public:
 
     void Move(const Math::Vector2f& offset);
 
-    Math::Vector2s GetMapCellIndices() const
+    CellIndex GetMapCellIndex() const
     {
-        return mMapCellIndices;
+        return mMapCellIndex;
     }
 
     ActorMoveDirection GetDirection() const
@@ -53,9 +53,9 @@ public:
         return mSpeed;
     }
 
-    void SetMapCellIndices(const Math::Vector2s& cellIndices)
+    void SetMapCellIndex(const CellIndex& index)
     {
-        mMapCellIndices = cellIndices;
+        mMapCellIndex = index;
     }
 
     void SetDirection(const ActorMoveDirection direction)
@@ -70,7 +70,7 @@ public:
 
 private:
 
-    Math::Vector2s             mMapCellIndices;
+    CellIndex                  mMapCellIndex;
     ActorMoveDirection         mDirection;
     ActorMoveDirection         mNextDirection;
     size_t                     mSpeed;
