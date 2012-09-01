@@ -90,10 +90,10 @@ static FORCEINLINE void CutBottom(SpriteRegion& region, const uint16_t cutSize)
 
 //============================================================================================================================================
 
-Map::Map(const std::string& textData)
+Map::Map(const std::string& textData, std::vector<DotType>& dotsInfo)
    : mRect(0, 0, 0, 0)
 {
-	ParseJsonData(textData);
+	ParseJsonData(textData, dotsInfo);
 
     // calc map parameters
     Engine* engine = GetEngine();
@@ -220,7 +220,7 @@ FullMapNeighborsInfo Map::GetFullNeighbors(const CellIndex& index) const
     return info;
 }
 
-void Map::ParseJsonData(const std::string& data)
+void Map::ParseJsonData(const std::string& data, std::vector<DotType>& dotsInfo)
 {
     const Json::Value root = JsonHelper::ParseJson(data);
     PACMAN_CHECK_ERROR(root.isObject(), ErrorCode::BadFormat);
@@ -233,6 +233,8 @@ void Map::ParseJsonData(const std::string& data)
     const Json::Value cells = root["cells"];
     PACMAN_CHECK_ERROR(cells.isArray(), ErrorCode::BadFormat);
     PACMAN_CHECK_ERROR(cells.size() % mRowsCount == 0, ErrorCode::BadFormat);
+
+    dotsInfo.reserve(cells.size());
 
     for (size_t i = 0; i < cells.size(); i++)
     {
@@ -250,7 +252,7 @@ void Map::ParseJsonData(const std::string& data)
         }
 
         mCells.push_back(static_cast<MapCellType>(value));
-        mDots.push_back(dot);
+        dotsInfo.push_back(dot);
     }
 
     mColumnsCount = mCells.size() / mRowsCount;
@@ -346,7 +348,7 @@ std::shared_ptr<Texture2D> Map::GenerateTexture(TextureRegion* textureRegion)
 void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 {
 	// TRICK: (TODO: maybe need to find more simple way to do this)
-	// draw small rectangle in the corner for to hide an artifact
+	// draw small rectangle in the corner for hide an artifact
 	for (size_t i = 0; i < mRowsCount; i++)
 	{
 		for (size_t j = 0; j < mColumnsCount; j++)

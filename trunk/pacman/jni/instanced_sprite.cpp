@@ -91,7 +91,7 @@ static FORCEINLINE void FillTexCoord(TextureVertex& vertex, const Math::Vector2f
 
 InstancedSprite::InstancedSprite(const SpriteRegion& region, const Color& leftTop, const Color& rightTop, const Color& leftBottom,
 			                     const Color& rightBottom, std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend,
-                                 const std::vector<SpritePosition>& positions)
+                                 const std::vector<SpritePosition>& positions, const bool instanceHideEnabled)
 	           : mShaderProgram(shaderProgram),
 	             mTexture(nullptr),
 		         mVertexBuffer(nullptr),
@@ -101,7 +101,7 @@ InstancedSprite::InstancedSprite(const SpriteRegion& region, const Color& leftTo
 }
 
 InstancedSprite::InstancedSprite(const SpriteRegion& region, std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend,
-                                 const std::vector<SpritePosition>& positions)
+                                 const std::vector<SpritePosition>& positions, const bool instanceHideEnabled)
 	           : mShaderProgram(shaderProgram),
 	             mTexture(nullptr),
 		         mVertexBuffer(nullptr),
@@ -111,7 +111,8 @@ InstancedSprite::InstancedSprite(const SpriteRegion& region, std::shared_ptr<Sha
 }
 
 InstancedSprite::InstancedSprite(const SpriteRegion& region, const TextureRegion& textureRegion, std::shared_ptr<Texture2D> texture,
-			                     std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend, const std::vector<SpritePosition>& positions)
+			                     std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend, const std::vector<SpritePosition>& positions,
+                                 const bool instanceHideEnabled)
 	           : mShaderProgram(shaderProgram),
 	             mTexture(texture),
 		         mVertexBuffer(nullptr),
@@ -121,7 +122,7 @@ InstancedSprite::InstancedSprite(const SpriteRegion& region, const TextureRegion
 }
 
 InstancedSprite::InstancedSprite(const SpriteRegion& region, std::shared_ptr<Texture2D> texture, std::shared_ptr<ShaderProgram> shaderProgram,
-                                 const bool alphaBlend, const std::vector<SpritePosition>& positions)
+                                 const bool alphaBlend, const std::vector<SpritePosition>& positions, const bool instanceHideEnabled)
 	           : mShaderProgram(shaderProgram),
 	             mTexture(texture),
 		         mVertexBuffer(nullptr),
@@ -171,7 +172,7 @@ void InstancedSprite::InitByColor(const SpriteRegion& region, const Color& leftT
         FillColor(vertices[i*kSpriteVertexCount + 3], rightTop);
     }
 
-	mVertexBuffer = std::make_shared<VertexBuffer>(vertices, indices, BufferUsage::Static);
+	mVertexBuffer = std::make_shared<VertexBuffer>(vertices, indices, BufferUsage::Static, BufferUsage::Static);
 }
 
 void InstancedSprite::InitByTexture(const SpriteRegion& region, const TextureRegion& textureRegion, const std::vector<SpritePosition>& positions)
@@ -194,7 +195,7 @@ void InstancedSprite::InitByTexture(const SpriteRegion& region, const TextureReg
         FillTexCoord(vertices[i*kSpriteVertexCount + 3], Math::Vector2f(textureRegion.GetPosX() + textureRegion.GetWidth(), textureRegion.GetPosY()));
     }
 
-	mVertexBuffer = std::make_shared<VertexBuffer>(vertices, indices, BufferUsage::Static);
+	mVertexBuffer = std::make_shared<VertexBuffer>(vertices, indices, BufferUsage::Static, BufferUsage::Static);
 }
 
 } // Pacman namespace

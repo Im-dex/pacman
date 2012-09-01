@@ -1,9 +1,9 @@
 #pragma once
 
-#include "engine_listeners.h"
-
 #include <cstdint>
 #include <memory>
+
+#include "engine_listeners.h"
 
 namespace Pacman {
 

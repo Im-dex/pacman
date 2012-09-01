@@ -25,6 +25,7 @@ enum class ErrorCode : uint32_t
 	BadPixelFormat,
 
 	InvalidResult,
+    InvalidState,
 	BadArgument,
     BadCast,
 	ContainerInsert,
