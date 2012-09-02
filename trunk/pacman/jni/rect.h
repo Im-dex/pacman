@@ -17,6 +17,7 @@ public:
 	static_assert(std::is_arithmetic<T>::value, "Wrong type");
 
 	typedef Math::Vector2<T> Position;
+    static const Rect<T> kZero;
 
 	Rect() = delete;
 	// x, y - position
@@ -59,6 +60,9 @@ private:
 	T mWidth;
 	T mHeight;
 };
+
+template <typename T>
+const Rect<T> Rect<T>::kZero = Rect<T>(T(0), T(0), T(0), T(0));
 
 template <typename T>
 Rect<T>::Rect(const T x, const T y, const T width, const T height)

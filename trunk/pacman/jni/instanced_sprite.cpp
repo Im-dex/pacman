@@ -69,7 +69,10 @@ static void FillVertexData(const SpriteRegion& region, const std::vector<SpriteP
     // fill index data
     for (size_t i = 0; i < positions.size(); i++)
     {
-        std::copy(kBaseIndices.begin(), kBaseIndices.end(), indices.begin() + (i * kSpriteIndexCount));
+        for (size_t j = 0; j < kSpriteIndexCount; j++)
+        {
+            indices[i*kSpriteIndexCount + j] = kBaseIndices[j] + i*kSpriteVertexCount;
+        }
     }
 }
 
@@ -172,6 +175,8 @@ bool InstancedSprite::HasAlphaBlend() const
 void InstancedSprite::InitByColor(const SpriteRegion& region, const Color& leftTop, const Color& rightTop, 
 					         	  const Color& leftBottom, const Color& rightBottom, const std::vector<SpritePosition>& instances)
 {
+    PACMAN_CHECK_ERROR(instances.size() > 0, ErrorCode::BadArgument);
+
     std::vector<ColorVertex> vertices;
     std::vector<uint16_t> indices;
 
@@ -196,6 +201,8 @@ void InstancedSprite::InitByColor(const SpriteRegion& region, const Color& leftT
 
 void InstancedSprite::InitByTexture(const SpriteRegion& region, const TextureRegion& textureRegion, const std::vector<SpritePosition>& instances)
 {
+    PACMAN_CHECK_ERROR(instances.size() > 0, ErrorCode::BadArgument);
+
     std::vector<TextureVertex> vertices;
     std::vector<uint16_t> indices;
 

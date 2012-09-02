@@ -247,7 +247,7 @@ void Map::ParseJsonData(const std::string& data, std::vector<DotType>& dotsInfo)
         DotType dot = DotType::None;
         if ((value == static_cast<uint8_t>(DotType::Small)) || (value == static_cast<uint8_t>(DotType::Big)))
         {
-            DotType dot = static_cast<DotType>(value);
+            dot = static_cast<DotType>(value);
             value = static_cast<uint8_t>(MapCellType::Empty);
         }
 
