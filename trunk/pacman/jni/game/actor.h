@@ -22,6 +22,7 @@ class Actor
 public:
 
     Actor() = delete;
+    Actor(const std::string& textData, std::shared_ptr<SceneNode> node);
     Actor(std::shared_ptr<SceneNode> node, const CellIndex& startIndex,
           const ActorMoveDirection startDirection, const size_t moveSpeed);
     Actor(const Actor&) = default;

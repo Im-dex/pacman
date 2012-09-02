@@ -1,6 +1,5 @@
 {
-	"startRow":1,
-	"startColumn":1,
-	"direction":"right",
-	"speed":1 // cells in second
+	"startCellIndex": [22, 14],
+	"direction":"left",
+	"speed":5
 }
