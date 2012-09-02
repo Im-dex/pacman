@@ -14,6 +14,7 @@
 #include "spritesheet.h"
 #include "frame_animator.h"
 #include "actors_manager.h"
+#include "actor.h"
 #include "dots_grid.h"
 
 static std::shared_ptr<Pacman::Game> gGame = nullptr;
@@ -62,19 +63,22 @@ void Game::OnLoad()
     std::shared_ptr<Sprite> sprite_pacman_2 = spriteSheet.MakeSprite("pacman_anim_2", SpriteRegion(0, 0, actorsSize, actorsSize));
 
     std::vector<std::shared_ptr<Sprite>> frames;
-    frames.reserve(5);
+    frames.reserve(4);
     frames.push_back(sprite_pacman_0);
     frames.push_back(sprite_pacman_1);
     frames.push_back(sprite_pacman_2);
     frames.push_back(sprite_pacman_1);
-    frames.push_back(sprite_pacman_0);
+    //frames.push_back(sprite_pacman_0);
     
-    mPacmanAnimator = std::make_shared<FrameAnimator>(frames, 70);
+    mPacmanAnimator = std::make_shared<FrameAnimator>(frames, 55);
     auto pos = map->GetCellCenterPos(1, 1);
     startTmp = pos.GetX() - actorsSize/2;
     startTmp2 = pos.GetY() - actorsSize/2;
     mPacmanNode = std::make_shared<SceneNode>(mPacmanAnimator, Math::Vector2f((float)pos.GetX() - actorsSize/2, (float)pos.GetY() - actorsSize/2));
     sceneManager.AttachNode(mPacmanNode);
+
+    std::shared_ptr<Actor> pacmanActor = std::make_shared<Actor>(assetManager.LoadTextFile("pacman.json"), mPacmanNode);
+    mActorsManager->RegisterActor(pacmanActor);
 }
 
 void Game::OnUnload()
@@ -90,11 +94,12 @@ void Game::OnUpdate(const uint64_t dt)
     mPacmanAnimator->Update(dt);
     mActorsManager->Update(dt);
 
-    if (mPacmanNode->GetPosition().GetX() > 400.0f)
-        mPacmanNode->Translate(Math::Vector2f((float)startTmp, (float)startTmp2));
-    mPacmanNode->Move(Math::Vector2f(5.0f, 0.0f));
-    Math::Vector2f pos = mPacmanNode->GetPosition();
-    //LOGI("x: %f, y: %f", pos.GetX(), pos.GetY());
+    //if (mPacmanNode->GetPosition().GetX() > 400.0f)
+    //    mPacmanNode->Translate(Math::Vector2f((float)startTmp, (float)startTmp2));
+    //float diff = (120 * dt * 0.001f);
+    //LOGI("dt: %llu", dt);
+    //mPacmanNode->Move(Math::Vector2f(diff, 0.0f));
+    //Math::Vector2f pos = mPacmanNode->GetPosition();
 }
 
 void Game::OnGesture(const GestureType gestureType)
