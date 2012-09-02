@@ -17,7 +17,7 @@ class ActorsManager
 public:
 
     ActorsManager() = delete;
-    ActorsManager(std::shared_ptr<Map> map);
+    ActorsManager(const std::shared_ptr<Map> map);
     ActorsManager(const ActorsManager&) = delete;
     ~ActorsManager() = default;
 
@@ -33,7 +33,7 @@ private:
 
     bool IsDirectionPossible(const ActorMoveDirection direction, const CellIndex& index) const;
 
-    std::shared_ptr<Map>              mMap;
+    const std::shared_ptr<Map>        mMap;
     std::list<std::shared_ptr<Actor>> mActors;
 };
 

@@ -48,11 +48,14 @@ void Game::OnLoad()
     std::shared_ptr<Map> map = std::make_shared<Map>(assetManager.LoadTextFile("map.json"), dotsInfo);
     map->AttachToScene(sceneManager);
 
+    mActorsManager = std::unique_ptr<ActorsManager>(new ActorsManager(map));
+
     std::string spritesheetData = assetManager.LoadTextFile("spritesheet1.json");
     SpriteSheet spriteSheet(spritesheetData);
 
     std::shared_ptr<DotsGrid> dots = std::make_shared<DotsGrid>(dotsInfo, map, spriteSheet);
     dots->AttachToScene(sceneManager);
+    //dots->
 
     size_t actorsSize = map->GetCellSize() + (map->GetCellSize() / 2);
     std::shared_ptr<Sprite> sprite_pacman_0 = spriteSheet.MakeSprite("pacman_anim_0", SpriteRegion(0, 0, actorsSize, actorsSize));
@@ -67,7 +70,7 @@ void Game::OnLoad()
     frames.push_back(sprite_pacman_1);
     frames.push_back(sprite_pacman_0);
     
-    mPacmanAnimator = std::make_shared<FrameAnimator>(frames, 100);
+    mPacmanAnimator = std::make_shared<FrameAnimator>(frames, 70);
     auto pos = map->GetCellCenterPos(1, 1);
     startTmp = pos.GetX() - actorsSize/2;
     startTmp2 = pos.GetY() - actorsSize/2;
@@ -86,6 +89,7 @@ void Game::OnUnload()
 void Game::OnUpdate(const uint64_t dt)
 {
     mPacmanAnimator->Update(dt);
+    mActorsManager->Update(dt);
 
     if (mPacmanNode->GetPosition().GetX() > 400.0f)
         mPacmanNode->Translate(Math::Vector2f((float)startTmp, (float)startTmp2));

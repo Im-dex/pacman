@@ -65,7 +65,7 @@ public:
 
     std::vector<byte_t>& LockVertexData();
 
-    void UnlockVertexData();
+    void UnlockVertexData(const size_t newVertexCount);
 
     std::vector<uint16_t>& LockIndexData();
 
