@@ -55,7 +55,6 @@ void Game::OnLoad()
 
     std::shared_ptr<DotsGrid> dots = std::make_shared<DotsGrid>(dotsInfo, map, spriteSheet);
     dots->AttachToScene(sceneManager);
-    //dots->
 
     size_t actorsSize = map->GetCellSize() + (map->GetCellSize() / 2);
     std::shared_ptr<Sprite> sprite_pacman_0 = spriteSheet.MakeSprite("pacman_anim_0", SpriteRegion(0, 0, actorsSize, actorsSize));
