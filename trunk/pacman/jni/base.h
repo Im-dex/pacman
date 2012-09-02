@@ -4,7 +4,7 @@
 #include <type_traits>
 #include <android/log.h>
 
-#define ADRENO_PROFILER_COMPATIBILITY
+//#define ADRENO_PROFILER_COMPATIBILITY
 #define PACMAN_DEBUG_MAP_TEXTURE
 
 #ifdef __GNUC__
@@ -22,7 +22,7 @@ namespace Pacman {
 
 typedef uint8_t byte_t;
 
-// internal compiler error on instantiation! TODO: submit crash (NDK r8b)
+// internal compiler error when instant! TODO: submit crash (NDK r8b)
 /*template <typename T, typename U>
 bool TestFlag(const T data, const U flag)
 {

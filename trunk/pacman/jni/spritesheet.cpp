@@ -54,35 +54,47 @@ SpriteSheet::SpriteSheet(const std::string& description)
 
 std::shared_ptr<Sprite> SpriteSheet::MakeSprite(const std::string& name, const SpriteRegion& region)
 {
-	auto iter = mSprites.find(name);
-	PACMAN_CHECK_ERROR(iter != mSprites.end(), ErrorCode::BadArgument);
-	const Json::Value spriteObject = iter->second;
-
-	const Json::Value vs = spriteObject["vs"];
-	const Json::Value fs = spriteObject["fs"];
-	const Json::Value alphaBlend = spriteObject["alpha_blend"];
-	const Json::Value x = spriteObject["x"];
-	const Json::Value y = spriteObject["y"];
-	const Json::Value width = spriteObject["width"];
-	const Json::Value height = spriteObject["height"];
-	PACMAN_CHECK_ERROR(vs.isString() && fs.isString() && alphaBlend.isBool() && 
-					   x.isNumeric() && y.isNumeric() && width.isNumeric() &&
-					   height.isNumeric(), ErrorCode::BadFormat);
-
-	const std::string vsValue = vs.asString();
-	const std::string fsValue = fs.asString();
-	const bool alphaBlendValue = alphaBlend.asBool();
-	PACMAN_CHECK_ERROR((vsValue.size() > 0) && (fsValue.size() > 0), ErrorCode::BadFormat);
-
-	float xValue = x.asDouble();
-	float yValue = y.asDouble();
-	float widthValue = width.asDouble();
-	float heightValue = height.asDouble();
-
+    SpriteInfo info = GetSpriteInfo(name);
 	AssetManager& assetManager = GetEngine()->GetAssetManager();
-	TextureRegion textureRegion(xValue, yValue, widthValue, heightValue);
-	std::shared_ptr<ShaderProgram> shaderProgram = assetManager.LoadShaderProgram(vsValue, fsValue);
-	return std::make_shared<Sprite>(region, textureRegion, mTexture, shaderProgram, alphaBlendValue);
+
+	std::shared_ptr<ShaderProgram> shaderProgram = assetManager.LoadShaderProgram(info.mVertexShaderName, info.mFragmentShaderName);
+	return std::make_shared<Sprite>(region, info.mTextureRegion, mTexture, shaderProgram, info.mAlphaBlend);
+}
+
+SpriteInfo SpriteSheet::GetSpriteInfo(const std::string& name) const
+{
+    auto iter = mSprites.find(name);
+    PACMAN_CHECK_ERROR(iter != mSprites.end(), ErrorCode::BadArgument);
+    const Json::Value spriteObject = iter->second;
+
+    const Json::Value vs = spriteObject["vs"];
+    const Json::Value fs = spriteObject["fs"];
+    const Json::Value alphaBlend = spriteObject["alpha_blend"];
+    const Json::Value x = spriteObject["x"];
+    const Json::Value y = spriteObject["y"];
+    const Json::Value width = spriteObject["width"];
+    const Json::Value height = spriteObject["height"];
+    PACMAN_CHECK_ERROR(vs.isString() && fs.isString() && alphaBlend.isBool() && 
+                       x.isNumeric() && y.isNumeric() && width.isNumeric() &&
+                       height.isNumeric(), ErrorCode::BadFormat);
+
+    const std::string vsValue = vs.asString();
+    const std::string fsValue = fs.asString();
+    const bool alphaBlendValue = alphaBlend.asBool();
+    PACMAN_CHECK_ERROR((vsValue.size() > 0) && (fsValue.size() > 0), ErrorCode::BadFormat);
+
+    float xValue = x.asDouble();
+    float yValue = y.asDouble();
+    float widthValue = width.asDouble();
+    float heightValue = height.asDouble();
+
+    return SpriteInfo  
+    {
+        TextureRegion(xValue, yValue, widthValue, heightValue),
+        vsValue,
+        fsValue,
+        alphaBlendValue
+    };
 }
 
 } // Pacman namespace

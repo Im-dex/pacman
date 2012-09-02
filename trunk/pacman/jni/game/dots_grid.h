@@ -6,31 +6,31 @@
 
 namespace Pacman {
 
+enum class DotType : uint8_t;
 class Map;
 class InstancedSprite;
-class SceneNode;
-enum class DotType;
+class SpriteSheet;
+class SceneManager;
 
 class DotsGrid
 {
 public:
 
     DotsGrid() = delete;
-    DotsGrid(const std::vector<DotType>& dotsInfo, std::shared_ptr<Map> map);
+    DotsGrid(const std::vector<DotType>& dotsInfo, const std::shared_ptr<Map> map, const SpriteSheet& spritesheet);
     DotsGrid(const DotsGrid&) = delete;
     ~DotsGrid() = default;
 
     DotsGrid& operator= (const DotsGrid&) = delete;
 
-    void AttachToScene();
+    void AttachToScene(SceneManager& sceneManager);
 
 private:
 
-    std::shared_ptr<InstancedSprite> MakeSprite();
-
     std::vector<DotType> mDots;
     std::shared_ptr<Map> mMap;
-    std::shared_ptr<SceneNode> mNode;
+    std::shared_ptr<InstancedSprite> mSmallDotsSprite;
+    std::shared_ptr<InstancedSprite> mBigDotsSprite;
 };
 
 } // Pacman namespace

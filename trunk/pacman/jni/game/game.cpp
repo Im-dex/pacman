@@ -14,6 +14,7 @@
 #include "spritesheet.h"
 #include "frame_animator.h"
 #include "actors_manager.h"
+#include "dots_grid.h"
 
 static std::shared_ptr<Pacman::Game> gGame = nullptr;
 
@@ -49,17 +50,14 @@ void Game::OnLoad()
 
     std::string spritesheetData = assetManager.LoadTextFile("spritesheet1.json");
     SpriteSheet spriteSheet(spritesheetData);
+
+    std::shared_ptr<DotsGrid> dots = std::make_shared<DotsGrid>(dotsInfo, map, spriteSheet);
+    dots->AttachToScene(sceneManager);
+
     size_t actorsSize = map->GetCellSize() + (map->GetCellSize() / 2);
-
-    size_t dotSize = map->GetCellSize() / 2;
-
     std::shared_ptr<Sprite> sprite_pacman_0 = spriteSheet.MakeSprite("pacman_anim_0", SpriteRegion(0, 0, actorsSize, actorsSize));
     std::shared_ptr<Sprite> sprite_pacman_1 = spriteSheet.MakeSprite("pacman_anim_1", SpriteRegion(0, 0, actorsSize, actorsSize));
     std::shared_ptr<Sprite> sprite_pacman_2 = spriteSheet.MakeSprite("pacman_anim_2", SpriteRegion(0, 0, actorsSize, actorsSize));
-    
-    std::shared_ptr<Sprite> dot = spriteSheet.MakeSprite("dot", SpriteRegion(0, 0, dotSize, dotSize));
-    auto node = std::make_shared<SceneNode>(dot, Math::Vector2f(100.f, 200.f));
-    sceneManager.AttachNode(node);
 
     std::vector<std::shared_ptr<Sprite>> frames;
     frames.reserve(5);
