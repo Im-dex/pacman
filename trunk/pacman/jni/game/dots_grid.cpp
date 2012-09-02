@@ -110,7 +110,7 @@ void DotsGrid::AddDotInstance(const uint16_t dotOrderIndex, const uint16_t dotHa
 {
     const CellIndex index = GetDotIndex(dotOrderIndex, map);
     instances.push_back(GetDotPosition(index, dotHalfSize, map));
-    mDotsIndexMap.insert(std::make_pair(index, instances.size()));
+    mDotsIndexMap.insert(std::make_pair(index, instances.size() - 1));
 }
 
 } // Pacman namespace
