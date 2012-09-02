@@ -42,8 +42,6 @@ void Renderer::Init(const size_t viewportWidth, const size_t viewportHeigth)
 
 void Renderer::DrawFrame()
 {
-    LOGI("frame");
-
 	glClearColor(mClearColor.GetRedFloat(), mClearColor.GetGreenFloat(),
 				 mClearColor.GetBlueFloat(), mClearColor.GetAlphaFloat());
 	PACMAN_CHECK_GL_ERROR();

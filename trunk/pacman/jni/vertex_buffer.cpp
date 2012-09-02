@@ -124,7 +124,7 @@ std::vector<byte_t>& VertexBuffer::LockVertexData()
     return mVertexCache;
 }
 
-void VertexBuffer::UnlockVertexData()
+void VertexBuffer::UnlockVertexData(const size_t newVertexCount)
 {
     PACMAN_CHECK_ERROR2(mVertexDataLocked, ErrorCode::InvalidState, "vertex stream isn't locked");
 
@@ -134,6 +134,7 @@ void VertexBuffer::UnlockVertexData()
     PACMAN_CHECK_GL_ERROR();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     mVertexDataLocked = false;
+    mVertexCount = newVertexCount;
 }
 
 std::vector<uint16_t>& VertexBuffer::LockIndexData()
@@ -153,6 +154,7 @@ void VertexBuffer::UnlockIndexData()
     PACMAN_CHECK_GL_ERROR();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     mIndexDataLocked = false;
+    mIndexCount = mIndexCache.size();
 }
 
 void VertexBuffer::Init(const byte_t* vertexData, const size_t vertexDataSize, const std::vector<uint16_t>& indexData,

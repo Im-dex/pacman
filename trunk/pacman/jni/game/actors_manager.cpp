@@ -25,7 +25,7 @@ static Math::Vector2f CalcOffset(const ActorMoveDirection direction, const size_
     }
 }
 
-ActorsManager::ActorsManager(std::shared_ptr<Map> map)
+ActorsManager::ActorsManager(const std::shared_ptr<Map> map)
              : mMap(map),
                mActors()
 {
