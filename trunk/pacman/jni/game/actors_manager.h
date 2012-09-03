@@ -31,10 +31,16 @@ public:
 
 private:
 
-    bool IsDirectionPossible(const ActorMoveDirection direction, const CellIndex& index) const;
+    SpritePosition FindMaxAvailablePos(const CellIndex& curCellIndex, const ActorMoveDirection direction);
 
-    const std::shared_ptr<Map>        mMap;
-    std::list<std::shared_ptr<Actor>> mActors;
+    struct ActorData
+    {
+        std::shared_ptr<Actor> mActor;
+        uint16_t               mAvailableDistance;
+    };
+
+    const std::shared_ptr<Map> mMap;
+    std::list<ActorData>       mActors;
 };
 
 } // Pacman namespace

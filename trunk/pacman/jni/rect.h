@@ -40,6 +40,7 @@ public:
 	Position GetLeftBottomPos() const;
 	Position GetRightTopPos() const;
 	Position GetRightBottomPos() const;
+    Position GetCenterPos() const;
 
 	T GetLeftBottomPosX() const;
 	T GetLeftBottomPosY() const;
@@ -47,12 +48,17 @@ public:
 	T GetRightTopPosY() const;
 	T GetRightBottomPosX() const;
 	T GetRightBottomPosY() const;
+    T GetCenterPosX() const;
+    T GetCenterPosY() const;
 
 	void SetPosition(Position leftTop);
 	void SetPosX(const T x);
 	void SetPosY(const T y);
 	void SetWidth(const T width);
 	void SetHeight(const T height);
+
+    bool HasPoint(const T x, const T y) const;
+    bool HasPoint(const Position& point) const;
 
 private:
 
@@ -169,6 +175,12 @@ FORCEINLINE typename Rect<T>::Position Rect<T>::GetRightBottomPos() const
 }
 
 template <typename T>
+FORCEINLINE typename Rect<T>::Position Rect<T>::GetCenterPos() const
+{
+    return Math::Vector2<T>(mPosition.GetX() + mWidth / 2, mPosition.GetY() + mHeight / 2);
+}
+
+template <typename T>
 FORCEINLINE T Rect<T>::GetLeftBottomPosX() const
 {
 	return GetLeftBottomPos().GetX();
@@ -205,6 +217,18 @@ FORCEINLINE T Rect<T>::GetRightBottomPosY() const
 }
 
 template <typename T>
+FORCEINLINE T Rect<T>::GetCenterPosX() const
+{
+    return GetCenterPos().GetX();
+}
+
+template <typename T>
+FORCEINLINE T Rect<T>::GetCenterPosY() const
+{
+    return GetCenterPos().GetY();
+}
+
+template <typename T>
 FORCEINLINE void Rect<T>::SetPosition(const Rect<T>::Position position)
 {
 	mPosition = position;
@@ -232,6 +256,19 @@ template <typename T>
 FORCEINLINE void Rect<T>::SetHeight(const T height)
 {
 	mHeight = height;
+}
+
+template <typename T>
+FORCEINLINE bool Rect<T>::HasPoint(const T x, const T y) const
+{
+    return (x >= mPosition.GetX()) && (x <= mPosition.GetX() + mWidth) &&
+           (y >= mPosition.GetY()) && (y <= mPosition.GetY() + mHeight);
+}
+
+template <typename T>
+FORCEINLINE bool Rect<T>::HasPoint(const Position& point) const
+{
+    return HasPoint(point.GetX(), point.GetY());
 }
 
 } // Pacmannamespace

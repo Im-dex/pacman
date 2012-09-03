@@ -1,5 +1,5 @@
 {
-	"startCellIndex": [22, 14],
+	"startRightCellIndex": [23, 14],
 	"direction":"left",
 	"speed":5
 }

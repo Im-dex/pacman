@@ -31,9 +31,6 @@ void OnPacmanApplicationEnd()
     gGame = nullptr;
 }
 
-static size_t startTmp = 0;
-static size_t startTmp2 = 0;
-
 namespace Pacman {
 
 void Game::OnLoad()
@@ -71,13 +68,7 @@ void Game::OnLoad()
     //frames.push_back(sprite_pacman_0);
     
     mPacmanAnimator = std::make_shared<FrameAnimator>(frames, 55);
-    auto pos = map->GetCellCenterPos(1, 1);
-    startTmp = pos.GetX() - actorsSize/2;
-    startTmp2 = pos.GetY() - actorsSize/2;
-    mPacmanNode = std::make_shared<SceneNode>(mPacmanAnimator, Math::Vector2f((float)pos.GetX() - actorsSize/2, (float)pos.GetY() - actorsSize/2));
-    sceneManager.AttachNode(mPacmanNode);
-
-    std::shared_ptr<Actor> pacmanActor = std::make_shared<Actor>(assetManager.LoadTextFile("pacman.json"), mPacmanNode);
+    std::shared_ptr<Actor> pacmanActor = std::make_shared<Actor>(assetManager.LoadTextFile("pacman.json"), mPacmanAnimator, actorsSize, map);
     mActorsManager->RegisterActor(pacmanActor);
 }
 
@@ -93,13 +84,6 @@ void Game::OnUpdate(const uint64_t dt)
 {
     mPacmanAnimator->Update(dt);
     mActorsManager->Update(dt);
-
-    //if (mPacmanNode->GetPosition().GetX() > 400.0f)
-    //    mPacmanNode->Translate(Math::Vector2f((float)startTmp, (float)startTmp2));
-    //float diff = (120 * dt * 0.001f);
-    //LOGI("dt: %llu", dt);
-    //mPacmanNode->Move(Math::Vector2f(diff, 0.0f));
-    //Math::Vector2f pos = mPacmanNode->GetPosition();
 }
 
 void Game::OnGesture(const GestureType gestureType)

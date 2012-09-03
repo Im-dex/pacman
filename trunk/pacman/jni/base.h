@@ -29,7 +29,7 @@ bool TestFlag(const T data, const U flag)
 	return (data & static_cast<T>(flag)) == static_cast<T>(flag);
 }*/
 
-// round up the value to next PowerOf Two value
+// round up the value to next Power Of Two value
 // ATTENTION!! 32-bit only!
 static FORCEINLINE size_t NextPOT(size_t value)
 {
