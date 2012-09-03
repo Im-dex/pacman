@@ -45,7 +45,7 @@ void ActorsManager::RegisterActor(std::shared_ptr<Actor> actor)
 
 void ActorsManager::UnregisterActor(std::shared_ptr<Actor> actor)
 {
-    std::remove_if(mActors.begin(), mActors.end(), [&actor](const ActorData& data)
+    std::remove_if(mActors.begin(), mActors.end(), [&actor](const ActorData& data) -> bool
     {
         return data.mActor == actor;
     });

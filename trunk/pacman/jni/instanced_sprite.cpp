@@ -151,9 +151,9 @@ void InstancedSprite::HideInstance(const size_t index)
     mVertexBuffer->UnlockIndexData();
 }
 
-VertexBuffer& InstancedSprite::GetVertexBuffer() const
+std::shared_ptr<VertexBuffer> InstancedSprite::GetVertexBuffer() const
 {
-	return *mVertexBuffer;
+	return mVertexBuffer;
 }
 
 std::weak_ptr<Texture2D> InstancedSprite::GetTexture() const
@@ -161,9 +161,9 @@ std::weak_ptr<Texture2D> InstancedSprite::GetTexture() const
 	return mTexture;
 }
 
-ShaderProgram& InstancedSprite::GetShaderProgram() const
+std::shared_ptr<ShaderProgram> InstancedSprite::GetShaderProgram() const
 {
-	return *mShaderProgram;
+	return mShaderProgram;
 }
 
 bool InstancedSprite::HasAlphaBlend() const

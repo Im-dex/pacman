@@ -43,11 +43,11 @@ public:
 
     void HideInstance(const size_t index);
 
-	virtual VertexBuffer& GetVertexBuffer() const;
+	virtual std::shared_ptr<VertexBuffer> GetVertexBuffer() const;
 
 	virtual std::weak_ptr<Texture2D> GetTexture() const;
 
-	virtual ShaderProgram& GetShaderProgram() const;
+	virtual std::shared_ptr<ShaderProgram> GetShaderProgram() const;
 
 	virtual bool HasAlphaBlend() const;
 
