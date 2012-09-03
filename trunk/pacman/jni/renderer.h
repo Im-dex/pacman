@@ -4,10 +4,13 @@
 #include "math/matrix4.h"
 
 #include <cstdint>
+#include <memory>
 
 namespace Pacman {
 
 class IDrawable;
+class Texture2D;
+class ShaderProgram;
 
 class Renderer
 {
@@ -40,12 +43,16 @@ public:
 
 private:
 
-	void RenderDrawable(const IDrawable& drawable, const Math::Matrix4f modelMatrix);
+	void RenderDrawable(const std::shared_ptr<IDrawable> drawable, const Math::Matrix4f modelMatrix);
 
 	Math::Matrix4f mProjection;
 	Color mClearColor;
 	size_t mViewportWidth;
 	size_t mViewportHeight;
+
+    Texture2D* mLastTexture;
+    ShaderProgram* mLastShaderProgram;
+    bool mLastAlphaBlendState;
 };
 
 } // Pacman namespace

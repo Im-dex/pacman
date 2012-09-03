@@ -22,7 +22,7 @@ void FrameAnimator::Update(const uint64_t dt)
 	}
 }
 
-VertexBuffer& FrameAnimator::GetVertexBuffer() const
+std::shared_ptr<VertexBuffer> FrameAnimator::GetVertexBuffer() const
 {
 	return mFrames[mCurrentFrame]->GetVertexBuffer();
 }
@@ -32,7 +32,7 @@ std::weak_ptr<Texture2D> FrameAnimator::GetTexture() const
 	return mFrames[mCurrentFrame]->GetTexture();
 }
 
-ShaderProgram& FrameAnimator::GetShaderProgram() const
+std::shared_ptr<ShaderProgram> FrameAnimator::GetShaderProgram() const
 {
 	return mFrames[mCurrentFrame]->GetShaderProgram();
 }

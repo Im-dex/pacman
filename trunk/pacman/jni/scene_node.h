@@ -21,9 +21,9 @@ public:
 
 	Math::Matrix4f GetModelMatrix() const;
 
-    IDrawable& GetDrawable() const
+    std::shared_ptr<IDrawable> GetDrawable() const
     {
-        return *mDrawable;
+        return mDrawable;
     }
 
 	SpritePosition GetPosition() const

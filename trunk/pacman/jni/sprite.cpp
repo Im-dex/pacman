@@ -27,7 +27,7 @@ Sprite::Sprite(const SpriteRegion& region, std::shared_ptr<Texture2D> texture,
 {
 }
 
-VertexBuffer& Sprite::GetVertexBuffer() const
+std::shared_ptr<VertexBuffer> Sprite::GetVertexBuffer() const
 {
 	return mInstancedSprite.GetVertexBuffer();
 }
@@ -37,7 +37,7 @@ std::weak_ptr<Texture2D> Sprite::GetTexture() const
 	return mInstancedSprite.GetTexture();
 }
 
-ShaderProgram& Sprite::GetShaderProgram() const
+std::shared_ptr<ShaderProgram> Sprite::GetShaderProgram() const
 {
 	return mInstancedSprite.GetShaderProgram();
 }
