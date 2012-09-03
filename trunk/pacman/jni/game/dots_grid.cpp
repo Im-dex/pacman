@@ -19,7 +19,7 @@ static const std::string kDotSpriteName = "dot";
 
 static FORCEINLINE CellIndex GetDotIndex(const uint16_t dotOrderIndex, const std::shared_ptr<Map> map)
 {
-    return CellIndex(dotOrderIndex % map->GetColumnsCount(), dotOrderIndex / map->GetColumnsCount());
+    return CellIndex(dotOrderIndex / map->GetColumnsCount(), dotOrderIndex % map->GetColumnsCount());
 }
 
 static FORCEINLINE SpritePosition GetDotPosition(const CellIndex& index, const uint16_t dotSizeHalf, const std::shared_ptr<Map> map)
@@ -56,8 +56,8 @@ DotsGrid::DotsGrid(const std::vector<DotType>& dotsInfo, const std::shared_ptr<M
 
 void DotsGrid::AttachToScene(SceneManager& sceneManager)
 {
-    sceneManager.AttachNode(std::make_shared<SceneNode>(mSmallDotsSprite, Math::Vector2f::kZero));
-    sceneManager.AttachNode(std::make_shared<SceneNode>(mBigDotsSprite, Math::Vector2f::kZero));
+    sceneManager.AttachNode(std::make_shared<SceneNode>(mSmallDotsSprite, SpritePosition::kZero));
+    sceneManager.AttachNode(std::make_shared<SceneNode>(mBigDotsSprite, SpritePosition::kZero));
 }
 
 void DotsGrid::HideDot(const CellIndex& index)

@@ -1,11 +1,10 @@
 #pragma once
 
-#include "math/vector2.h"
+#include <memory>
+
+#include "engine_typedefs.h"
 #include "math/matrix4.h"
 #include "drawable.h"
-
-//#include <list>
-#include <memory>
 
 namespace Pacman {
 
@@ -14,7 +13,7 @@ class SceneNode
 public:
 
 	SceneNode() = delete;
-	SceneNode(const std::shared_ptr<IDrawable> drawable, const Math::Vector2f position);
+	SceneNode(const std::shared_ptr<IDrawable> drawable, const SpritePosition& position);
 	SceneNode(const SceneNode&) = default;
 	~SceneNode() = default;
 
@@ -27,26 +26,36 @@ public:
         return *mDrawable;
     }
 
-	Math::Vector2f GetPosition() const
+	SpritePosition GetPosition() const
 	{
 		return mPosition;
 	}
 
-	void Move(const Math::Vector2f offset)
+	void MoveForward(const SpritePosition& offset)
 	{
 		mPosition += offset;
 	}
 
-	void Translate(const Math::Vector2f position)
+    void MoveBack(const SpritePosition& offset)
+    {
+        mPosition -= offset;
+    }
+
+	void Translate(const SpritePosition& position)
 	{
 		mPosition = position;
 	}
 
+    /*void Rotate(const float angle)
+    {
+
+    }*/
+
 private:
 	
-	Math::Vector2f             mPosition;
+	SpritePosition             mPosition;
+    //float                      mRotation;
     std::shared_ptr<IDrawable> mDrawable;
-	//std::list<SceneNode> mChilds;
 };
 
 } // Pacman namespace

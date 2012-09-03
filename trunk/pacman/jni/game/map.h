@@ -72,6 +72,9 @@ public:
 
     SpritePosition GetCellCenterPos(const CellIndex& index) const;
 
+    // find cell where placed region
+    CellIndex FindCell(const SpriteRegion& region) const;
+
     MapNeighborsInfo GetDirectNeighbors(const uint16_t rowIndex, const uint16_t columnIndex) const;
 
     MapNeighborsInfo GetDirectNeighbors(const CellIndex& index) const;

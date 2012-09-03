@@ -118,7 +118,7 @@ Map::Map(const std::string& textData, std::vector<DotType>& dotsInfo)
 
     // make sprite
 	std::shared_ptr<Sprite> sprite = GenerateSprite();
-	mNode = std::make_shared<SceneNode>(sprite, Math::Vector2f::kZero);
+	mNode = std::make_shared<SceneNode>(sprite, SpritePosition::kZero);
 }
 
 void Map::AttachToScene(SceneManager& sceneManager)
@@ -128,96 +128,106 @@ void Map::AttachToScene(SceneManager& sceneManager)
 
 MapCellType Map::GetCell(const uint16_t rowIndex, const uint16_t columnIndex) const
 {
-    return GetCell(CellIndex(rowIndex, columnIndex));
+    PACMAN_CHECK_ERROR((rowIndex <= mRowsCount) && (columnIndex <= mColumnsCount), ErrorCode::BadArgument);
+    return mCells[(rowIndex * mColumnsCount) + columnIndex];
 }
 
 MapCellType Map::GetCell(const CellIndex& index) const
 {
-    PACMAN_CHECK_ERROR((index.GetX() <= mRowsCount) && (index.GetY() <= mColumnsCount), ErrorCode::BadArgument);
-    return mCells[(index.GetX() * mColumnsCount) + index.GetY()];
+    return GetCell(index.GetX(), index.GetY());
 }
 
 SpritePosition Map::GetCellCenterPos(const uint16_t rowIndex, const uint16_t columnIndex) const
 {
-    return GetCellCenterPos(CellIndex(rowIndex, columnIndex));
+    return mRect.GetPosition() + (SpritePosition(columnIndex * mCellSize, rowIndex * mCellSize) + mCellSizeHalf);
 }
 
 SpritePosition Map::GetCellCenterPos(const CellIndex& index) const
 {
-    return mRect.GetPosition() + (index * mCellSize) + mCellSizeHalf;
+    return GetCellCenterPos(index.GetX(), index.GetY());   
+}
+
+CellIndex Map::FindCell(const SpriteRegion& region) const
+{
+    for (size_t i = 0; i < mRowsCount; i++)
+        for (size_t j = 0; j < mColumnsCount; j++)
+        {
+            if (region.HasPoint(GetCellCenterPos(i, j)))
+                return CellIndex(i, j);
+        }
 }
 
 MapNeighborsInfo Map::GetDirectNeighbors(const uint16_t rowIndex, const uint16_t columnIndex) const
 {
-    return GetDirectNeighbors(CellIndex(rowIndex, columnIndex));
+    MapNeighborsInfo info;
+
+    // left
+    if (columnIndex == 0)
+        info.left = MapCellType::Empty;
+    else
+        info.left = GetCell(rowIndex, columnIndex - 1);
+
+    // right
+    if (columnIndex >= (mColumnsCount - 1))
+        info.right = MapCellType::Empty;
+    else
+        info.right = GetCell(rowIndex, columnIndex + 1);
+
+    // top
+    if (rowIndex == 0)
+        info.top = MapCellType::Empty;
+    else
+        info.top = GetCell(rowIndex - 1, columnIndex);
+
+    // bottom
+    if (rowIndex >= (mRowsCount - 1))
+        info.bottom = MapCellType::Empty;
+    else
+        info.bottom = GetCell(rowIndex + 1, columnIndex);
+
+    return info;
 }
 
 MapNeighborsInfo Map::GetDirectNeighbors(const CellIndex& index) const
 {
-    MapNeighborsInfo info;
-
-    // left
-    if (index.GetY() == 0)
-        info.left = MapCellType::Empty;
-    else
-        info.left = GetCell(index.GetX(), index.GetY() - 1);
-
-    // right
-    if (index.GetY() >= (mColumnsCount - 1))
-        info.right = MapCellType::Empty;
-    else
-        info.right = GetCell(index.GetX(), index.GetY() + 1);
-
-    // top
-    if (index.GetX() == 0)
-        info.top = MapCellType::Empty;
-    else
-        info.top = GetCell(index.GetX() - 1, index.GetY());
-
-    // bottom
-    if (index.GetX() >= (mRowsCount - 1))
-        info.bottom = MapCellType::Empty;
-    else
-        info.bottom = GetCell(index.GetX() + 1, index.GetY());
-
-    return info;
+    return GetDirectNeighbors(index.GetX(), index.GetY());
 }
 
 FullMapNeighborsInfo Map::GetFullNeighbors(const uint16_t rowIndex, const uint16_t columnIndex) const
 {
-    return GetFullNeighbors(CellIndex(rowIndex, columnIndex));
+    FullMapNeighborsInfo info;
+    info.directInfo = GetDirectNeighbors(rowIndex, columnIndex);
+
+    // left top
+    if ((columnIndex == 0) || (rowIndex == 0))
+        info.leftTop = MapCellType::Empty;
+    else
+        info.leftTop = GetCell(rowIndex - 1, columnIndex - 1);
+
+    // right top
+    if ((columnIndex >= (mColumnsCount - 1)) || (rowIndex == 0))
+        info.rightTop = MapCellType::Empty;
+    else
+        info.rightTop = GetCell(rowIndex - 1, columnIndex + 1);
+
+    // left bottom
+    if ((columnIndex == 0) || (rowIndex >= (mRowsCount - 1)))
+        info.leftBottom = MapCellType::Empty;
+    else
+        info.leftBottom = GetCell(rowIndex + 1, columnIndex - 1);
+
+    // right bottom
+    if ((columnIndex >= (mColumnsCount - 1)) || (rowIndex >= (mRowsCount - 1)))
+        info.rightBottom = MapCellType::Empty;
+    else
+        info.rightBottom = GetCell(rowIndex + 1, columnIndex + 1);
+
+    return info;
 }
 
 FullMapNeighborsInfo Map::GetFullNeighbors(const CellIndex& index) const
 {
-    FullMapNeighborsInfo info;
-    info.directInfo = GetDirectNeighbors(index.GetX(), index.GetY());
-
-    // left top
-    if ((index.GetY() == 0) || (index.GetX() == 0))
-        info.leftTop = MapCellType::Empty;
-    else
-        info.leftTop = GetCell(index.GetX() - 1, index.GetY() - 1);
-
-    // right top
-    if ((index.GetY() >= (mColumnsCount - 1)) || (index.GetX() == 0))
-        info.rightTop = MapCellType::Empty;
-    else
-        info.rightTop = GetCell(index.GetX() - 1, index.GetY() + 1);
-
-    // left bottom
-    if ((index.GetY() == 0) || (index.GetX() >= (mRowsCount - 1)))
-        info.leftBottom = MapCellType::Empty;
-    else
-        info.leftBottom = GetCell(index.GetX() + 1, index.GetY() - 1);
-
-    // right bottom
-    if ((index.GetY() >= (mColumnsCount - 1)) || (index.GetX() >= (mRowsCount - 1)))
-        info.rightBottom = MapCellType::Empty;
-    else
-        info.rightBottom = GetCell(index.GetX() + 1, index.GetY() + 1);
-
-    return info;
+    return GetFullNeighbors(index.GetX(), index.GetY());
 }
 
 void Map::ParseJsonData(const std::string& data, std::vector<DotType>& dotsInfo)

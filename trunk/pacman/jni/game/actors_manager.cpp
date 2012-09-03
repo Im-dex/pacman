@@ -1,27 +1,33 @@
 #include "actors_manager.h"
+
+#include <cstdint>
+#include <algorithm>
+
+#include "error.h"
+#include "engine.h"
+#include "scene_manager.h"
 #include "map.h"
 #include "actor.h"
 
-#include <cstdint>
-
 namespace Pacman {
 
-static Math::Vector2f CalcOffset(const ActorMoveDirection direction, const size_t speed, const uint64_t dt)
-{
-    const size_t offset = speed * dt;
+static const uint16_t kNpos = uint16_t(-1);
 
+static uint16_t CalcMaxAvailableDistance(const ActorMoveDirection direction, const SpritePosition& curPosition,
+                                         const SpritePosition& maxAvailablePos)
+{
     switch (direction)
     {
     case ActorMoveDirection::Left:
-        return Math::Vector2f(-offset, 0);
+        return curPosition.GetX() - maxAvailablePos.GetX();
     case ActorMoveDirection::Right:
-        return Math::Vector2f(offset, 0);
+        return maxAvailablePos.GetX() - curPosition.GetX();
     case ActorMoveDirection::Up:
-        return Math::Vector2f(0, -offset);
+        return curPosition.GetY() - maxAvailablePos.GetY();
     case ActorMoveDirection::Down:
-        return Math::Vector2f(0, offset);
+        return maxAvailablePos.GetY() - curPosition.GetY();
     default:
-        return Math::Vector2f(0, 0);
+        return kNpos;
     }
 }
 
@@ -33,53 +39,126 @@ ActorsManager::ActorsManager(const std::shared_ptr<Map> map)
 
 void ActorsManager::RegisterActor(std::shared_ptr<Actor> actor)
 {
-    mActors.push_back(actor);
+    mActors.push_back(ActorData { actor, kNpos } );
+    actor->AttachToScene(GetEngine()->GetSceneManager());
 }
 
 void ActorsManager::UnregisterActor(std::shared_ptr<Actor> actor)
 {
-    mActors.remove(actor);
+    std::remove_if(mActors.begin(), mActors.end(), [&actor](const ActorData& data)
+    {
+        return data.mActor == actor;
+    });
+
+    actor->DetachFromScene(GetEngine()->GetSceneManager());
 }
 
 void ActorsManager::Update(const uint64_t dt)
 {
-    for (auto actorPtr : mActors)
+    for (ActorData& actorData : mActors)
     {
-        CellIndex index = actorPtr->GetMapCellIndex();
-
-        ActorMoveDirection nextDirection = actorPtr->GetNextDirection();
-        if ((nextDirection != ActorMoveDirection::None) && IsDirectionPossible(nextDirection, index))
+        ActorMoveDirection nextDirection = actorData.mActor->GetNextDirection();
+        if (nextDirection != ActorMoveDirection::None)
         {
-            actorPtr->SetDirection(nextDirection);
-            actorPtr->SetNextDirection(ActorMoveDirection::None);
+            LOGI("direction: %u", nextDirection);
+            const SpriteRegion curRegion = actorData.mActor->GetRegion();
+            LOGI("Cur region: centerX: %u, centerY: %u, x: %u, y: %u, width: %u, height: %u", curRegion.GetCenterPosX(), curRegion.GetCenterPosY(), curRegion.GetPosX(), curRegion.GetPosY(), curRegion.GetWidth(), curRegion.GetHeight());
+            const CellIndex index = mMap->FindCell(curRegion);
+            LOGI("Cell index: row: %u, column: %u", index.GetX(), index.GetY());
+
+            actorData.mActor->SetDirection(nextDirection);
+            actorData.mActor->SetNextDirection(ActorMoveDirection::None);
+
+            const SpritePosition maxAvailablePos = FindMaxAvailablePos(index, nextDirection);
+            LOGI("max avail pos: x: %u, y: %u", maxAvailablePos.GetX(), maxAvailablePos.GetY());
+            actorData.mAvailableDistance = CalcMaxAvailableDistance(nextDirection, curRegion.GetCenterPos(), maxAvailablePos);
+            LOGI("max avail distance: %u", actorData.mAvailableDistance);
         }
 
-        ActorMoveDirection direction = actorPtr->GetDirection();
-        if ((direction == ActorMoveDirection::None) || !IsDirectionPossible(direction, index))
-            continue;
+        PACMAN_CHECK_ERROR(actorData.mAvailableDistance != kNpos, ErrorCode::InvalidState);
 
-        size_t speed = actorPtr->GetSpeed();
-        actorPtr->Move(CalcOffset(direction, speed, dt));
+        const uint16_t speed = actorData.mActor->GetSpeed();
+        const uint16_t cellSize = mMap->GetCellSize();
+        LOGI("speed: %u, cellSize: %u", speed, cellSize);
+        const uint16_t offset = std::min(actorData.mAvailableDistance, static_cast<const uint16_t>(speed * cellSize * dt / 1000));
+        LOGI("offset: %u, mAvail: %u", offset, actorData.mAvailableDistance);
+
+        if (offset > 0)
+        {
+            switch (actorData.mActor->GetDirection())
+            {
+            case ActorMoveDirection::Left:
+                actorData.mActor->MoveBack(SpritePosition(offset, 0));
+                break;
+            case ActorMoveDirection::Right:
+                actorData.mActor->MoveForward(SpritePosition(offset, 0));
+                break;
+            case ActorMoveDirection::Up:
+                actorData.mActor->MoveBack(SpritePosition(0, offset));
+                break;
+            case ActorMoveDirection::Down:
+                actorData.mActor->MoveForward(SpritePosition(0, offset));
+                break;
+            }
+
+            actorData.mAvailableDistance -= offset;
+        }
+        else
+        {
+            // TODO: callback??
+        }
     }
 }
 
-bool ActorsManager::IsDirectionPossible(const ActorMoveDirection direction, const CellIndex& index) const
+SpritePosition ActorsManager::FindMaxAvailablePos(const CellIndex& curCellIndex, const ActorMoveDirection direction)
 {
-    MapNeighborsInfo neighbors = mMap->GetDirectNeighbors(index);
+    CellIndex index = curCellIndex;
+    bool canMove = true;
 
-    switch (direction)
+    while (canMove)
     {
-    case ActorMoveDirection::Left:
-        return neighbors.left == MapCellType::Empty;
-    case ActorMoveDirection::Right:
-        return neighbors.right == MapCellType::Empty;
-    case ActorMoveDirection::Up:
-        return neighbors.top == MapCellType::Empty;
-    case ActorMoveDirection::Down:
-        return neighbors.bottom == MapCellType::Empty;
-    default: // none
-        return true;
+        MapNeighborsInfo neighbors = mMap->GetDirectNeighbors(index);
+
+        switch (direction)
+        {
+        case ActorMoveDirection::Left:
+            {
+                if (neighbors.left == MapCellType::Empty)
+                    index.SetY(index.GetY() - 1);
+                else
+                    canMove = false;
+                break;
+            }
+        case ActorMoveDirection::Right:
+            {
+                if (neighbors.right == MapCellType::Empty)
+                    index.SetY(index.GetY() + 1);
+                else
+                    canMove = false;
+                break;
+            }
+        case ActorMoveDirection::Up:
+            {
+                if (neighbors.top == MapCellType::Empty)
+                    index.SetX(index.GetX() - 1);
+                else
+                    canMove = false;
+                break;
+            }
+        case ActorMoveDirection::Down:
+            {
+                if (neighbors.bottom == MapCellType::Empty)
+                    index.SetX(index.GetX() + 1);
+                else
+                    canMove = false;
+                break;
+            }
+        default: // none
+            canMove = false;
+        }
     }
+
+    return mMap->GetCellCenterPos(index);
 }
 
 } // Pacman namespace

@@ -2,11 +2,14 @@
 
 #include <memory>
 
-#include "map.h"
+#include "engine_typedefs.h"
 
 namespace Pacman {
 
 class SceneNode;
+class IDrawable;
+class SceneManager;
+class Map;
 
 enum class ActorMoveDirection
 {
@@ -22,22 +25,24 @@ class Actor
 public:
 
     Actor() = delete;
-    Actor(const std::string& textData, std::shared_ptr<SceneNode> node);
-    Actor(std::shared_ptr<SceneNode> node, const CellIndex& startIndex,
-          const ActorMoveDirection startDirection, const size_t moveSpeed);
+    Actor(const std::string& textData, std::shared_ptr<IDrawable> drawable,
+          const uint16_t size, const std::weak_ptr<Map> map);
     Actor(const Actor&) = default;
     virtual ~Actor() {}
 
     Actor& operator= (const Actor&) = default;
 
-    void Translate(const Math::Vector2f& position);
+    void Translate(const SpritePosition& position);
 
-    void Move(const Math::Vector2f& offset);
+    void MoveForward(const SpritePosition& offset);
 
-    CellIndex GetMapCellIndex() const
-    {
-        return mMapCellIndex;
-    }
+    void MoveBack(const SpritePosition& offset);
+
+    void AttachToScene(SceneManager& sceneManager) const;
+
+    void DetachFromScene(SceneManager& sceneManager) const;
+
+    SpriteRegion GetRegion() const;
 
     ActorMoveDirection GetDirection() const
     {
@@ -49,14 +54,9 @@ public:
         return mNextDirection;
     }
 
-    size_t GetSpeed() const
+    uint16_t GetSpeed() const
     {
         return mSpeed;
-    }
-
-    void SetMapCellIndex(const CellIndex& index)
-    {
-        mMapCellIndex = index;
     }
 
     void SetDirection(const ActorMoveDirection direction)
@@ -71,10 +71,10 @@ public:
 
 private:
 
-    CellIndex                  mMapCellIndex;
+    const uint16_t             mSize;
     ActorMoveDirection         mDirection;
     ActorMoveDirection         mNextDirection;
-    size_t                     mSpeed;
+    uint16_t                   mSpeed;
     std::shared_ptr<SceneNode> mNode;
 };
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "drawable.h"
-#include "rect.h"
 #include "color.h"
+#include "engine_typedefs.h"
 
 #include <array>
 #include <memory>
@@ -15,10 +15,6 @@ class Texture2D;
 class ShaderProgram;
 class VertexBuffer;
 struct Vertex;
-
-typedef Rect<float> TextureRegion;
-typedef Rect<uint16_t> SpriteRegion;
-typedef SpriteRegion::Position SpritePosition;
 
 class InstancedSprite : public IDrawable
 {
