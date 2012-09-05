@@ -41,6 +41,7 @@ void Game::OnLoad()
     InputManager& inputManager = engine->GetInputManager();
 
     inputManager.SetListener(gGame);
+    mScheduler = std::unique_ptr<Scheduler>(new Scheduler());
 
     std::vector<DotType> dotsInfo;
     std::shared_ptr<Map> map = std::make_shared<Map>(assetManager.LoadTextFile("map.json"), dotsInfo);
@@ -82,6 +83,7 @@ void Game::OnUnload()
 
 void Game::OnUpdate(const uint64_t dt)
 {
+    mScheduler->Update(dt);
     mPacmanAnimator->Update(dt);
     mActorsManager->Update(dt);
 }

@@ -5,6 +5,8 @@
 
 #include "engine_listeners.h"
 
+#include "scheduler.h"
+
 namespace Pacman {
 
 class SceneNode;
@@ -36,6 +38,7 @@ private:
 	std::shared_ptr<FrameAnimator> mPacmanAnimator;
 
     std::unique_ptr<ActorsManager> mActorsManager;
+    std::unique_ptr<Scheduler> mScheduler;
 };
 
 } // Pacman namespace
