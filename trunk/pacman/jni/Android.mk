@@ -34,6 +34,8 @@ LOCAL_SRC_FILES := main.cpp\
 				   game/actors_manager.cpp\
 				   game/map.cpp\
 				   game/dots_grid.cpp\
+				   game/scheduler.cpp\
+				   game/trigger.cpp\
 				   game/pacman.cpp
 LOCAL_LDLIBS    := -llog -lGLESv2 -ljnigraphics
 

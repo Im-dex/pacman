@@ -1,7 +1,6 @@
 #include "actors_manager.h"
 
 #include <cstdint>
-#include <algorithm>
 
 #include "error.h"
 #include "engine.h"
@@ -45,7 +44,7 @@ void ActorsManager::RegisterActor(std::shared_ptr<Actor> actor)
 
 void ActorsManager::UnregisterActor(std::shared_ptr<Actor> actor)
 {
-    std::remove_if(mActors.begin(), mActors.end(), [&actor](const ActorData& data) -> bool
+    mActors.remove_if([&actor](const ActorData& data) -> bool
     {
         return data.mActor == actor;
     });
