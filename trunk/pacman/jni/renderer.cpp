@@ -84,18 +84,18 @@ void Renderer::RenderDrawable(const std::shared_ptr<IDrawable> drawable, const M
 
 	if (auto texturePtr = texture.lock())
     {
-        //if (mLastTexture != texturePtr.get())
-       // {
+        if (mLastTexture != texturePtr.get())
+        {
 		    texturePtr->Bind();
             mLastTexture = texturePtr.get();
-        //}
+        }
     }
 
-    //if (shaderProgram.get() != mLastShaderProgram)
-    //{
+    if (shaderProgram.get() != mLastShaderProgram)
+    {
 	    shaderProgram->Bind();
-      //  mLastShaderProgram = shaderProgram.get();
-   // }
+        mLastShaderProgram = shaderProgram.get();
+    }
 
 	Math::Matrix4f modelProjection = (mProjection * modelMatrix).Transpose();
 	shaderProgram->SetUniform(kModelProjMatrixUniformName, modelProjection);

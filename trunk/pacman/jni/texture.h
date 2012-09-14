@@ -6,12 +6,14 @@
 
 namespace Pacman {
 
-enum class TextureFiltering
+enum class TextureFiltering : uint8_t
 {
-	None = 0,
-	Bilinear,
-	Trilinear
+	None      = 0,
+	Bilinear  = 1,
+	Trilinear = 2
 };
+
+static const size_t kTextureFilteringsCount = 3;
 
 enum class TextureRepeat
 {

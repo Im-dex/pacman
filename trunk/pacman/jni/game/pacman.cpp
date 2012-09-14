@@ -66,11 +66,7 @@ PacmanActor::PacmanActor(const uint16_t size, const uint16_t speed, const Sprite
 void PacmanActor::ChangeDirection(const PacmanMoveDirection direction)
 {
     const CellIndex index = mMap->FindCell(GetRegion());
-    const uint16_t indexX = index.GetX();
-    const uint16_t indexY = index.GetY();
     const CellIndex maxAvailableCellIndex = FindMaxAvailableCell(index, direction);
-    const uint16_t maxindexX = maxAvailableCellIndex.GetX();
-    const uint16_t maxindexY = maxAvailableCellIndex.GetY();
     if (index != maxAvailableCellIndex)
     {
         SpritePosition maxAvailablePos = mMap->GetCellCenterPos(maxAvailableCellIndex);

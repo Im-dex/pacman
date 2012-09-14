@@ -57,9 +57,9 @@ private:
     void AddDotInstance(const uint16_t dotOrderIndex, const uint16_t dotHalfSize, const std::shared_ptr<Map> map,
                         std::vector<SpritePosition>& instances);
 
-    DotsIndexMap                     mDotsIndexMap;
     const std::vector<DotType>       mDotsInfo;
     const uint16_t                   mMapColumnsCount;
+    DotsIndexMap                     mDotsIndexMap;
     std::shared_ptr<InstancedSprite> mSmallDotsSprite;
     std::shared_ptr<InstancedSprite> mBigDotsSprite;
     std::shared_ptr<SceneNode>       mSmallDotsNode;

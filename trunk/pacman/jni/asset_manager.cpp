@@ -11,7 +11,9 @@
 #include "color.h"
 #include "texture.h"
 #include "shader_program.h"
+#include "spritesheet.h"
 #include "jni_utility.h"
+#include "json_helper.h"
 
 namespace Pacman {
 
@@ -166,6 +168,70 @@ std::shared_ptr<ShaderProgram> AssetManager::LoadShaderProgram(const std::string
 	shader->Link();
 	mShaderPrograms.insert(std::make_pair(vertexShaderName + fragmentShaderName, shader));
 	return shader;
+}
+
+std::shared_ptr<SpriteSheet> AssetManager::LoadSpriteSheet(const std::string& name)
+{
+    const std::string jsonData = LoadTextFile(name);
+    PACMAN_CHECK_ERROR(jsonData.size() > 0, ErrorCode::BadArgument);
+
+    const Json::Value root = JsonHelper::ParseJson(jsonData);
+    PACMAN_CHECK_ERROR(root.isObject(), ErrorCode::BadFormat);
+
+    const Json::Value image = root["image"];
+    const Json::Value filtering = root["filtering"];
+    const Json::Value list = root["list"];
+    PACMAN_CHECK_ERROR(image.isString() && filtering.isNumeric() && 
+                       list.isArray() && (list.size() > 0), ErrorCode::BadFormat);
+
+    const std::string imageValue = image.asString();
+    const uint8_t filteringValue = filtering.asUInt();
+    PACMAN_CHECK_ERROR((imageValue.size() > 0) && (filteringValue < kTextureFilteringsCount), ErrorCode::BadFormat);
+
+    std::shared_ptr<Texture2D> texture = LoadTexture(imageValue, static_cast<TextureFiltering>(filteringValue), TextureRepeat::None);
+    NamedSpriteInfoArray namedSpritesInfo;
+    namedSpritesInfo.reserve(list.size());
+
+    for (size_t i = 0; i < list.size(); i++)
+    {
+        const Json::Value spriteObject = list[i];
+        PACMAN_CHECK_ERROR(spriteObject.isObject(), ErrorCode::BadFormat);
+
+        const Json::Value name = spriteObject["name"];
+        const Json::Value vs = spriteObject["vs"];
+        const Json::Value fs = spriteObject["fs"];
+        const Json::Value alphaBlend = spriteObject["alpha_blend"];
+        const Json::Value x = spriteObject["x"];
+        const Json::Value y = spriteObject["y"];
+        const Json::Value width = spriteObject["width"];
+        const Json::Value height = spriteObject["height"];
+        PACMAN_CHECK_ERROR(name.isString() && vs.isString() && fs.isString() && alphaBlend.isBool() && 
+                           x.isNumeric() && y.isNumeric() && width.isNumeric() && height.isNumeric(),
+                           ErrorCode::BadFormat);
+
+        const std::string nameValue = name.asString();
+        const std::string vsValue = vs.asString();
+        const std::string fsValue = fs.asString();
+        const bool alphaBlendValue = alphaBlend.asBool();
+        PACMAN_CHECK_ERROR((nameValue.size() > 0) && (vsValue.size() > 0) && (fsValue.size() > 0), ErrorCode::BadFormat);
+
+        float xValue = x.asDouble();
+        float yValue = y.asDouble();
+        float widthValue = width.asDouble();
+        float heightValue = height.asDouble();
+
+        SpriteInfo spriteInfo  
+        {
+            TextureRegion(xValue, yValue, widthValue, heightValue),
+            vsValue,
+            fsValue,
+            alphaBlendValue
+        };
+
+        namedSpritesInfo.push_back(std::make_pair(nameValue, spriteInfo));
+    }
+
+    return std::make_shared<SpriteSheet>(texture, namedSpritesInfo);
 }
 
 std::string AssetManager::LoadTextFile(const std::string& name)

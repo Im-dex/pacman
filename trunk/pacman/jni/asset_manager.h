@@ -11,7 +11,8 @@ namespace Pacman {
 
 class Texture2D;
 class ShaderProgram;
-enum class TextureFiltering;
+class SpriteSheet;
+enum class TextureFiltering : uint8_t;
 enum class TextureRepeat;
 
 class AssetManager
@@ -41,6 +42,8 @@ public:
 										   const TextureRepeat repeat);
 
 	std::shared_ptr<ShaderProgram> LoadShaderProgram(const std::string& vertexShaderName, const std::string& fragmentShaderName);
+
+    std::shared_ptr<SpriteSheet> LoadSpriteSheet(const std::string& name);
 
 	std::string LoadTextFile(const std::string& name);
 
