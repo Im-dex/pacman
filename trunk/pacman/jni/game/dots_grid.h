@@ -50,15 +50,16 @@ private:
 
     typedef std::vector<SpritePosition> InstancesArray;
     typedef std::tuple<InstancesArray, InstancesArray> DotsInstancesTuple;
-    typedef std::unordered_map<CellIndex, uint16_t, CustomHash<CellIndex>> DotsIndexMap;
+    typedef std::unordered_map<CellIndex, uint16_t, CustomHash<CellIndex>> DotsIndexMap; // cellIndex <-> mDotsInfo.position
 
     DotsInstancesTuple MakeInstances(const std::shared_ptr<Map> map, const uint16_t smallDotSize, const uint16_t bigDotSize);
 
     void AddDotInstance(const uint16_t dotOrderIndex, const uint16_t dotHalfSize, const std::shared_ptr<Map> map,
                         std::vector<SpritePosition>& instances);
 
-    const std::vector<DotType>       mDotsInfo;
     const uint16_t                   mMapColumnsCount;
+    size_t                           mHiddenDotsCounts;
+    std::vector<DotType>             mDotsInfo;
     DotsIndexMap                     mDotsIndexMap;
     std::shared_ptr<InstancedSprite> mSmallDotsSprite;
     std::shared_ptr<InstancedSprite> mBigDotsSprite;

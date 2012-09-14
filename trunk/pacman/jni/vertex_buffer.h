@@ -115,6 +115,7 @@ private:
 	size_t                mAttributesCount;
     bool                  mVertexDataLocked;
     bool                  mIndexDataLocked;
+    bool                  mEmpty;
     std::vector<byte_t>   mVertexCache;
     std::vector<uint16_t> mIndexCache;
 	VertexAttributesArray mVertexAttributes;

@@ -31,6 +31,7 @@ VertexBuffer::VertexBuffer(const std::vector<Vertex>& vertexData, const std::vec
               mIndexCount(indexData.size()),
               mVertexDataLocked(false),
               mIndexDataLocked(false),
+              mEmpty(false),
               mVertexCache(),
               mIndexCache(),
 			  mAttributesCount(3)
@@ -48,6 +49,7 @@ VertexBuffer::VertexBuffer(const std::vector<ColorVertex>& vertexData, const std
               mIndexCount(indexData.size()),
               mVertexDataLocked(false),
               mIndexDataLocked(false),
+              mEmpty(false),
               mVertexCache(),
               mIndexCache(),
 			  mAttributesCount(2)
@@ -64,6 +66,7 @@ VertexBuffer::VertexBuffer(const std::vector<TextureVertex>& vertexData, const s
               mIndexCount(indexData.size()),
               mVertexDataLocked(false),
               mIndexDataLocked(false),
+              mEmpty(false),
               mVertexCache(),
               mIndexCache(),
 			  mAttributesCount(2)
@@ -113,6 +116,9 @@ void VertexBuffer::Unbind() const
 
 void VertexBuffer::Draw() const
 {
+    if (mEmpty)
+        return;
+
     PACMAN_CHECK_ERROR2(!mVertexDataLocked && !mIndexDataLocked, ErrorCode::InvalidState, "one of the streams is locked now");
 	glDrawElements(GL_TRIANGLES, mIndexCount, GL_UNSIGNED_SHORT, 0);
 	PACMAN_CHECK_GL_ERROR();
@@ -129,11 +135,19 @@ void VertexBuffer::UnlockVertexData(const size_t newVertexCount)
 {
     PACMAN_CHECK_ERROR2(mVertexDataLocked, ErrorCode::InvalidState, "vertex stream isn't locked");
 
-    glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
-    PACMAN_CHECK_GL_ERROR();
-    glBufferData(GL_ARRAY_BUFFER, mVertexCache.size(), static_cast<const void*>(&mVertexCache.front()), GL_DYNAMIC_DRAW);
-    PACMAN_CHECK_GL_ERROR();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    if (newVertexCount != 0)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
+        PACMAN_CHECK_GL_ERROR();
+        glBufferData(GL_ARRAY_BUFFER, mVertexCache.size(), static_cast<const void*>(&mVertexCache.front()), GL_DYNAMIC_DRAW);
+        PACMAN_CHECK_GL_ERROR();
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+    else
+    {
+        mEmpty = true;
+    }
+    
     mVertexDataLocked = false;
     mVertexCount = newVertexCount;
 }
@@ -149,11 +163,19 @@ void VertexBuffer::UnlockIndexData()
 {
     PACMAN_CHECK_ERROR2(mIndexDataLocked, ErrorCode::InvalidState, "index stream isn't locked");
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
-    PACMAN_CHECK_GL_ERROR();
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * mIndexCache.size(), static_cast<const void*>(&mIndexCache.front()), GL_DYNAMIC_DRAW);
-    PACMAN_CHECK_GL_ERROR();
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    if (mIndexCache.size() > 0)
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
+        PACMAN_CHECK_GL_ERROR();
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * mIndexCache.size(), static_cast<const void*>(&mIndexCache.front()), GL_DYNAMIC_DRAW);
+        PACMAN_CHECK_GL_ERROR();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+    else
+    {
+        mEmpty = true;
+    }
+    
     mIndexDataLocked = false;
     mIndexCount = mIndexCache.size();
 }

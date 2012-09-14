@@ -93,61 +93,80 @@ static FORCEINLINE void FillTexCoord(TextureVertex& vertex, const Math::Vector2f
 
 InstancedSprite::InstancedSprite(const SpriteRegion& region, const Color& leftTop, const Color& rightTop, const Color& leftBottom,
 			                     const Color& rightBottom, std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend,
-                                 const std::vector<SpritePosition>& instances, const bool instanceHideEnabled)
+                                 const std::vector<SpritePosition>& instances, const bool instanceEraseEnabled)
 	           : mShaderProgram(shaderProgram),
 	             mTexture(nullptr),
 		         mVertexBuffer(nullptr),
 		         mAlphaBlend(alphaBlend),
-                 mInstanceHideEnabled(instanceHideEnabled),
+                 mInstanceEraseEnabled(instanceEraseEnabled),
                  mInstancesCount(instances.size())
 {
 	InitByColor(region, leftTop, rightTop, leftBottom, rightBottom, instances);
+    InitInstancesEraseState();
 }
 
 InstancedSprite::InstancedSprite(const SpriteRegion& region, std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend,
-                                 const std::vector<SpritePosition>& instances, const bool instanceHideEnabled)
+                                 const std::vector<SpritePosition>& instances, const bool instanceEraseEnabled)
 	           : mShaderProgram(shaderProgram),
 	             mTexture(nullptr),
 		         mVertexBuffer(nullptr),
 		         mAlphaBlend(alphaBlend),
-                 mInstanceHideEnabled(instanceHideEnabled),
+                 mInstanceEraseEnabled(instanceEraseEnabled),
                  mInstancesCount(instances.size())
 {
 	InitByColor(region, kDefaultColor, kDefaultColor, kDefaultColor, kDefaultColor, instances);
+    InitInstancesEraseState();
 }
 
 InstancedSprite::InstancedSprite(const SpriteRegion& region, const TextureRegion& textureRegion, std::shared_ptr<Texture2D> texture,
 			                     std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend, const std::vector<SpritePosition>& instances,
-                                 const bool instanceHideEnabled)
+                                 const bool instanceEraseEnabled)
 	           : mShaderProgram(shaderProgram),
 	             mTexture(texture),
 		         mVertexBuffer(nullptr),
 		         mAlphaBlend(alphaBlend),
-                 mInstanceHideEnabled(instanceHideEnabled),
+                 mInstanceEraseEnabled(instanceEraseEnabled),
                  mInstancesCount(instances.size())
 {
 	InitByTexture(region, textureRegion, instances);
+    InitInstancesEraseState();
 }
 
 InstancedSprite::InstancedSprite(const SpriteRegion& region, std::shared_ptr<Texture2D> texture, std::shared_ptr<ShaderProgram> shaderProgram,
-                                 const bool alphaBlend, const std::vector<SpritePosition>& instances, const bool instanceHideEnabled)
+                                 const bool alphaBlend, const std::vector<SpritePosition>& instances, const bool instanceEraseEnabled)
 	           : mShaderProgram(shaderProgram),
 	             mTexture(texture),
 		         mVertexBuffer(nullptr),
 		         mAlphaBlend(alphaBlend),
-                 mInstanceHideEnabled(instanceHideEnabled),
+                 mInstanceEraseEnabled(instanceEraseEnabled),
                  mInstancesCount(instances.size())
 {
 	InitByTexture(region, kDefaultRegion, instances);
+    InitInstancesEraseState();
 }
 
-void InstancedSprite::HideInstance(const size_t index)
+void InstancedSprite::EraseInstance(const size_t index)
 {
-    PACMAN_CHECK_ERROR(index < mInstancesCount, ErrorCode::BadArgument);
+    PACMAN_CHECK_ERROR((index < mInstancesCount) && mInstanceEraseEnabled, ErrorCode::BadArgument);
     std::vector<uint16_t>& indexData = mVertexBuffer->LockIndexData();
-    const size_t instanceOffset = index * kSpriteIndexCount;
+
+    // calc removed size before current index
+    size_t removedSize = 0;
+    for (size_t i = 0; i < index; i++)
+    {
+        if (mInstancesEraseStates[i])
+            removedSize += kSpriteIndexCount;
+    }
+    // calc total offset
+    size_t instanceOffset = index * kSpriteIndexCount;
+    // reduce total offset by removed size
+    instanceOffset -= removedSize;
+    // fix index data
     indexData.erase(indexData.begin() + instanceOffset, indexData.begin() + instanceOffset + kSpriteIndexCount);
+
     mVertexBuffer->UnlockIndexData();
+
+    mInstancesEraseStates[index] = true;
 }
 
 std::shared_ptr<VertexBuffer> InstancedSprite::GetVertexBuffer() const
@@ -194,7 +213,7 @@ void InstancedSprite::InitByColor(const SpriteRegion& region, const Color& leftT
         FillColor(vertices[i*kSpriteVertexCount + 3], rightTop);
     }
 
-    BufferUsage indexBufferUsage = mInstanceHideEnabled ? BufferUsage::Dynamic : BufferUsage::Static;
+    BufferUsage indexBufferUsage = mInstanceEraseEnabled ? BufferUsage::Dynamic : BufferUsage::Static;
 	mVertexBuffer = std::make_shared<VertexBuffer>(vertices, indices, BufferUsage::Static, indexBufferUsage);
 }
 
@@ -220,8 +239,19 @@ void InstancedSprite::InitByTexture(const SpriteRegion& region, const TextureReg
         FillTexCoord(vertices[i*kSpriteVertexCount + 3], Math::Vector2f(textureRegion.GetPosX() + textureRegion.GetWidth(), textureRegion.GetPosY()));
     }
 
-    BufferUsage indexBufferUsage = mInstanceHideEnabled ? BufferUsage::Dynamic : BufferUsage::Static;
+    BufferUsage indexBufferUsage = mInstanceEraseEnabled ? BufferUsage::Dynamic : BufferUsage::Static;
 	mVertexBuffer = std::make_shared<VertexBuffer>(vertices, indices, BufferUsage::Static, indexBufferUsage);
+}
+
+void InstancedSprite::InitInstancesEraseState()
+{
+    if (!mInstanceEraseEnabled)
+    {
+        mInstancesEraseStates.reserve(0);
+        return;
+    }
+
+    mInstancesEraseStates = std::vector<bool>(mInstancesCount, false);
 }
 
 } // Pacman namespace
