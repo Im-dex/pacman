@@ -1,4 +1,7 @@
 #include "engine.h"
+
+#include <unistd.h>
+
 #include "error.h"
 #include "asset_manager.h"
 #include "font_manager.h"
@@ -7,8 +10,6 @@
 #include "input_manager.h"
 #include "timer.h"
 #include "json_helper.h"
-
-#include <unistd.h>
 
 namespace Pacman {
 
@@ -64,9 +65,12 @@ void Engine::OnDrawFrame()
 	mRenderer->DrawFrame();
 
 	mLastTime += kSkipTicks;
-	size_t sleepTime = mLastTime - mTimer->GetMillisec();
-	if (sleepTime >= 0)
+    const uint64_t now = mTimer->GetMillisec();
+	if (mLastTime >= now)
+    {
+        const uint64_t sleepTime = mLastTime - now;
 		usleep(sleepTime * 1000);
+    }
 }
 
 void Engine::OnTouch(const int event, const float x, const float y)

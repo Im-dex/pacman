@@ -4,8 +4,10 @@
 #include <limits>
 #include <type_traits>
 
+#include "base.h"
+
 #define PACMAN_CHECK_ARITHMETIC_TYPE\
-		static_assert(std::is_arithmetic<T>::value, "Wrong type");
+    static_assert(std::is_arithmetic<T>::value, "Wrong type");
 
 namespace Pacman {
 namespace Math {

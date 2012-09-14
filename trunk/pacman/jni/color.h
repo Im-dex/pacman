@@ -1,8 +1,8 @@
 #pragma once
 
-#include "base.h"
-
 #include <array>
+
+#include "base.h"
 
 namespace Pacman {
 
@@ -15,7 +15,7 @@ public:
 	static const Color kBlue;
 	static const Color kWhite;
 	static const Color kBlack;
-
+	
 	Color() = delete;
 	Color(const byte_t r, const byte_t g, const byte_t b, const byte_t a);
 	Color(const Color& other) = default;

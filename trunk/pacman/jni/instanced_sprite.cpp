@@ -2,7 +2,6 @@
 
 #include <cassert>
 
-#include "base.h"
 #include "error.h"
 #include "texture.h"
 #include "vertex_buffer.h"

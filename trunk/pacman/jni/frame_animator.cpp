@@ -1,9 +1,10 @@
 #include "frame_animator.h"
+
 #include "sprite.h"
 
 namespace Pacman {
 
-FrameAnimator::FrameAnimator(const std::vector<std::shared_ptr<Sprite>>& frames, const size_t frameDuration)
+FrameAnimator::FrameAnimator(const std::vector<std::shared_ptr<Sprite>>& frames, const uint64_t frameDuration)
 			 : mFrames(frames),
 			   mFrameDuration(frameDuration),
 			   mLastFrameSwitch(0),

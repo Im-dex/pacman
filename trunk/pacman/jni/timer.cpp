@@ -1,7 +1,8 @@
 #include "timer.h"
-#include "error.h"
 
 #include <time.h>
+
+#include "error.h"
 
 namespace Pacman {
 

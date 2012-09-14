@@ -1,13 +1,13 @@
 #pragma once
 
-#include "drawable.h"
-#include "color.h"
-#include "engine_typedefs.h"
-
 #include <array>
 #include <memory>
 #include <vector>
-#include <cstdint>
+
+#include "base.h"
+#include "drawable.h"
+#include "color.h"
+#include "engine_typedefs.h"
 
 namespace Pacman {
 

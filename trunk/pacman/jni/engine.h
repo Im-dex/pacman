@@ -1,10 +1,11 @@
 #pragma once
 
-#include "engine_listeners.h"
-
 #include <memory>
 #include <cstdint>
 #include <cassert>
+
+#include "base.h"
+#include "engine_listeners.h"
 
 namespace Pacman {
 

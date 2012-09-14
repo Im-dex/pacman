@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base.h"
 #include "instanced_sprite.h"
 
 namespace Pacman {

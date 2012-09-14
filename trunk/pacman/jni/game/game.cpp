@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "log.h"
 #include "main.h"
 #include "engine.h"
 #include "asset_manager.h"
@@ -13,8 +14,6 @@
 #include "texture.h"
 #include "spritesheet.h"
 #include "frame_animator.h"
-#include "actors_manager.h"
-#include "actor.h"
 #include "dots_grid.h"
 
 static std::shared_ptr<Pacman::Game> gGame = nullptr;
@@ -33,48 +32,45 @@ void OnPacmanApplicationEnd()
 
 namespace Pacman {
 
+static FORCEINLINE uint16_t CalcCellSize(const AssetManager& assetManager)
+{
+    static const uint16_t kBaseCellSize = 8;
+    return kBaseCellSize * assetManager.GetMultiplier();
+}
+
+static FORCEINLINE uint16_t CalcActorSize(const uint16_t cellSize)
+{
+    return cellSize + (cellSize / 2);
+}
+
 void Game::OnLoad()
 {
+    LOGI("LOAD!");
     Engine* engine = GetEngine();
     AssetManager& assetManager = engine->GetAssetManager();
     SceneManager& sceneManager = engine->GetSceneManager();
     InputManager& inputManager = engine->GetInputManager();
-
+    
+    const uint16_t cellSize = CalcCellSize(assetManager);
     inputManager.SetListener(gGame);
-    mScheduler = std::unique_ptr<Scheduler>(new Scheduler());
 
-    std::vector<DotType> dotsInfo;
-    std::shared_ptr<Map> map = std::make_shared<Map>(assetManager.LoadTextFile("map.json"), dotsInfo);
-    map->AttachToScene(sceneManager);
-
-    mActorsManager = std::unique_ptr<ActorsManager>(new ActorsManager(map));
+    mMap = mLoader.LoadMap("map.json", cellSize);
+    mMap->AttachToScene(sceneManager);
 
     std::string spritesheetData = assetManager.LoadTextFile("spritesheet1.json");
-    SpriteSheet spriteSheet(spritesheetData);
+    std::shared_ptr<SpriteSheet> spriteSheet = std::make_shared<SpriteSheet>(spritesheetData);
 
-    std::shared_ptr<DotsGrid> dots = std::make_shared<DotsGrid>(dotsInfo, map, spriteSheet);
+    std::shared_ptr<DotsGrid> dots = mLoader.MakeDotsGrid(mMap, spriteSheet);
     dots->AttachToScene(sceneManager);
 
-    size_t actorsSize = map->GetCellSize() + (map->GetCellSize() / 2);
-    std::shared_ptr<Sprite> sprite_pacman_0 = spriteSheet.MakeSprite("pacman_anim_0", SpriteRegion(0, 0, actorsSize, actorsSize));
-    std::shared_ptr<Sprite> sprite_pacman_1 = spriteSheet.MakeSprite("pacman_anim_1", SpriteRegion(0, 0, actorsSize, actorsSize));
-    std::shared_ptr<Sprite> sprite_pacman_2 = spriteSheet.MakeSprite("pacman_anim_2", SpriteRegion(0, 0, actorsSize, actorsSize));
-
-    std::vector<std::shared_ptr<Sprite>> frames;
-    frames.reserve(4);
-    frames.push_back(sprite_pacman_0);
-    frames.push_back(sprite_pacman_1);
-    frames.push_back(sprite_pacman_2);
-    frames.push_back(sprite_pacman_1);
-    //frames.push_back(sprite_pacman_0);
-    
-    mPacmanAnimator = std::make_shared<FrameAnimator>(frames, 55);
-    std::shared_ptr<Actor> pacmanActor = std::make_shared<Actor>(assetManager.LoadTextFile("pacman.json"), mPacmanAnimator, actorsSize, map);
-    mActorsManager->RegisterActor(pacmanActor);
+    const uint16_t actorSize = CalcActorSize(cellSize);
+    mPacman = mLoader.LoadPacmanActor("pacman.json", actorSize, spriteSheet, mMap);
+    mPacman->AttachToScene(sceneManager);
 }
 
 void Game::OnUnload()
 {
+    LOGI("UNLOAD!");
     Engine* engine = GetEngine();
     InputManager& inputManager = engine->GetInputManager();
 
@@ -83,9 +79,8 @@ void Game::OnUnload()
 
 void Game::OnUpdate(const uint64_t dt)
 {
-    mScheduler->Update(dt);
-    mPacmanAnimator->Update(dt);
-    mActorsManager->Update(dt);
+    mScheduler.Update(dt);
+    mPacman->Update(dt);
 }
 
 void Game::OnGesture(const GestureType gestureType)
@@ -93,22 +88,19 @@ void Game::OnGesture(const GestureType gestureType)
     switch (gestureType)
     {
     case GestureType::LeftSwipe:
-        LOGI("Left swipe");
+        mPacman->ChangeDirection(PacmanMoveDirection::Left);
         break;
     case GestureType::RightSwipe:
-        LOGI("Right swipe");
+        mPacman->ChangeDirection(PacmanMoveDirection::Right);
         break;
     case GestureType::TopSwipe:
-        LOGI("Top swipe");
+        mPacman->ChangeDirection(PacmanMoveDirection::Up);
         break;
     case GestureType::BottomSwipe:
-        LOGI("Bottom swipe");
+        mPacman->ChangeDirection(PacmanMoveDirection::Down);
         break;
     case GestureType::None:
-        LOGI("Empty swipe");
-        break;
     default:
-        LOGI("Unknown swipe");
         break;
     }
 }

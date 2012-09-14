@@ -1,5 +1,9 @@
 #pragma once
 
+#include <GLES2/gl2.h>
+#include <string>
+#include <unordered_map>
+
 #include "base.h"
 #include "shader.h"
 #include "math/vector2.h"
@@ -7,11 +11,6 @@
 #include "math/vector4.h"
 #include "math/matrix4.h"
 #include "math/matrix4.h"
-
-#include <GLES2/gl2.h>
-#include <cstdint>
-#include <string>
-#include <unordered_map>
 
 namespace Pacman {
 

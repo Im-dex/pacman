@@ -2,6 +2,8 @@
 
 #include <pthread.h>
 
+#include "base.h"
+
 namespace Pacman {
 
 class Mutex 

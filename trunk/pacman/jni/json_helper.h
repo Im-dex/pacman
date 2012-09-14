@@ -1,8 +1,9 @@
 #pragma once
 
-#include "json/json.h"
-
 #include <string>
+
+#include "base.h"
+#include "json/json.h"
 
 namespace Pacman {
 namespace JsonHelper {

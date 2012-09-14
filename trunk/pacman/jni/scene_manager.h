@@ -3,6 +3,8 @@
 #include <list>
 #include <memory>
 
+#include "base.h"
+
 namespace Pacman{
 
 class SceneNode;

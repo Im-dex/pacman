@@ -1,7 +1,8 @@
 #include "shader_program.h"
-#include "error.h"
 
 #include <memory>
+
+#include "error.h"
 
 namespace Pacman {
 

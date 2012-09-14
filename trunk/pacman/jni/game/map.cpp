@@ -4,22 +4,19 @@
 #include <complex>
 #include <algorithm>
 
-#include "base.h"
+#include "log.h"
+#include "utils.h"
 #include "error.h"
 #include "color.h"
-#include "engine.h"
 #include "scene_node.h"
-#include "shader_program.h"
+#include "engine.h"
 #include "asset_manager.h"
-#include "renderer.h"
+#include "shader_program.h"
 #include "texture.h"
-#include "json_helper.h"
 #include "scene_manager.h"
 #include "rect.h"
 
 namespace Pacman {
-
-static const uint16_t kBaseCellSize = 8;
 
 static const Color kEmptyColor = Color::kBlack;
 static const Color kWallColor = Color::kBlue;
@@ -90,35 +87,26 @@ static FORCEINLINE void CutBottom(SpriteRegion& region, const uint16_t cutSize)
 
 //============================================================================================================================================
 
-Map::Map(const std::string& textData, std::vector<DotType>& dotsInfo)
-   : mRect(0, 0, 0, 0)
+Map::Map(const uint16_t cellSize, const uint16_t rowsCount, const size_t viewportWidth,
+         const size_t viewportHeight, const std::vector<MapCellType>& cells)
+   : mCellSize(cellSize),
+     mCellSizeHalf(cellSize/2),
+     mCellSizeQuarter(cellSize/4),
+     mRowsCount(rowsCount),
+     mColumnsCount(cells.size() / rowsCount),
+     mCells(cells),
+     mRect(0, 0, 0, 0)
 {
-	ParseJsonData(textData, dotsInfo);
+    const uint16_t mapWidth = mColumnsCount * mCellSize;
+    const uint16_t mapHeight = mRowsCount * mCellSize;
 
-    // calc map parameters
-    Engine* engine = GetEngine();
-    Renderer& renderer = engine->GetRenderer();
-    size_t multiplier = engine->GetAssetManager().GetMultiplier();
-    
-    mCellSize = kBaseCellSize * multiplier;
-    assert(mCellSize / kBaseCellSize == multiplier);
-    mCellSizeHalf = mCellSize / 2;
-    mCellSizeQuarter = mCellSize / 4;
-    
-    const size_t viewportWidth = renderer.GetViewportWidth();
-    const size_t viewportHeight = renderer.GetViewportHeight();
-
-    const size_t mapWidth = mColumnsCount * mCellSize;
-    const size_t mapHeight = mRowsCount * mCellSize;
-
-    const size_t leftRightPadding = (viewportWidth - mapWidth) / 2;
-    const size_t topBottomPadding = (viewportHeight - mapHeight) / 2;
+    const uint16_t leftRightPadding = (viewportWidth - mapWidth) / 2;
+    const uint16_t topBottomPadding = (viewportHeight - mapHeight) / 2;
 
     mRect = SpriteRegion(leftRightPadding, topBottomPadding, mapWidth, mapHeight);
-
-    // make sprite
-	std::shared_ptr<Sprite> sprite = GenerateSprite();
-	mNode = std::make_shared<SceneNode>(sprite, SpritePosition::kZero);
+    LOGI("mRect: posx: %u, posy: %u", mRect.GetPosX(), mRect.GetPosY());
+    std::shared_ptr<Sprite> sprite = GenerateSprite();
+	mNode = std::make_shared<SceneNode>(sprite, SpritePosition::kZero, SpritePosition::kZero, Rotation::kZero);
 }
 
 void Map::AttachToScene(SceneManager& sceneManager)
@@ -128,7 +116,8 @@ void Map::AttachToScene(SceneManager& sceneManager)
 
 MapCellType Map::GetCell(const uint16_t rowIndex, const uint16_t columnIndex) const
 {
-    PACMAN_CHECK_ERROR((rowIndex <= mRowsCount) && (columnIndex <= mColumnsCount), ErrorCode::BadArgument);
+    PACMAN_CHECK_ERROR2((rowIndex <= mRowsCount) && (columnIndex <= mColumnsCount), ErrorCode::BadArgument,
+                        MakeString("rowIndex: ", rowIndex, ", columnIndex: ", columnIndex).c_str());
     return mCells[(rowIndex * mColumnsCount) + columnIndex];
 }
 
@@ -147,6 +136,7 @@ SpritePosition Map::GetCellCenterPos(const CellIndex& index) const
     return GetCellCenterPos(index.GetX(), index.GetY());   
 }
 
+// TODO: optimize by quad-tree scene split
 CellIndex Map::FindCell(const SpriteRegion& region) const
 {
     for (size_t i = 0; i < mRowsCount; i++)
@@ -163,25 +153,25 @@ MapNeighborsInfo Map::GetDirectNeighbors(const uint16_t rowIndex, const uint16_t
 
     // left
     if (columnIndex == 0)
-        info.left = MapCellType::Empty;
+        info.left = MapCellType::Space;
     else
         info.left = GetCell(rowIndex, columnIndex - 1);
 
     // right
     if (columnIndex >= (mColumnsCount - 1))
-        info.right = MapCellType::Empty;
+        info.right = MapCellType::Space;
     else
         info.right = GetCell(rowIndex, columnIndex + 1);
 
     // top
     if (rowIndex == 0)
-        info.top = MapCellType::Empty;
+        info.top = MapCellType::Space;
     else
         info.top = GetCell(rowIndex - 1, columnIndex);
 
     // bottom
     if (rowIndex >= (mRowsCount - 1))
-        info.bottom = MapCellType::Empty;
+        info.bottom = MapCellType::Space;
     else
         info.bottom = GetCell(rowIndex + 1, columnIndex);
 
@@ -200,25 +190,25 @@ FullMapNeighborsInfo Map::GetFullNeighbors(const uint16_t rowIndex, const uint16
 
     // left top
     if ((columnIndex == 0) || (rowIndex == 0))
-        info.leftTop = MapCellType::Empty;
+        info.leftTop = MapCellType::Space;
     else
         info.leftTop = GetCell(rowIndex - 1, columnIndex - 1);
 
     // right top
     if ((columnIndex >= (mColumnsCount - 1)) || (rowIndex == 0))
-        info.rightTop = MapCellType::Empty;
+        info.rightTop = MapCellType::Space;
     else
         info.rightTop = GetCell(rowIndex - 1, columnIndex + 1);
 
     // left bottom
     if ((columnIndex == 0) || (rowIndex >= (mRowsCount - 1)))
-        info.leftBottom = MapCellType::Empty;
+        info.leftBottom = MapCellType::Space;
     else
         info.leftBottom = GetCell(rowIndex + 1, columnIndex - 1);
 
     // right bottom
     if ((columnIndex >= (mColumnsCount - 1)) || (rowIndex >= (mRowsCount - 1)))
-        info.rightBottom = MapCellType::Empty;
+        info.rightBottom = MapCellType::Space;
     else
         info.rightBottom = GetCell(rowIndex + 1, columnIndex + 1);
 
@@ -230,44 +220,6 @@ FullMapNeighborsInfo Map::GetFullNeighbors(const CellIndex& index) const
     return GetFullNeighbors(index.GetX(), index.GetY());
 }
 
-void Map::ParseJsonData(const std::string& data, std::vector<DotType>& dotsInfo)
-{
-    const Json::Value root = JsonHelper::ParseJson(data);
-    PACMAN_CHECK_ERROR(root.isObject(), ErrorCode::BadFormat);
-
-    const Json::Value rowsCount = root["rowsCount"];
-    PACMAN_CHECK_ERROR(rowsCount.isNumeric(), ErrorCode::BadFormat);
-
-    mRowsCount = static_cast<const uint16_t>(rowsCount.asUInt());
-
-    const Json::Value cells = root["cells"];
-    PACMAN_CHECK_ERROR(cells.isArray(), ErrorCode::BadFormat);
-    PACMAN_CHECK_ERROR(cells.size() % mRowsCount == 0, ErrorCode::BadFormat);
-
-    dotsInfo.reserve(cells.size());
-
-    for (size_t i = 0; i < cells.size(); i++)
-    {
-        const Json::Value cell = cells[i];
-        PACMAN_CHECK_ERROR(cell.isNumeric(), ErrorCode::BadFormat);
-
-        uint8_t value = static_cast<uint8_t>(cell.asUInt());
-        PACMAN_CHECK_ERROR(value < kCellTypesCount + kDotTypesCount, ErrorCode::BadFormat);
-
-        DotType dot = DotType::None;
-        if ((value == static_cast<uint8_t>(DotType::Small)) || (value == static_cast<uint8_t>(DotType::Big)))
-        {
-            dot = static_cast<DotType>(value);
-            value = static_cast<uint8_t>(MapCellType::Empty);
-        }
-
-        mCells.push_back(static_cast<MapCellType>(value));
-        dotsInfo.push_back(dot);
-    }
-
-    mColumnsCount = mCells.size() / mRowsCount;
-}
-
 std::shared_ptr<Sprite> Map::GenerateSprite()
 {
 	// lets generate!
@@ -277,8 +229,7 @@ std::shared_ptr<Sprite> Map::GenerateSprite()
 	AssetManager& assetManager = GetEngine()->GetAssetManager();
 	std::shared_ptr<ShaderProgram> shaderProgram = assetManager.LoadShaderProgram(AssetManager::kDefaultTextureVertexShader, AssetManager::kDefaultTextureFragmentShader);
 
-	SpriteRegion region(mRect.GetPosition(), mRect.GetWidth(), mRect.GetHeight());
-	return std::make_shared<Sprite>(region, textureRegion, texture, shaderProgram, false);
+	return std::make_shared<Sprite>(mRect, textureRegion, texture, shaderProgram, false);
 }
 
 std::shared_ptr<Texture2D> Map::GenerateTexture(TextureRegion* textureRegion)
@@ -310,14 +261,14 @@ std::shared_ptr<Texture2D> Map::GenerateTexture(TextureRegion* textureRegion)
 			else if (cell == MapCellType::Wall)
 			{
 				MapNeighborsInfo neighbors = GetDirectNeighbors(i, j);
-				if (neighbors.left == MapCellType::Empty) // cut left side
-					CutLeft(cellRegion, mCellSizeQuarter);
-				if (neighbors.right == MapCellType::Empty) // cut right side
-					CutRight(cellRegion, mCellSizeQuarter);
-				if (neighbors.top == MapCellType::Empty) // cut top side
-					CutTop(cellRegion, mCellSizeQuarter);
-				if (neighbors.bottom == MapCellType::Empty) // cut bottom side
-					CutBottom(cellRegion, mCellSizeQuarter);
+				if ((neighbors.left == MapCellType::Empty) || (neighbors.left == MapCellType::Space))
+					CutLeft(cellRegion, mCellSizeQuarter); // cut left side
+				if ((neighbors.right == MapCellType::Empty) || (neighbors.right == MapCellType::Space))
+					CutRight(cellRegion, mCellSizeQuarter); // cut right side
+				if ((neighbors.top == MapCellType::Empty) || (neighbors.top == MapCellType::Space))
+					CutTop(cellRegion, mCellSizeQuarter); // cut top side
+				if ((neighbors.bottom == MapCellType::Empty) || (neighbors.bottom == MapCellType::Space))
+					CutBottom(cellRegion, mCellSizeQuarter); // cut bottom side
 			}
 
 			FillRegion(buffer.get(), textureWidth, cellRegion, GetColor(cell));

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "error.h"
-
 #include <jni.h>
+
+#include "base.h"
+#include "error.h"
 
 namespace Pacman {
 namespace JNI {

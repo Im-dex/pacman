@@ -1,9 +1,10 @@
 #pragma once
 
+#include <memory>
+
+#include "base.h"
 #include "mutex.h"
 #include "engine_listeners.h"
-
-#include <memory>
 
 namespace Pacman {
 
