@@ -78,7 +78,7 @@ public:
 		return mCellSize;
 	}
 
-    uint16_t GetRowsCont() const
+    uint16_t GetRowsCount() const
     {
         return mRowsCount;
     }

@@ -36,7 +36,8 @@ static FORCEINLINE uint16_t GetMapColumnsCount(const std::weak_ptr<Map> mapPtr)
 
 DotsGrid::DotsGrid(const std::vector<DotType>& dotsInfo, const std::weak_ptr<Map> mapPtr, const std::weak_ptr<SpriteSheet> spritesheetPtr)
         : mDotsInfo(dotsInfo),
-          mMapColumnsCount(GetMapColumnsCount(mapPtr))
+          mMapColumnsCount(GetMapColumnsCount(mapPtr)),
+          mHiddenDotsCounts(0)
 {
     const std::shared_ptr<Map> map = mapPtr.lock();
     const std::shared_ptr<SpriteSheet> spritesheet = spritesheetPtr.lock();
@@ -85,14 +86,19 @@ void DotsGrid::HideDot(const CellIndex& index)
     if (iter == mDotsIndexMap.end())
         return;
 
-    const DotType dotType = mDotsInfo[index.GetY() * mMapColumnsCount + index.GetX()];
+    const size_t dotIndex = index.GetX() * mMapColumnsCount + index.GetY();
+    const DotType dotType = mDotsInfo[dotIndex];
     switch (dotType)
     {
     case DotType::Small:
-        mSmallDotsSprite->HideInstance(iter->second);
+        mSmallDotsSprite->EraseInstance(iter->second);
+        mDotsInfo[dotIndex] = DotType::None;
+        mHiddenDotsCounts++;
         break;
     case DotType::Big:
-        mBigDotsSprite->HideInstance(iter->second);
+        mBigDotsSprite->EraseInstance(iter->second);
+        mDotsInfo[dotIndex] = DotType::None;
+        mHiddenDotsCounts++;
         break;
     }
 }

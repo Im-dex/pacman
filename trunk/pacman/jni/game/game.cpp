@@ -13,7 +13,6 @@
 #include "scene_node.h"
 #include "texture.h"
 #include "spritesheet.h"
-#include "frame_animator.h"
 #include "dots_grid.h"
 
 static std::shared_ptr<Pacman::Game> gGame = nullptr;
@@ -65,6 +64,16 @@ void Game::OnLoad()
     const uint16_t actorSize = CalcActorSize(cellSize);
     mPacman = mLoader.LoadPacmanActor("pacman.json", actorSize, spriteSheet, mMap);
     mPacman->AttachToScene(sceneManager);
+
+    std::shared_ptr<Action> pacmanEatAction = std::make_shared<Action>(
+    [mPacman, mMap, dots]() -> ActionResult
+    {
+        const CellIndex pacmanCellIndex = mMap->FindCell(mPacman->GetRegion());
+        dots->HideDot(pacmanCellIndex);
+        return ActionResult::None;
+    });
+
+    mScheduler.RegisterAction(pacmanEatAction, 0, true);
 }
 
 void Game::OnUnload()
