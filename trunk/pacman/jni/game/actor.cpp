@@ -1,4 +1,5 @@
 #include "actor.h"
+
 #include "error.h"
 #include "scene_node.h"
 #include "scene_manager.h"
@@ -7,71 +8,14 @@
 
 namespace Pacman {
 
-static ActorMoveDirection ConvertDirection(const std::string& direction)
+Actor::Actor(const uint16_t size, const uint16_t speed, const SpritePosition& startPosition,
+             const uint16_t cellSize, std::shared_ptr<IDrawable> drawable)
+     : mSize(size),
+       mSpeed(speed),
+       mMovePoint(0, 0),
+       mCellSize(cellSize),
+       mNode(std::make_shared<SceneNode>(drawable, SpritePosition(size/2, size/2), startPosition, Rotation::kZero))
 {
-    if (direction == "left")
-        return ActorMoveDirection::Left;
-    if (direction == "right")
-        return ActorMoveDirection::Right;
-    if (direction == "up")
-        return ActorMoveDirection::Up;
-    if (direction == "down")
-        return ActorMoveDirection::Down;
-    return ActorMoveDirection::None;
-}
-
-Actor::Actor(const std::string& textData, std::shared_ptr<IDrawable> drawable,
-             const uint16_t size, const std::weak_ptr<Map> map)
-     : mDirection(ActorMoveDirection::None),
-       mSize(size)
-{
-    const Json::Value root = JsonHelper::ParseJson(textData);
-    PACMAN_CHECK_ERROR(root.isObject(), ErrorCode::BadFormat);
-
-    const Json::Value startCellIndex = root["startRightCellIndex"];
-    const Json::Value direction = root["direction"];
-    const Json::Value speed = root["speed"];
-    PACMAN_CHECK_ERROR(startCellIndex.isArray() && (startCellIndex.size() == 2) &&
-                       direction.isString() && speed.isNumeric(), ErrorCode::BadFormat);
-
-    const Json::Value cellIndexRow = startCellIndex[size_t(0)];
-    const Json::Value cellIndexColumn = startCellIndex[size_t(1)];
-    PACMAN_CHECK_ERROR(cellIndexRow.isNumeric() && cellIndexColumn.isNumeric(), ErrorCode::BadFormat);
-
-    mNextDirection = ConvertDirection(direction.asString());
-    mSpeed = speed.asUInt();
-
-    CellIndex rightCellIndex(cellIndexRow.asUInt(), cellIndexColumn.asUInt());
-    const std::shared_ptr<Map> mapPtr = map.lock();
-    PACMAN_CHECK_ERROR(mapPtr != nullptr, ErrorCode::InvalidState);
-
-    const uint16_t cellSize = mapPtr->GetCellSize();
-    const uint16_t cellSizeHalf = cellSize / 2;
-    const uint16_t actorsSizeHalf = mSize / 2;
-
-    // find start position
-    SpritePosition startPosition = mapPtr->GetCellCenterPos(rightCellIndex);
-    startPosition.SetX(startPosition.GetX() - cellSizeHalf); // position between cells
-    // move actors drawable center into this position
-    startPosition.SetX(startPosition.GetX() - actorsSizeHalf);
-    startPosition.SetY(startPosition.GetY() - actorsSizeHalf);
-
-    mNode = std::make_shared<SceneNode>(drawable, startPosition);
-}
-
-void Actor::Translate(const SpritePosition& position)
-{
-    mNode->Translate(position);
-}
-
-void Actor::MoveForward(const SpritePosition& offset)
-{
-    mNode->MoveForward(offset);
-}
-
-void Actor::MoveBack(const SpritePosition& offset)
-{
-    mNode->MoveBack(offset);
 }
 
 void Actor::AttachToScene(SceneManager& sceneManager) const
@@ -84,9 +28,33 @@ void Actor::DetachFromScene(SceneManager& sceneManager) const
     sceneManager.DetachNode(mNode);
 }
 
+void Actor::Update(const uint64_t dt)
+{
+    const int32_t offset = static_cast<const int32_t>(mSpeed * mCellSize * dt / 1000);
+
+    const SpritePosition currentPosition = mNode->GetPosition();
+    const int32_t xDiff = static_cast<const int32_t>(mMovePoint.GetX()) - currentPosition.GetX();
+    const int32_t yDiff = static_cast<const int32_t>(mMovePoint.GetY()) - currentPosition.GetY();
+
+    const int32_t xOffset = ((xDiff < 0) ? -1 : 1) * (std::min(offset, std::abs(xDiff)));
+    const int32_t yOffset = ((yDiff < 0) ? -1 : 1) * (std::min(offset, std::abs(yDiff)));
+
+    mNode->Move(xOffset, yOffset);
+}
+
+SpritePosition Actor::GetPosition() const
+{
+    return mNode->GetPosition();
+}
+
 SpriteRegion Actor::GetRegion() const
 {
     return SpriteRegion(mNode->GetPosition(), mSize, mSize);
+}
+
+void Actor::Rotate(const Rotation& rotation)
+{
+    mNode->Rotate(rotation);
 }
 
 } // Pacman namespace

@@ -1,13 +1,11 @@
 #pragma once
 
 #include <vector>
-#include <cstdint>
 #include <memory>
 #include <string>
 
-#include "base.h"
-#include "math/vector2.h"
 #include "sprite.h"
+#include "game_typedefs.h"
 
 namespace Pacman {
 
@@ -19,19 +17,11 @@ enum class MapCellType : uint8_t
 {
 	Empty = 0,
 	Wall  = 1,
-	Door  = 2
+	Door  = 2,
+    Space = 3 // out of map area
 };
 
-static const size_t kCellTypesCount = 3;
-
-enum class DotType : uint8_t
-{
-    None  = 0,
-    Small = 3,
-    Big   = 4
-};
-
-static const size_t kDotTypesCount = 2;
+static const size_t kCellTypesCount = 4;
 
 struct MapNeighborsInfo
 {
@@ -50,13 +40,13 @@ struct FullMapNeighborsInfo
     MapCellType      rightBottom;
 };
 
-typedef Math::Vector2<uint16_t> CellIndex;
-
 class Map
 {
 public:
 
-	Map(const std::string& textData, std::vector<DotType>& dotsInfo);
+	Map(const uint16_t cellSize, const uint16_t rowsCount, const size_t viewportWidth,
+        const size_t viewportHeight, const std::vector<MapCellType>& cells);
+
 	Map(const Map&) = delete;
 	~Map() = default;
 
@@ -99,8 +89,6 @@ public:
     }
 
 private:
-
-    void ParseJsonData(const std::string& data, std::vector<DotType>& dotsInfo);
 
 	std::shared_ptr<Sprite> GenerateSprite();
 

@@ -1,10 +1,10 @@
 #pragma once
 
+#include <array>
+
 #include "base.h"
 #include "math.h"
 #include "vector4.h"
-
-#include <array>
 
 namespace Pacman {
 namespace Math {
@@ -20,6 +20,21 @@ public:
 	static const Matrix4<T> kIdentity;
 
 	static Matrix4<T> Ortho(const T left, const T right, const T bottom, const T top, const T near, const T far);
+
+    static Matrix4<T> MakeTranslationX(const T x);
+    static Matrix4<T> MakeTranslationY(const T y);
+    static Matrix4<T> MakeTranslationZ(const T z);
+    static Matrix4<T> MakeTranslation(const T x, const T y, const T z);
+
+    static Matrix4<T> MakeRotationX(const T x);
+    static Matrix4<T> MakeRotationY(const T y);
+    static Matrix4<T> MakeRotationZ(const T z);
+    static Matrix4<T> MakeRotation(const T x, const T y, const T z);
+
+    static Matrix4<T> MakeScaleX(const T x);
+    static Matrix4<T> MakeScaleY(const T y);
+    static Matrix4<T> MakeScaleZ(const T z);
+    static Matrix4<T> MakeScale(const T x, const T y, const T z);
 
 	explicit Matrix4() = default;
 	explicit Matrix4(const T m00, const T m01, const T m02, const T m03,

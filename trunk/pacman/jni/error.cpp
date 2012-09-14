@@ -1,12 +1,13 @@
 #include "error.h"
-#include "base.h"
-#include "jni_utility.h"
 
 #include <GLES2/gl2.h>
 #include <exception>
 #include <vector>
 #include <string>
 #include <sstream>
+
+#include "log.h"
+#include "jni_utility.h"
 
 namespace Pacman {
 

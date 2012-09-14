@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "base.h"
 #include "engine_typedefs.h"
 #include "math/matrix4.h"
 #include "drawable.h"
@@ -13,7 +14,8 @@ class SceneNode
 public:
 
 	SceneNode() = delete;
-	SceneNode(const std::shared_ptr<IDrawable> drawable, const SpritePosition& position);
+	SceneNode(const std::shared_ptr<IDrawable> drawable, const SpritePosition& pivotOffset,
+              const SpritePosition& position, const Rotation& rotation);
 	SceneNode(const SceneNode&) = default;
 	~SceneNode() = default;
 
@@ -31,30 +33,27 @@ public:
 		return mPosition;
 	}
 
-	void MoveForward(const SpritePosition& offset)
+	void Move(const int32_t xOffset, const int32_t yOffset)
 	{
-		mPosition += offset;
+        mPosition.SetX(static_cast<uint32_t>(static_cast<const uint16_t>(mPosition.GetX() + xOffset)));
+        mPosition.SetY(static_cast<uint32_t>(static_cast<const uint16_t>(mPosition.GetY() + yOffset)));
 	}
-
-    void MoveBack(const SpritePosition& offset)
-    {
-        mPosition -= offset;
-    }
 
 	void Translate(const SpritePosition& position)
 	{
 		mPosition = position;
 	}
 
-    /*void Rotate(const float angle)
+    void Rotate(const Rotation& rotation)
     {
-
-    }*/
+        mRotation = rotation;
+    }
 
 private:
 	
+    SpritePosition             mPivotOffset;
 	SpritePosition             mPosition;
-    //float                      mRotation;
+    Rotation                   mRotation;
     std::shared_ptr<IDrawable> mDrawable;
 };
 

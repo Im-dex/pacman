@@ -1,4 +1,7 @@
 #include "renderer.h"
+
+#include <GLES2/gl2.h>
+
 #include "error.h"
 #include "engine.h"
 #include "scene_manager.h"
@@ -7,10 +10,6 @@
 #include "texture.h"
 #include "shader_program.h"
 #include "vertex_buffer.h"
-
-#include "base.h"
-
-#include <GLES2/gl2.h>
 
 namespace Pacman {
 
@@ -66,7 +65,7 @@ void Renderer::RenderDrawable(const std::shared_ptr<IDrawable> drawable, const M
 	std::shared_ptr<ShaderProgram> shaderProgram = drawable->GetShaderProgram();
 	std::weak_ptr<Texture2D> texture = drawable->GetTexture();
 	bool hasAlphaBlend = drawable->HasAlphaBlend();
-
+    
     PACMAN_CHECK_ERROR((vertexBuffer != nullptr) && (shaderProgram != nullptr), ErrorCode::InvalidState);
 
 	if (hasAlphaBlend && !mLastAlphaBlendState)
@@ -85,18 +84,18 @@ void Renderer::RenderDrawable(const std::shared_ptr<IDrawable> drawable, const M
 
 	if (auto texturePtr = texture.lock())
     {
-        if (mLastTexture != texturePtr.get())
-        {
+        //if (mLastTexture != texturePtr.get())
+       // {
 		    texturePtr->Bind();
             mLastTexture = texturePtr.get();
-        }
+        //}
     }
 
-    if (shaderProgram.get() != mLastShaderProgram)
-    {
+    //if (shaderProgram.get() != mLastShaderProgram)
+    //{
 	    shaderProgram->Bind();
-        mLastShaderProgram = shaderProgram.get();
-    }
+      //  mLastShaderProgram = shaderProgram.get();
+   // }
 
 	Math::Matrix4f modelProjection = (mProjection * modelMatrix).Transpose();
 	shaderProgram->SetUniform(kModelProjMatrixUniformName, modelProjection);

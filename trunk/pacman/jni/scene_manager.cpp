@@ -1,8 +1,9 @@
 #include "scene_manager.h"
-#include "error.h"
-#include "scene_node.h"
 
 #include <algorithm>
+
+#include "error.h"
+#include "scene_node.h"
 
 namespace Pacman{
 

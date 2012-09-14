@@ -1,11 +1,12 @@
 #pragma once
 
-#include "sprite.h"
-#include "json_helper.h"
-
 #include <string>
 #include <memory>
 #include <unordered_map>
+
+#include "base.h"
+#include "sprite.h"
+#include "json_helper.h"
 
 namespace Pacman {
 
@@ -30,7 +31,7 @@ public:
 
 	SpriteSheet& operator= (const SpriteSheet&) = default;
 
-	std::shared_ptr<Sprite> MakeSprite(const std::string& name, const SpriteRegion& region);
+	std::shared_ptr<Sprite> MakeSprite(const std::string& name, const SpriteRegion& region) const;
 
     SpriteInfo GetSpriteInfo(const std::string& name) const;
 

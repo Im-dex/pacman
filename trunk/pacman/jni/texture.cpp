@@ -1,4 +1,5 @@
 #include "texture.h"
+
 #include "error.h"
 
 namespace Pacman {

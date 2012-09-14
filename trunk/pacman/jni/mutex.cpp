@@ -1,4 +1,5 @@
 #include "mutex.h"
+
 #include "error.h"
 
 namespace Pacman {

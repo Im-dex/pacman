@@ -479,5 +479,77 @@ Matrix4<T> Matrix4<T>::Ortho(const T left, const T right, const T bottom, const 
 					  T(0), T(0), T(0),	T(1));
 }
 
+template <typename T>
+Matrix4<T> Matrix4<T>::MakeTranslationX(const T x)
+{
+    return Matrix4<T>(Matrix4<T>::kIdentity).TranslateX(x);
+}
+
+template <typename T>
+Matrix4<T> Matrix4<T>::MakeTranslationY(const T y)
+{
+    return Matrix4<T>(Matrix4<T>::kIdentity).TranslateY(y);
+}
+
+template <typename T>
+Matrix4<T> Matrix4<T>::MakeTranslationZ(const T z)
+{
+    return Matrix4<T>(Matrix4<T>::kIdentity).TranslateZ(z);
+}
+
+template <typename T>
+Matrix4<T> Matrix4<T>::MakeTranslation(const T x, const T y, const T z)
+{
+    return Matrix4<T>(Matrix4<T>::kIdentity).Translate(x, y, z);
+}
+
+template <typename T>
+Matrix4<T> Matrix4<T>::MakeRotationX(const T x)
+{
+    return Matrix4<T>(Matrix4<T>::kIdentity).RotateX(x);
+}
+
+template <typename T>
+Matrix4<T> Matrix4<T>::MakeRotationY(const T y)
+{
+    return Matrix4<T>(Matrix4<T>::kIdentity).RotateY(y);
+}
+
+template <typename T>
+Matrix4<T> Matrix4<T>::MakeRotationZ(const T z)
+{
+    return Matrix4<T>(Matrix4<T>::kIdentity).RotateZ(z);
+}
+
+template <typename T>
+Matrix4<T> Matrix4<T>::MakeRotation(const T x, const T y, const T z)
+{
+    return Matrix4<T>(Matrix4<T>::kIdentity).Rotate(x, y, z);
+}
+
+template <typename T>
+Matrix4<T> Matrix4<T>::MakeScaleX(const T x)
+{
+    return Matrix4<T>(Matrix4<T>::kIdentity).ScaleX(x);
+}
+
+template <typename T>
+Matrix4<T> Matrix4<T>::MakeScaleY(const T y)
+{
+    return Matrix4<T>(Matrix4<T>::kIdentity).ScaleY(y);
+}
+
+template <typename T>
+Matrix4<T> Matrix4<T>::MakeScaleZ(const T z)
+{
+    return Matrix4<T>(Matrix4<T>::kIdentity).ScaleZ(z);
+}
+
+template <typename T>
+Matrix4<T> Matrix4<T>::MakeScale(const T x, const T y, const T z)
+{
+    return Matrix4<T>(Matrix4<T>::kIdentity).Scale(x, y, z);
+}
+
 } // Math namespace
 } // Pacman namespace

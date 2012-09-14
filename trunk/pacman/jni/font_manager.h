@@ -1,15 +1,15 @@
 #pragma once
 
-#include "sprite.h"
-#include "color.h"
-
-#include "drawable.h"
-#include "math/vector2.h"
-
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "base.h"
+#include "sprite.h"
+#include "color.h"
+#include "drawable.h"
+#include "math/vector2.h"
 
 namespace Pacman {
 

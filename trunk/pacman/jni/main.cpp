@@ -1,10 +1,11 @@
 #include "main.h"
-#include "base.h"
-#include "error.h"
-#include "engine.h"
 
 #include <jni.h>
 #include <cassert>
+
+#include "log.h"
+#include "error.h"
+#include "engine.h"
 
 namespace Pacman {
 

@@ -3,11 +3,11 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE    := nativelib
-LOCAL_CFLAGS    := -Werror -std=gnu++0x -Wno-psabi -fexceptions
+LOCAL_CFLAGS    := -Werror -std=gnu++0x -Wno-psabi -fexceptions -fno-rtti
 LOCAL_SRC_FILES := main.cpp\
                    renderer.cpp\
                    sprite.cpp\
-				   instanced_sprite.cpp\
+                   instanced_sprite.cpp\
                    spritesheet.cpp\
                    color.cpp\
                    vertex_buffer.cpp\
@@ -24,14 +24,15 @@ LOCAL_SRC_FILES := main.cpp\
                    jni_utility.cpp\
                    json_helper.cpp\
                    engine.cpp\
-				   mutex.cpp\
+		           mutex.cpp\
+				   utils.cpp\
                    input_manager.cpp\
                    json/json_reader.cpp\
                    json/json_value.cpp\
                    json/json_writer.cpp\
 				   game/game.cpp\
+				   game/loader.cpp\
 				   game/actor.cpp\
-				   game/actors_manager.cpp\
 				   game/map.cpp\
 				   game/dots_grid.cpp\
 				   game/scheduler.cpp\

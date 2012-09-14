@@ -1,8 +1,8 @@
 #pragma once
 
-#include "base.h"
-
 #include <GLES2/gl2.h>
+
+#include "base.h"
 
 namespace Pacman {
 

@@ -1,9 +1,10 @@
 #include "vertex_buffer.h"
-#include "error.h"
 
 #include <cstring>
 #include <cassert>
 #include <cstddef>
+
+#include "error.h"
 
 namespace Pacman {
 

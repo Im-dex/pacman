@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <cstdint>
 #include <memory>
 #include <unordered_map>
 #include <tuple>
@@ -14,6 +13,7 @@ enum class DotType : uint8_t;
 class InstancedSprite;
 class SpriteSheet;
 class SceneManager;
+class SceneNode;
 
 template <typename T>
 struct CustomHash;
@@ -34,13 +34,15 @@ class DotsGrid
 public:
 
     DotsGrid() = delete;
-    DotsGrid(const std::vector<DotType>& dotsInfo, const std::shared_ptr<Map> map, const SpriteSheet& spritesheet);
+    DotsGrid(const std::vector<DotType>& dotsInfo, const std::weak_ptr<Map> mapPtr, const std::weak_ptr<SpriteSheet> spritesheetPtr);
     DotsGrid(const DotsGrid&) = delete;
     ~DotsGrid() = default;
 
     DotsGrid& operator= (const DotsGrid&) = delete;
 
     void AttachToScene(SceneManager& sceneManager);
+
+    void DetachFromScene(SceneManager& sceneManager);
 
     void HideDot(const CellIndex& index);
 
@@ -60,6 +62,8 @@ private:
     const uint16_t                   mMapColumnsCount;
     std::shared_ptr<InstancedSprite> mSmallDotsSprite;
     std::shared_ptr<InstancedSprite> mBigDotsSprite;
+    std::shared_ptr<SceneNode>       mSmallDotsNode;
+    std::shared_ptr<SceneNode>       mBigDotsNode;
 };
 
 } // Pacman namespace

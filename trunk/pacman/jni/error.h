@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include "base.h"
+
 namespace Pacman {
 
 #define PACMAN_CHECK_GL_ERROR()\
@@ -10,8 +12,13 @@ namespace Pacman {
 #define PACMAN_CHECK_ERROR(err, errorCode)\
 	ErrorHandler::CheckError((err), (errorCode), __FILE__, __LINE__);
 
-#define PACMAN_CHECK_ERROR2(err, errorCode, msg)\
-	ErrorHandler::CheckError((err), (errorCode), __FILE__, __LINE__, (msg));
+#ifdef NDEBUG
+    #define PACMAN_CHECK_ERROR2(err, errorCode, msg)\
+	    ErrorHandler::CheckError((err), (errorCode), __FILE__, __LINE__, "");
+#else
+    #define PACMAN_CHECK_ERROR2(err, errorCode, msg)\
+        ErrorHandler::CheckError((err), (errorCode), __FILE__, __LINE__, (msg));
+#endif
 
 enum class ErrorCode : uint32_t
 {

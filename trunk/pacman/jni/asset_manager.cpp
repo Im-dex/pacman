@@ -1,17 +1,17 @@
 #include "asset_manager.h"
-#include "base.h"
-#include "engine.h"
-#include "error.h"
-#include "color.h"
-#include "texture.h"
-#include "shader_program.h"
-#include "jni_utility.h"
 
 #include <new>
 #include <algorithm>
 #include <memory>
 #include <sstream>
 #include <android/bitmap.h>
+
+#include "engine.h"
+#include "error.h"
+#include "color.h"
+#include "texture.h"
+#include "shader_program.h"
+#include "jni_utility.h"
 
 namespace Pacman {
 

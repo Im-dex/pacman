@@ -3,6 +3,8 @@
 #include <GLES2/gl2.h>
 #include <string>
 
+#include "base.h"
+
 namespace Pacman {
 
 enum class ShaderType

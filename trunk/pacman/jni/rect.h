@@ -1,11 +1,11 @@
 #pragma once
 
-#include "base.h"
-#include "math/vector2.h"
-
 #include <utility>
 #include <algorithm>
 #include <type_traits>
+
+#include "base.h"
+#include "math/vector2.h"
 
 namespace Pacman {
 

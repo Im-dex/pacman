@@ -1,4 +1,5 @@
 #include "spritesheet.h"
+
 #include "error.h"
 #include "texture.h"
 #include "shader_program.h"
@@ -52,7 +53,7 @@ SpriteSheet::SpriteSheet(const std::string& description)
 	}
 }
 
-std::shared_ptr<Sprite> SpriteSheet::MakeSprite(const std::string& name, const SpriteRegion& region)
+std::shared_ptr<Sprite> SpriteSheet::MakeSprite(const std::string& name, const SpriteRegion& region) const
 {
     SpriteInfo info = GetSpriteInfo(name);
 	AssetManager& assetManager = GetEngine()->GetAssetManager();

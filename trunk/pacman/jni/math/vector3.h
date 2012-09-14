@@ -1,9 +1,9 @@
 #pragma once
 
+#include <array>
+
 #include "base.h"
 #include "math.h"
-
-#include <array>
 
 namespace Pacman {
 namespace Math {

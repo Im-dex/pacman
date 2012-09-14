@@ -1,5 +1,4 @@
 #include "json_helper.h"
-#include "error.h"
 
 namespace Pacman {
 namespace JsonHelper {

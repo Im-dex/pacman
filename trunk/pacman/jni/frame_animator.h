@@ -1,10 +1,11 @@
 #pragma once
 
-#include "drawable.h"
-
 #include <vector>
 #include <memory>
 #include <cstdint>
+
+#include "base.h"
+#include "drawable.h"
 
 namespace Pacman {
 
@@ -16,7 +17,7 @@ public:
 
 	FrameAnimator() = delete;
 	// frameDuration in milliseconds
-	FrameAnimator(const std::vector<std::shared_ptr<Sprite>>& frames, const size_t frameDuration);
+	FrameAnimator(const std::vector<std::shared_ptr<Sprite>>& frames, const uint64_t frameDuration);
 	FrameAnimator(const FrameAnimator&) = delete;
 	~FrameAnimator() = default;
 
@@ -35,7 +36,7 @@ public:
 private:
 
 	std::vector<std::shared_ptr<Sprite>> mFrames;
-	const size_t mFrameDuration;
+	const uint64_t mFrameDuration;
 	uint64_t mLastFrameSwitch;
 	size_t mCurrentFrame;
 };

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "base.h"
-
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_map>
+
+#include "base.h"
 
 namespace Pacman {
 

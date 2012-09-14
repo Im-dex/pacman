@@ -6,7 +6,6 @@
 #include <GLES2/gl2.h>
 #include <array>
 #include <vector>
-#include <cstdint>
 
 namespace Pacman {
 

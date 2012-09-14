@@ -1,10 +1,10 @@
 #pragma once
 
+#include <memory>
+
+#include "base.h"
 #include "color.h"
 #include "math/matrix4.h"
-
-#include <cstdint>
-#include <memory>
 
 namespace Pacman {
 

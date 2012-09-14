@@ -1,18 +1,17 @@
 #pragma once
 
-#include <cstdint>
 #include <memory>
 
 #include "engine_listeners.h"
-
+#include "loader.h"
 #include "scheduler.h"
+#include "pacman.h"
+#include "map.h"
 
 namespace Pacman {
 
 class SceneNode;
 class FrameAnimator;
-
-class ActorsManager;
 
 class Game : public IEngineListener, public IGestureListener
 {
@@ -34,11 +33,11 @@ public:
 
 private:
 
-	std::shared_ptr<SceneNode> mPacmanNode;
-	std::shared_ptr<FrameAnimator> mPacmanAnimator;
+    GameLoader mLoader;
+    Scheduler mScheduler;
 
-    std::unique_ptr<ActorsManager> mActorsManager;
-    std::unique_ptr<Scheduler> mScheduler;
+    std::shared_ptr<Map> mMap;
+	std::shared_ptr<PacmanActor> mPacman;
 };
 
 } // Pacman namespace
