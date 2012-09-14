@@ -1,12 +1,13 @@
 #pragma once
 
+#include <vector>
 #include <string>
 #include <memory>
+#include <utility>
 #include <unordered_map>
 
 #include "base.h"
 #include "sprite.h"
-#include "json_helper.h"
 
 namespace Pacman {
 
@@ -20,12 +21,15 @@ struct SpriteInfo
     bool          mAlphaBlend;
 };
 
+typedef std::pair<std::string, SpriteInfo> NamedSpriteInfo;
+typedef std::vector<NamedSpriteInfo> NamedSpriteInfoArray; 
+
 class SpriteSheet
 {
 public:
 
 	SpriteSheet() = delete;
-	SpriteSheet(const std::string& description);
+	SpriteSheet(const std::shared_ptr<Texture2D> texture, const NamedSpriteInfoArray& namedSpritesInfo);
 	SpriteSheet(const SpriteSheet&) = default;
 	~SpriteSheet() = default;
 
@@ -42,7 +46,7 @@ public:
 
 private:
 
-	std::unordered_map<std::string, Json::Value> mSprites;
+	std::unordered_map<std::string, SpriteInfo>  mSpritesInfo;
 	std::shared_ptr<Texture2D>					 mTexture;
 };
 

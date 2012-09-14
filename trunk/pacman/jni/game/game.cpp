@@ -57,8 +57,7 @@ void Game::OnLoad()
     mMap = mLoader.LoadMap("map.json", cellSize);
     mMap->AttachToScene(sceneManager);
 
-    std::string spritesheetData = assetManager.LoadTextFile("spritesheet1.json");
-    std::shared_ptr<SpriteSheet> spriteSheet = std::make_shared<SpriteSheet>(spritesheetData);
+    std::shared_ptr<SpriteSheet> spriteSheet = assetManager.LoadSpriteSheet("spritesheet1.json");
 
     std::shared_ptr<DotsGrid> dots = mLoader.MakeDotsGrid(mMap, spriteSheet);
     dots->AttachToScene(sceneManager);

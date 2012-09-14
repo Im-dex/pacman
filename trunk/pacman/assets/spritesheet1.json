@@ -1,6 +1,6 @@
 {
 	"image":"spritesheet1.png",
-	"filtering":"bilinear",
+	"filtering":1,
 	"list": [
 		{
 			"name":"cherry",
