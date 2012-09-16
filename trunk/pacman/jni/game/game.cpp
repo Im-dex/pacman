@@ -76,6 +76,9 @@ void Game::OnLoad()
     mPacman = mLoader.LoadPacmanActor("pacman.json", actorSize, spriteSheet, map);
     mPacman->AttachToScene(sceneManager);
 
+    mBlinky = mLoader.LoadGhostActor("blinky.json", actorSize, spriteSheet, map);
+    mBlinky->AttachToScene(sceneManager);
+
     InitActionsAndTriggers(map, dots);
 }
 
@@ -92,6 +95,7 @@ void Game::OnUpdate(const uint64_t dt)
 {
     mScheduler.Update(dt);
     mPacman->Update(dt);
+    //mBlinky->Update(dt);
 }
 
 void Game::OnGesture(const GestureType gestureType)

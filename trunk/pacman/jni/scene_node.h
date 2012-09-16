@@ -28,6 +28,11 @@ public:
         return mDrawable;
     }
 
+    void SetDrawable(const std::shared_ptr<IDrawable> drawable)
+    {
+        mDrawable = drawable;
+    }
+
 	SpritePosition GetPosition() const
 	{
 		return mPosition;
