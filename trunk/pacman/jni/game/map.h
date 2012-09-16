@@ -45,7 +45,8 @@ class Map
 public:
 
 	Map(const uint16_t cellSize, const uint16_t rowsCount, const size_t viewportWidth,
-        const size_t viewportHeight, const std::vector<MapCellType>& cells);
+        const size_t viewportHeight, const CellIndex& leftTunnelExit,
+        const CellIndex& rightTunnelExit, const std::vector<MapCellType>& cells);
 
 	Map(const Map&) = delete;
 	~Map() = default;
@@ -88,6 +89,16 @@ public:
         return mColumnsCount;
     }
 
+    CellIndex GetLeftTunnelExit() const
+    {
+        return mLeftTunnelExit;
+    }
+
+    CellIndex GetRightTunnelExit() const
+    {
+        return mRightTunnelExit;
+    }
+
 private:
 
 	std::shared_ptr<Sprite> GenerateSprite();
@@ -96,13 +107,15 @@ private:
 
 	void CleanArtifacts(byte_t* buffer, const size_t textureWidth);
 
+    const uint16_t			 mCellSize;
+    const uint16_t           mCellSizeHalf;
+    const uint16_t			 mCellSizeQuarter;
+    const uint16_t 			 mRowsCount;
+    const uint16_t 			 mColumnsCount;
+    const CellIndex          mLeftTunnelExit;
+    const CellIndex          mRightTunnelExit;
 	std::vector<MapCellType> mCells;
     SpriteRegion             mRect;
-	uint16_t 				 mRowsCount;
-	uint16_t 				 mColumnsCount;
-	uint16_t				 mCellSize;
-    uint16_t                 mCellSizeHalf;
-	uint16_t				 mCellSizeQuarter;
 
 	std::shared_ptr<SceneNode> mNode;
 };

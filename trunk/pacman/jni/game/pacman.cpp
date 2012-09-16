@@ -57,6 +57,7 @@ PacmanActor::PacmanActor(const uint16_t size, const uint16_t speed, const Sprite
            : Actor(size, speed, startPosition, cellSize, MakeAnimator(spriteSheet, animationFrameDuration, size)),
              mSpriteCenterOffset(size / 2, size / 2),
              mAnimator(nullptr),
+             mDirection(PacmanMoveDirection::None),
              mMap(map)
 {
     mAnimator = std::static_pointer_cast<FrameAnimator>(Actor::mNode->GetDrawable());
@@ -72,8 +73,16 @@ void PacmanActor::ChangeDirection(const PacmanMoveDirection direction)
         SpritePosition maxAvailablePos = mMap->GetCellCenterPos(maxAvailableCellIndex);
         maxAvailablePos -= mSpriteCenterOffset; // because sprite pos is the left top point, not center
         Rotate(GetDirectionRotation(direction));
-        MoveTo(maxAvailablePos);            
+        MoveTo(maxAvailablePos);
+        mDirection = direction;
     }
+}
+
+void PacmanActor::TranslateTo(const CellIndex& index)
+{
+    const SpritePosition position = mMap->GetCellCenterPos(index) - mSpriteCenterOffset;
+    Translate(position);
+    ChangeDirection(mDirection);
 }
 
 void PacmanActor::Update(const uint64_t dt)

@@ -88,11 +88,14 @@ static FORCEINLINE void CutBottom(SpriteRegion& region, const uint16_t cutSize)
 //============================================================================================================================================
 
 Map::Map(const uint16_t cellSize, const uint16_t rowsCount, const size_t viewportWidth,
-         const size_t viewportHeight, const std::vector<MapCellType>& cells)
+         const size_t viewportHeight, const CellIndex& leftTunnelExit,
+         const CellIndex& rightTunnelExit, const std::vector<MapCellType>& cells)
    : mCellSize(cellSize),
      mCellSizeHalf(cellSize/2),
      mCellSizeQuarter(cellSize/4),
      mRowsCount(rowsCount),
+     mLeftTunnelExit(leftTunnelExit),
+     mRightTunnelExit(rightTunnelExit),
      mColumnsCount(cells.size() / rowsCount),
      mCells(cells),
      mRect(0, 0, 0, 0)

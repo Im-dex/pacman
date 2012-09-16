@@ -40,12 +40,23 @@ std::shared_ptr<Map> GameLoader::LoadMap(const std::string& fileName, const uint
     PACMAN_CHECK_ERROR(root.isObject(), ErrorCode::BadFormat);
 
     const Json::Value rowsCount = root["rowsCount"];
+    const Json::Value leftTunnelExit = root["leftTunnelExit"];
+    const Json::Value rightTunnelExit = root["rightTunnelExit"];
     const Json::Value cells = root["cells"];
-    PACMAN_CHECK_ERROR(rowsCount.isNumeric() && cells.isArray() &&
+    PACMAN_CHECK_ERROR(rowsCount.isNumeric() && leftTunnelExit.isArray() &&
+                       (leftTunnelExit.size() == 2) && rightTunnelExit.isArray() &&
+                       (rightTunnelExit.size() == 2) && cells.isArray() &&
                        (cells.size() > 0), ErrorCode::BadFormat);
 
     const uint16_t rowsCountValue = static_cast<const uint16_t>(rowsCount.asUInt());
+    const uint16_t leftTunnelExitRow = static_cast<const uint16_t>(leftTunnelExit[size_t(0)].asUInt());
+    const uint16_t leftTunnelExitColumn = static_cast<const uint16_t>(leftTunnelExit[size_t(1)].asUInt());
+    const uint16_t rightTunnelExitRow = static_cast<const uint16_t>(rightTunnelExit[size_t(0)].asUInt());
+    const uint16_t rightTunnelExitColumn = static_cast<const uint16_t>(rightTunnelExit[size_t(1)].asUInt());
     PACMAN_CHECK_ERROR((cells.size() % rowsCountValue) == 0, ErrorCode::BadFormat);
+
+    const CellIndex leftTunnelExitValue(leftTunnelExitRow, leftTunnelExitColumn);
+    const CellIndex rightTunnelExitValue(rightTunnelExitRow, rightTunnelExitColumn);
 
     std::vector<MapCellType> cellsValues;
     mDotsInfo.clear();
@@ -71,7 +82,8 @@ std::shared_ptr<Map> GameLoader::LoadMap(const std::string& fileName, const uint
         mDotsInfo.push_back(dot);
     }
 
-    return std::make_shared<Map>(cellSize, rowsCountValue, renderer.GetViewportWidth(), renderer.GetViewportHeight(), cellsValues);
+    return std::make_shared<Map>(cellSize, rowsCountValue, renderer.GetViewportWidth(), renderer.GetViewportHeight(),
+                                 leftTunnelExitValue, rightTunnelExitValue, cellsValues);
 }
 
 std::shared_ptr<DotsGrid> GameLoader::MakeDotsGrid(const std::weak_ptr<Map> mapPtr, const std::weak_ptr<SpriteSheet> spritesheetPtr)

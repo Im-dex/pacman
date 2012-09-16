@@ -7,6 +7,7 @@
 #include "scheduler.h"
 #include "pacman.h"
 #include "map.h"
+#include "dots_grid.h"
 
 namespace Pacman {
 
@@ -33,11 +34,12 @@ public:
 
 private:
 
+    void InitActionsAndTriggers(const std::shared_ptr<Map> map, const std::shared_ptr<DotsGrid> dots);
+
     GameLoader mLoader;
     Scheduler mScheduler;
 
-    std::shared_ptr<Map> mMap;
-	std::shared_ptr<PacmanActor> mPacman;
+    std::shared_ptr<PacmanActor> mPacman;
 };
 
 } // Pacman namespace

@@ -3,7 +3,7 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE    := nativelib
-LOCAL_CFLAGS    := -Werror -std=gnu++0x -Wno-psabi -fexceptions -fno-rtti
+LOCAL_CFLAGS    := -Werror -std=gnu++0x -Wno-psabi -fexceptions -frtti
 LOCAL_SRC_FILES := main.cpp\
                    renderer.cpp\
                    sprite.cpp\
