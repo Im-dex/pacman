@@ -54,13 +54,13 @@ PacmanActor::PacmanActor(const uint16_t size, const uint16_t speed, const Sprite
                          const uint16_t cellSize, const uint64_t animationFrameDuration,
                          const PacmanMoveDirection startDirection, const std::weak_ptr<SpriteSheet> spriteSheet,
                          const std::shared_ptr<Map> map)
-           : Actor(size, speed, startPosition, cellSize, MakeAnimator(spriteSheet, animationFrameDuration, size)),
+           : Actor(size, speed, startPosition, cellSize, nullptr),
              mSpriteCenterOffset(size / 2, size / 2),
-             mAnimator(nullptr),
+             mAnimator(MakeAnimator(spriteSheet, animationFrameDuration, size)),
              mDirection(PacmanMoveDirection::None),
              mMap(map)
 {
-    mAnimator = std::static_pointer_cast<FrameAnimator>(Actor::mNode->GetDrawable());
+    Actor::mNode->SetDrawable(mAnimator);
     ChangeDirection(startDirection);
 }
 

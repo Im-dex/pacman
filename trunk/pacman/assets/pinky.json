@@ -1,6 +1,6 @@
 {
 	"actor":{
-		"startCellIndex": [14, 13],
+		"startCellIndex": [14, 14],
 		"speed":5
 	},
 	"leftSprite":"pinky_left",

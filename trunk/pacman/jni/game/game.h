@@ -6,6 +6,7 @@
 #include "loader.h"
 #include "scheduler.h"
 #include "pacman.h"
+#include "ghost.h"
 #include "map.h"
 #include "dots_grid.h"
 
@@ -40,6 +41,7 @@ private:
     Scheduler mScheduler;
 
     std::shared_ptr<PacmanActor> mPacman;
+    std::shared_ptr<GhostActor> mBlinky;
 };
 
 } // Pacman namespace

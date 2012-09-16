@@ -4,6 +4,7 @@
 
 namespace Pacman {
 
+class Sprite;
 class SpriteSheet;
 
 class GhostActor : public Actor
@@ -21,6 +22,10 @@ public:
 
 private:
 
+    const std::shared_ptr<Sprite> mLeftSprite;
+    const std::shared_ptr<Sprite> mRightSprite;
+    const std::shared_ptr<Sprite> mTopSprite;
+    const std::shared_ptr<Sprite> mBottomSprite;
 };
 
 } // Pacman namespace
