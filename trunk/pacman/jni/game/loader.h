@@ -12,6 +12,7 @@ class Map;
 class DotsGrid;
 class SpriteSheet;
 class PacmanActor;
+class GhostActor;
 
 class GameLoader
 {
@@ -29,6 +30,9 @@ public:
 
     std::shared_ptr<PacmanActor> LoadPacmanActor(const std::string& fileName, const uint16_t actorSize,
                                                  const std::weak_ptr<SpriteSheet> spriteSheet, const std::shared_ptr<Map> map) const;
+
+    std::shared_ptr<GhostActor> LoadGhostActor(const std::string& fileName, const uint16_t actorSize,
+                                               const std::weak_ptr<SpriteSheet> spriteSheet, const std::shared_ptr<Map> map) const;
 private:
 
     std::vector<DotType> mDotsInfo;

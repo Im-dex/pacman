@@ -4,6 +4,7 @@
 #include "map.h"
 #include "dots_grid.h"
 #include "pacman.h"
+#include "ghost.h"
 #include "engine.h"
 #include "asset_manager.h"
 #include "renderer.h"
@@ -27,6 +28,14 @@ static ActorData ParseActorData(const Json::Value& object)
     const CellIndex startCellIndexValue(startCellIndex[size_t(0)].asUInt(),
                                         startCellIndex[size_t(1)].asUInt());
     return ActorData { startCellIndexValue, static_cast<uint16_t>(speed.asUInt()) };
+}
+
+static SpritePosition CalcActorPosition(const uint16_t cellSize, const uint16_t actorSize,
+                                        const SpritePosition& startCellCenterPos)
+{
+    const uint16_t cellSizeHalf = cellSize / 2;
+    const uint16_t actorsSizeHalf = actorSize / 2;
+    return startCellCenterPos - SpritePosition(cellSizeHalf + actorsSizeHalf, actorsSizeHalf);
 }
 
 std::shared_ptr<Map> GameLoader::LoadMap(const std::string& fileName, const uint16_t cellSize)
@@ -113,18 +122,40 @@ std::shared_ptr<PacmanActor> GameLoader::LoadPacmanActor(const std::string& file
     const PacmanMoveDirection directionValue = static_cast<PacmanMoveDirection>(directionNumberValue);
 
     const uint16_t cellSize = map->GetCellSize();
-    const uint16_t cellSizeHalf = cellSize / 2;
-    const uint16_t actorsSizeHalf = actorSize / 2;
-
-    // find start position
-    SpritePosition startPosition = map->GetCellCenterPos(actorData.mCellIndex);
-    startPosition.SetX(startPosition.GetX() - cellSizeHalf); // position between cells
-    // move actors drawable center into this position
-    startPosition.SetX(startPosition.GetX() - actorsSizeHalf);
-    startPosition.SetY(startPosition.GetY() - actorsSizeHalf);
+    const SpritePosition startPosition = CalcActorPosition(cellSize, actorSize, map->GetCellCenterPos(actorData.mCellIndex));
 
     return std::make_shared<PacmanActor>(actorSize, actorData.mSpeed, startPosition, cellSize, animationFrameDurationValue,
                                          directionValue, spriteSheet, map);
+}
+
+std::shared_ptr<GhostActor> GameLoader::LoadGhostActor(const std::string& fileName, const uint16_t actorSize,
+                                                       const std::weak_ptr<SpriteSheet> spriteSheet, const std::shared_ptr<Map> map) const
+{
+    AssetManager& assetManager = GetEngine()->GetAssetManager();
+    const std::string jsonData = assetManager.LoadTextFile(fileName);
+
+    const Json::Value root = JsonHelper::ParseJson(jsonData);
+    PACMAN_CHECK_ERROR(root.isObject(), ErrorCode::BadFormat);
+
+    const Json::Value actor = root["actor"];
+    const Json::Value leftSprite = root["leftSprite"];
+    const Json::Value rightSprite = root["rightSprite"];
+    const Json::Value topSprite = root["topSprite"];
+    const Json::Value bottomSprite = root["bottomSprite"];
+    PACMAN_CHECK_ERROR(actor.isObject() && leftSprite.isString() && rightSprite.isString() &&
+                       topSprite.isString() && bottomSprite.isString(), ErrorCode::BadFormat);
+
+    const ActorData actorData = ParseActorData(actor);
+    const std::string leftSpriteValue = leftSprite.asString();
+    const std::string rightSpriteValue = rightSprite.asString();
+    const std::string topSpriteValue = topSprite.asString();
+    const std::string bottomSpriteValue = bottomSprite.asString();
+
+    const uint16_t cellSize = map->GetCellSize();
+    const SpritePosition startPosition = CalcActorPosition(cellSize, actorSize, map->GetCellCenterPos(actorData.mCellIndex));
+
+    return std::make_shared<GhostActor>(actorSize, actorData.mSpeed, startPosition, cellSize, spriteSheet,
+                                        leftSpriteValue, rightSpriteValue, topSpriteValue, bottomSpriteValue);
 }
 
 } // Pacman namespace
