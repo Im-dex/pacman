@@ -57,4 +57,9 @@ void Actor::Rotate(const Rotation& rotation)
     mNode->Rotate(rotation);
 }
 
+void Actor::Translate(const SpritePosition& position)
+{
+    mNode->Translate(position);
+}
+
 } // Pacman namespace

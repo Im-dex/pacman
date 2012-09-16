@@ -39,14 +39,14 @@ static void WriteValue(const std::ostringstream& stream)
 {}
 
 template <typename First, typename... Args>
-static void WriteValue(std::ostringstream& stream, const First& first, const Args... args)
+static void WriteValue(std::ostringstream& stream, const First first, const Args... args)
 {
     stream << first;
     WriteValue(stream, args...);
 }
 
 template <typename T>
-static void WriteValue(std::ostringstream& stream, const T& var)
+static void WriteValue(std::ostringstream& stream, const T var)
 {
     stream << var;
 }

@@ -34,6 +34,8 @@ public:
 
     void Rotate(const Rotation& rotation);
 
+    void Translate(const SpritePosition& position);
+
     void MoveTo(const SpritePosition& position)
     {
         mMovePoint = position;

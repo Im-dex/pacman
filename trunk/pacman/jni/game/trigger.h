@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "scheduler_context.h"
+
 namespace Pacman {
 
 enum class ActionResult
@@ -10,8 +12,8 @@ enum class ActionResult
     Unregister
 };
 
-typedef std::function<ActionResult()> Action;
-typedef std::function<bool()> Condition;
+typedef std::function<ActionResult(SchedulerContext& context)> Action;
+typedef std::function<bool(SchedulerContext& context)> Condition;
 
 class Trigger
 {
@@ -24,7 +26,7 @@ public:
 
     Trigger& operator= (const Trigger&) = default;
 
-    ActionResult Update();
+    ActionResult Update(SchedulerContext& context);
 
 private:
 

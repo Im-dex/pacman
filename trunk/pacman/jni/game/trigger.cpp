@@ -9,11 +9,11 @@ Trigger::Trigger(const Condition& condition, const Action& action)
 {
 }
 
-ActionResult Trigger::Update()
+ActionResult Trigger::Update(SchedulerContext& context)
 {
-    if (mCondition())
+    if (mCondition(context))
     {
-        return mAction();
+        return mAction(context);
     }
 
     return ActionResult::None;

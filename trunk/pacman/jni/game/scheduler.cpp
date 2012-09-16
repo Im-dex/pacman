@@ -10,7 +10,7 @@ void Scheduler::Update(const uint64_t dt)
         actionData.mElapsedInterval += dt;
         if (actionData.mElapsedInterval >= actionData.mDelay)
         {
-            ActionResult result = (*(actionData.mAction))();
+            ActionResult result = (*(actionData.mAction))(mContext);
             if ((!actionData.mRepeatable) || (result == ActionResult::Unregister))
                 UnregisterAction(actionData.mAction);
         }
@@ -19,12 +19,12 @@ void Scheduler::Update(const uint64_t dt)
     // update triggers
     for (std::shared_ptr<Trigger>& trigger : mTriggers)
     {
-        ActionResult result = trigger->Update();
+        ActionResult result = trigger->Update(mContext);
         if (result == ActionResult::Unregister)
             UnregisterTrigger(trigger);
     }
 
-    // cleanup actions and triggers
+    // cleanup context, actions and triggers
     Cleanup();
 }
 
@@ -50,6 +50,8 @@ void Scheduler::UnregisterTrigger(const std::shared_ptr<Trigger>& trigger)
 
 void Scheduler::Cleanup()
 {
+    mContext.Reset();
+
     for (const std::shared_ptr<Action>& action : mUnregisteredActions)
     {
         mActions.remove_if([&action](const ActionData& actionData)

@@ -36,7 +36,14 @@ public:
 
     void ChangeDirection(const PacmanMoveDirection direction);
 
+    void TranslateTo(const CellIndex& index);
+
     void Update(const uint64_t dt);
+
+    PacmanMoveDirection GetDirection() const
+    {
+        return mDirection;
+    }
 
 private:
 
@@ -44,6 +51,7 @@ private:
 
     const SpritePosition           mSpriteCenterOffset;
     const std::shared_ptr<Map>     mMap;
+    PacmanMoveDirection            mDirection;
     std::shared_ptr<FrameAnimator> mAnimator;
 };
 

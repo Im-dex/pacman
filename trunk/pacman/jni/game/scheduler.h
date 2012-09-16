@@ -49,6 +49,8 @@ private:
 
     ActionList  mUnregisteredActions;
     TriggerList mUnregisteredTriggers;
+
+    SchedulerContext mContext;
 };
 
 } // Pacman namespace
