@@ -1,8 +1,7 @@
 {
-	"actor":{
-		"startCellIndex": [23, 14],
-		"speed":5
-	},
-	"direction":1,
-	"animationFrameDuration":55
+	"startCellIndex": [23, 14],
+	"startDirection":1,
+	"startWayLenght":-1,
+	"startSpeed":5
+	//"animationFrameDuration":55
 }

@@ -1,10 +1,6 @@
 {
-	"actor":{
-		"startCellIndex": [11, 14],
-		"speed":5
-	},
-	"leftSprite":"blinky_left",
-	"rightSprite":"blinky_right",
-	"topSprite":"blinky_top",
-	"bottomSprite":"blinky_bottom"
+	"startCellIndex": [11, 14],
+	"startDirection":1,
+	"startWayLenght":1,
+	"startSpeed":5
 }

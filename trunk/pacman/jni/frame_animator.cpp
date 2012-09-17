@@ -8,12 +8,16 @@ FrameAnimator::FrameAnimator(const std::vector<std::shared_ptr<Sprite>>& frames,
 			 : mFrames(frames),
 			   mFrameDuration(frameDuration),
 			   mLastFrameSwitch(0),
-			   mCurrentFrame(0)
+			   mCurrentFrame(0),
+               mPaused(false)
 {
 }
 
 void FrameAnimator::Update(const uint64_t dt)
 {
+    if (mPaused)
+        return;
+
 	mLastFrameSwitch += dt;
 	if (mLastFrameSwitch > mFrameDuration)
 	{

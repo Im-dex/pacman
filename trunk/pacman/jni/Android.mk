@@ -37,8 +37,8 @@ LOCAL_SRC_FILES := main.cpp\
 				   game/dots_grid.cpp\
 				   game/scheduler.cpp\
 				   game/trigger.cpp\
-				   game/pacman.cpp\
-				   game/ghost.cpp
+				   game/pacman_controller.cpp\
+				   game/ai_controller.cpp
 LOCAL_LDLIBS    := -llog -lGLESv2 -ljnigraphics
 
 include $(BUILD_SHARED_LIBRARY)

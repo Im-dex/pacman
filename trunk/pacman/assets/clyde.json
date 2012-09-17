@@ -1,10 +1,6 @@
 {
-	"actor":{
-		"startCellIndex": [14, 15],
-		"speed":5
-	},
-	"leftSprite":"clyde_left",
-	"rightSprite":"clyde_right",
-	"topSprite":"clyde_top",
-	"bottomSprite":"clyde_bottom"
+	"startCellIndex": [14, 15],
+	"startDirection":1,
+	"startWayLenght":1,
+	"startSpeed":5
 }
