@@ -15,11 +15,12 @@ static std::shared_ptr<Sprite> MakeLookSprite(const std::weak_ptr<SpriteSheet> s
     return spriteSheet->MakeSprite(spriteName, SpriteRegion(0, 0, actorSize, actorSize));
 }
 
-GhostActor::GhostActor(const uint16_t size, const uint16_t speed, const SpritePosition& startPosition,
-                       const uint16_t cellSize, const std::weak_ptr<SpriteSheet> spriteSheet,
+GhostActor::GhostActor(const uint16_t size, const uint16_t speed, const uint16_t cellSize,
+                       const SpritePosition& startPosition, const MoveDirection startDirection,
+                       const std::weak_ptr<SpriteSheet> spriteSheet,
                        const std::string& leftSpriteName, const std::string& rightSpriteName,
                        const std::string& topSpriteName, const std::string& bottomSpriteName)
-     : Actor(size, speed, startPosition, cellSize, nullptr),
+     : Actor(size, speed, cellSize, startPosition, startDirection, nullptr),
        mLeftSprite(MakeLookSprite(spriteSheet, leftSpriteName, size)),
        mRightSprite(MakeLookSprite(spriteSheet, rightSpriteName, size)),
        mTopSprite(MakeLookSprite(spriteSheet, topSpriteName, size)),
@@ -27,6 +28,28 @@ GhostActor::GhostActor(const uint16_t size, const uint16_t speed, const SpritePo
 {
     Actor::mNode->SetDrawable(mLeftSprite);
     //MoveTo();
+}
+
+void GhostActor::DirectionChanged(const MoveDirection newDirection)
+{
+    switch (newDirection)
+    {
+    case MoveDirection::Left:
+        Actor::mNode->SetDrawable(mLeftSprite);
+        break;
+    case MoveDirection::Right:
+        Actor::mNode->SetDrawable(mRightSprite);
+        break;
+    case MoveDirection::Up:
+        Actor::mNode->SetDrawable(mTopSprite);
+        break;
+    case MoveDirection::Down:
+        Actor::mNode->SetDrawable(mBottomSprite);
+        break;
+    case MoveDirection::None:
+    default:
+        break;
+    }
 }
 
 } // Pacman namespace

@@ -3,12 +3,10 @@
 #include <memory>
 
 #include "engine_listeners.h"
-#include "loader.h"
 #include "scheduler.h"
-#include "pacman.h"
-#include "ghost.h"
 #include "map.h"
 #include "dots_grid.h"
+#include "pacman_controller.h"
 
 namespace Pacman {
 
@@ -37,11 +35,8 @@ private:
 
     void InitActionsAndTriggers(const std::shared_ptr<Map> map, const std::shared_ptr<DotsGrid> dots);
 
-    GameLoader mLoader;
-    Scheduler mScheduler;
-
-    std::shared_ptr<PacmanActor> mPacman;
-    std::shared_ptr<GhostActor> mBlinky;
+    std::unique_ptr<Scheduler>        mScheduler;
+    std::unique_ptr<PacmanController> mPacmanController;
 };
 
 } // Pacman namespace

@@ -33,12 +33,28 @@ public:
 
 	virtual bool HasAlphaBlend() const;
 
+    void Pause()
+    {
+        mPaused = true;
+    }
+
+    void Resume()
+    {
+        mPaused = false;
+    }
+
+    bool IsPaused() const
+    {
+        return mPaused;
+    }
+
 private:
 
 	std::vector<std::shared_ptr<Sprite>> mFrames;
-	const uint64_t mFrameDuration;
-	uint64_t mLastFrameSwitch;
-	size_t mCurrentFrame;
+	const uint64_t                       mFrameDuration;
+	uint64_t                             mLastFrameSwitch;
+	size_t                               mCurrentFrame;
+    bool                                 mPaused;
 };
 
 } // Pacman namespace

@@ -9,10 +9,11 @@
 namespace Pacman {
 
 class Map;
-class DotsGrid;
 class SpriteSheet;
-class PacmanActor;
-class GhostActor;
+class IDrawable;
+class DotsGrid;
+class Actor;
+class IActorListener;
 
 class GameLoader
 {
@@ -28,11 +29,9 @@ public:
 
     std::shared_ptr<DotsGrid> MakeDotsGrid(const std::weak_ptr<Map> mapPtr, const std::weak_ptr<SpriteSheet> spritesheetPtr);
 
-    std::shared_ptr<PacmanActor> LoadPacmanActor(const std::string& fileName, const uint16_t actorSize,
-                                                 const std::weak_ptr<SpriteSheet> spriteSheet, const std::shared_ptr<Map> map) const;
-
-    std::shared_ptr<GhostActor> LoadGhostActor(const std::string& fileName, const uint16_t actorSize,
-                                               const std::weak_ptr<SpriteSheet> spriteSheet, const std::shared_ptr<Map> map) const;
+    std::shared_ptr<Actor> LoadActor(const std::string& fileName, const uint16_t actorSize,
+                                     const std::shared_ptr<IDrawable> drawable, const std::shared_ptr<Map> map,
+                                     const std::shared_ptr<IActorListener> listener) const;
 private:
 
     std::vector<DotType> mDotsInfo;
