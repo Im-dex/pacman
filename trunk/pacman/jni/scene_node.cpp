@@ -2,26 +2,35 @@
 
 namespace Pacman {
 
-SceneNode::SceneNode(const std::shared_ptr<IDrawable> drawable, const SpritePosition& pivotOffset,
-                     const SpritePosition& position, const Rotation& rotation)
+SceneNode::SceneNode(const std::shared_ptr<IDrawable>& drawable,
+                     const Position& position, const Rotation& rotation)
 	: mDrawable(drawable),
-      mPivotOffset(pivotOffset),
+      mPivotOffset(Position::kZero),
 	  mPosition(position),
-      mRotation(rotation)
+      mRotation(rotation),
+      mModelMatrix(Math::Matrix4f::kIdentity),
+      mChanged(false)
 {
 }
 
-Math::Matrix4f SceneNode::GetModelMatrix() const
+Math::Matrix4f SceneNode::GetModelMatrix()
 {
-    const float posX = static_cast<float>(mPosition.GetX());
-    const float posY = static_cast<float>(mPosition.GetY());
+    if (mChanged)
+    {
+        const float posX = static_cast<float>(mPosition.GetX());
+        const float posY = static_cast<float>(mPosition.GetY());
 
-    const float pivotOffsetX = static_cast<float>(mPivotOffset.GetX());
-    const float pivotOffsetY = static_cast<float>(mPivotOffset.GetY());
+        const float pivotOffsetX = static_cast<float>(mPivotOffset.GetX());
+        const float pivotOffsetY = static_cast<float>(mPivotOffset.GetY());
 
-	return Math::Matrix4f::MakeTranslation(posX + pivotOffsetX, posY + pivotOffsetY, 0.0f) * 
-           Math::Matrix4f::MakeRotationZ(mRotation.GetZ()) *
-           Math::Matrix4f::MakeTranslation(-pivotOffsetX, -pivotOffsetY, 0.0f);
+        mModelMatrix = Math::Matrix4f::MakeTranslation(posX + pivotOffsetX, posY + pivotOffsetY, 0.0f) * 
+                                                       Math::Matrix4f::MakeRotationZ(mRotation.GetZ()) *
+                                                       Math::Matrix4f::MakeTranslation(-pivotOffsetX, -pivotOffsetY, 0.0f);           
+
+        mChanged = false;
+    }
+    
+    return mModelMatrix;
 }
 
 } // Pacman namespace

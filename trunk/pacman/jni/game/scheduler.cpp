@@ -5,12 +5,13 @@ namespace Pacman {
 void Scheduler::Update(const uint64_t dt)
 {
     // update actions
-    for (ActionData actionData : mActions)
+    for (ActionData& actionData : mActions)
     {
         actionData.mElapsedInterval += dt;
         if (actionData.mElapsedInterval >= actionData.mDelay)
         {
-            ActionResult result = (*(actionData.mAction))(mContext);
+            actionData.mElapsedInterval = 0;
+            const ActionResult result = (*(actionData.mAction))(mContext);
             if ((!actionData.mRepeatable) || (result == ActionResult::Unregister))
                 UnregisterAction(actionData.mAction);
         }
@@ -19,7 +20,7 @@ void Scheduler::Update(const uint64_t dt)
     // update triggers
     for (std::shared_ptr<Trigger>& trigger : mTriggers)
     {
-        ActionResult result = trigger->Update(mContext);
+        const ActionResult result = trigger->Update(mContext);
         if (result == ActionResult::Unregister)
             UnregisterTrigger(trigger);
     }
@@ -28,12 +29,12 @@ void Scheduler::Update(const uint64_t dt)
     Cleanup();
 }
 
-void Scheduler::RegisterAction(const std::shared_ptr<Action> action, const uint64_t delay, const bool repeatable)
+void Scheduler::RegisterAction(const std::shared_ptr<Action>& action, const uint64_t delay, const bool repeatable)
 {
     mActions.push_back(ActionData { delay, 0, repeatable, action });
 }
 
-void Scheduler::RegisterTrigger(const std::shared_ptr<Trigger> trigger)
+void Scheduler::RegisterTrigger(const std::shared_ptr<Trigger>& trigger)
 {
     mTriggers.push_back(trigger);
 }

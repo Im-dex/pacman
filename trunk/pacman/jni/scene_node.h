@@ -14,51 +14,58 @@ class SceneNode
 public:
 
 	SceneNode() = delete;
-	SceneNode(const std::shared_ptr<IDrawable> drawable, const SpritePosition& pivotOffset,
-              const SpritePosition& position, const Rotation& rotation);
+	SceneNode(const std::shared_ptr<IDrawable>& drawable,
+              const Position& position, const Rotation& rotation);
+
 	SceneNode(const SceneNode&) = default;
 	~SceneNode() = default;
 
 	SceneNode& operator= (const SceneNode&) = default;
 
-	Math::Matrix4f GetModelMatrix() const;
+	Math::Matrix4f GetModelMatrix();
 
     std::shared_ptr<IDrawable> GetDrawable() const
     {
         return mDrawable;
     }
 
-    void SetDrawable(const std::shared_ptr<IDrawable> drawable)
+    void SetDrawable(const std::shared_ptr<IDrawable>& drawable)
     {
         mDrawable = drawable;
     }
 
-	SpritePosition GetPosition() const
+	Position GetPosition() const
 	{
 		return mPosition;
 	}
 
-	void Move(const int32_t xOffset, const int32_t yOffset)
+	void Move(const PosOffset xOffset, const PosOffset yOffset)
 	{
-        mPosition.SetX(static_cast<uint32_t>(static_cast<const uint16_t>(mPosition.GetX() + xOffset)));
-        mPosition.SetY(static_cast<uint32_t>(static_cast<const uint16_t>(mPosition.GetY() + yOffset)));
+        mPosition.SetX(static_cast<const Position::value_t>(mPosition.GetX() + xOffset));
+        mPosition.SetY(static_cast<const Position::value_t>(mPosition.GetY() + yOffset));
+        mChanged = true;
 	}
 
-	void Translate(const SpritePosition& position)
+	void Translate(const Position& position)
 	{
 		mPosition = position;
+        mChanged = true;
 	}
 
-    void Rotate(const Rotation& rotation)
+    void SetRotation(const Rotation& rotation, const Position& pivotOffset)
     {
         mRotation = rotation;
+        mPivotOffset = pivotOffset;
+        mChanged = true;
     }
 
 private:
 	
-    SpritePosition             mPivotOffset;
-	SpritePosition             mPosition;
+    Position                   mPivotOffset;
+	Position                   mPosition;
     Rotation                   mRotation;
+    Math::Matrix4f             mModelMatrix;
+    bool                       mChanged;
     std::shared_ptr<IDrawable> mDrawable;
 };
 

@@ -26,7 +26,7 @@ public:
 
 	void DrawFrame();
 
-	void SetClearColor(const Color& color)
+	void SetClearColor(const Color color)
 	{
 		mClearColor = color;
 	}
@@ -43,7 +43,7 @@ public:
 
 private:
 
-	void RenderDrawable(const std::shared_ptr<IDrawable> drawable, const Math::Matrix4f modelMatrix);
+	void RenderDrawable(const std::shared_ptr<IDrawable>& drawable, const Math::Matrix4f modelMatrix);
 
 	Math::Matrix4f mProjection;
 	Color mClearColor;

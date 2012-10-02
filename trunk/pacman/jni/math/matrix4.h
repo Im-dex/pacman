@@ -19,6 +19,8 @@ public:
 	static const Matrix4<T> kZero;
 	static const Matrix4<T> kIdentity;
 
+    typedef T value_t;
+
 	static Matrix4<T> Ortho(const T left, const T right, const T bottom, const T top, const T near, const T far);
 
     static Matrix4<T> MakeTranslationX(const T x);
@@ -41,15 +43,14 @@ public:
 					 const T m10, const T m11, const T m12, const T m13,
 					 const T m20, const T m21, const T m22, const T m23,
 					 const T m30, const T m31, const T m32, const T m33);
+
 	explicit Matrix4(const T val);
 	explicit Matrix4(const T* data);
 	explicit Matrix4(const Vector4<T>& vec1,  const Vector4<T>& vec2, const Vector4<T>& vec3, const Vector4<T>& vec4);
 	Matrix4(const Matrix4<T>& other);
-	Matrix4(Matrix4<T>&& other);
 	~Matrix4() = default;
 
 	Matrix4<T>& operator= (const Matrix4<T>& other);
-	Matrix4<T>& operator= (Matrix4<T>&& other);
 
 	bool operator== (const Matrix4<T>& other) const;
 	bool operator!= (const Matrix4<T>& other) const;
@@ -113,6 +114,18 @@ private:
 		std::array<std::array<T, 4>, 4> mRowData;
 	};
 };
+
+template <typename T>
+const Matrix4<T> Matrix4<T>::kZero = Matrix4<T>(T(0), T(0), T(0), T(0),
+                                                T(0), T(0), T(0), T(0),
+                                                T(0), T(0), T(0), T(0),
+                                                T(0), T(0), T(0), T(0));
+
+template <typename T>
+const Matrix4<T> Matrix4<T>::kIdentity = Matrix4<T>(T(1), T(0), T(0), T(0),
+                                                    T(0), T(1), T(0), T(0),
+                                                    T(0), T(0), T(1), T(0),
+                                                    T(0), T(0), T(0), T(1));
 
 typedef Matrix4<float>  Matrix4f;
 typedef Matrix4<double> Matrix4d;

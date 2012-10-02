@@ -15,22 +15,22 @@ public:
 
 	PACMAN_CHECK_ARITHMETIC_TYPE;
 
-	static const Vector4<T> kZero;
+	static const Vector4<T> kZero; 
 	static const Vector4<T> kXAxis;
 	static const Vector4<T> kYAxis;
 	static const Vector4<T> kZAxis;
 	static const Vector4<T> kWAxis;
+
+    typedef T value_t;
 
 	explicit Vector4() = default;
 	explicit Vector4(const T x, const T y, const T z, const T w);
 	explicit Vector4(const T xyzw);
 	explicit Vector4(const T* data);
 	Vector4(const Vector4<T>& other);
-	Vector4(Vector4<T>&& other);
 	~Vector4() = default;
 
 	Vector4<T>& operator= (const Vector4<T>& other);
-	Vector4<T>& operator= (Vector4<T>&& other);
 
 	bool operator== (const Vector4<T>& other) const;
 	bool operator!= (const Vector4<T>& other) const;
@@ -94,6 +94,21 @@ private:
 		std::array<T, 4> mData;
 	};
 };
+
+template <typename T>
+const Vector4<T> Vector4<T>::kZero  = Vector4<T>(T(0), T(0), T(0), T(0));
+
+template <typename T>
+const Vector4<T> Vector4<T>::kXAxis = Vector4<T>(T(1), T(0), T(0), T(0));
+
+template <typename T>
+const Vector4<T> Vector4<T>::kYAxis = Vector4<T>(T(0), T(1), T(0), T(0));
+
+template <typename T>
+const Vector4<T> Vector4<T>::kZAxis = Vector4<T>(T(0), T(0), T(1), T(0));
+
+template <typename T>
+const Vector4<T> Vector4<T>::kWAxis = Vector4<T>(T(0), T(0), T(0), T(1));
 
 template <typename T>
 FORCEINLINE Vector4<T> operator* (const T val, const Vector4<T>& vec4)

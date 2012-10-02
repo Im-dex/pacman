@@ -1,6 +1,3 @@
-#include <utility>
-#include <algorithm>
-
 namespace Pacman {
 namespace Math {
 
@@ -32,12 +29,6 @@ FORCEINLINE Vector2<T>::Vector2(const Vector2<T>& other)
 }
 
 template <typename T>
-FORCEINLINE Vector2<T>::Vector2(Vector2<T>&& other)
-{
-	*this = std::move(other);
-}
-
-template <typename T>
 FORCEINLINE Vector2<T>& Vector2<T>::operator= (const Vector2<T>& other) 
 {
     if (this != &other)
@@ -46,17 +37,6 @@ FORCEINLINE Vector2<T>& Vector2<T>::operator= (const Vector2<T>& other)
     }
 
     return *this;
-}
-
-template <typename T>
-FORCEINLINE Vector2<T>& Vector2<T>::operator= (Vector2<T>&& other)
-{
-	if (this != &other)
-	{
-		std::swap(mData, other.mData);
-	}
-
-	return *this;
 }
 
 template <typename T>
@@ -236,15 +216,6 @@ FORCEINLINE Vector2<T> Vector2<T>::Reverse() const
 {
     return Vector2<T>(mY, mX);
 }
-
-template <typename T>
-const Vector2<T> Vector2<T>::kZero = Vector2<T>(T(0), T(0));
-
-template <typename T>
-const Vector2<T> Vector2<T>::kXAxis = Vector2<T>(T(1), T(0));
-
-template <typename T>
-const Vector2<T> Vector2<T>::kYAxis = Vector2<T>(T(0), T(1));
 
 } // Math namespace
 } // Pacman namespace

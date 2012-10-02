@@ -8,7 +8,7 @@
 
 namespace Pacman {
 
-SpriteSheet::SpriteSheet(const std::shared_ptr<Texture2D> texture, const NamedSpriteInfoArray& namedSpritesInfo)
+SpriteSheet::SpriteSheet(const std::shared_ptr<Texture2D>& texture, const NamedSpriteInfoArray& namedSpritesInfo)
            : mTexture(texture)
 {
 	for (const NamedSpriteInfo& namedInfo : namedSpritesInfo)
@@ -19,8 +19,8 @@ SpriteSheet::SpriteSheet(const std::shared_ptr<Texture2D> texture, const NamedSp
 
 std::shared_ptr<Sprite> SpriteSheet::MakeSprite(const std::string& name, const SpriteRegion& region) const
 {
-    SpriteInfo info = GetSpriteInfo(name);
-	AssetManager& assetManager = GetEngine()->GetAssetManager();
+    const SpriteInfo info = GetSpriteInfo(name);
+	AssetManager& assetManager = GetEngine().GetAssetManager();
 
 	std::shared_ptr<ShaderProgram> shaderProgram = assetManager.LoadShaderProgram(info.mVertexShaderName, info.mFragmentShaderName);
 	return std::make_shared<Sprite>(region, info.mTextureRegion, mTexture, shaderProgram, info.mAlphaBlend);

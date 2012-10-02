@@ -16,7 +16,9 @@ public:
 
 	static_assert(std::is_arithmetic<T>::value, "Wrong type");
 
+    typedef T value_t;
 	typedef Math::Vector2<T> Position;
+
     static const Rect<T> kZero;
 
 	Rect() = delete;
@@ -25,11 +27,9 @@ public:
 	// position - the left top point position
 	Rect(const Position position, const T width, const T height);
 	Rect(const Rect<T>& other);
-	Rect(Rect<T>&& other);
 	~Rect() = default;
 
 	Rect& operator= (const Rect<T>& other);
-	Rect& operator= (Rect<T>&& other);
 
 	Position GetPosition() const;
 	T GetPosX() const;
@@ -59,6 +59,9 @@ public:
 
     bool HasPoint(const T x, const T y) const;
     bool HasPoint(const Position& point) const;
+
+    bool IsIntersect(const Rect<T>& other) const;
+    Rect<T> Intersection(const Rect<T>& other) const;
 
 private:
 
@@ -95,12 +98,6 @@ Rect<T>::Rect(const Rect<T>& other)
 }
 
 template <typename T>
-Rect<T>::Rect(Rect<T>&& other)
-{
-	*this = std::move(other);
-}
-
-template <typename T>
 FORCEINLINE Rect<T>& Rect<T>::operator= (const Rect<T>& other)
 {
 	if (this != &other)
@@ -110,19 +107,6 @@ FORCEINLINE Rect<T>& Rect<T>::operator= (const Rect<T>& other)
 		mHeight = other.mHeight;
 	}
 	
-	return *this;
-}
-
-template <typename T>
-FORCEINLINE Rect<T>& Rect<T>::operator= (Rect<T>&& other)
-{
-	if (this != &other)
-	{
-		std::swap(mPosition, other.mPosition);
-		std::swap(mWidth, other.mWidth);
-		std::swap(mHeight, other.mHeight);
-	}
-
 	return *this;
 }
 
@@ -269,6 +253,25 @@ template <typename T>
 FORCEINLINE bool Rect<T>::HasPoint(const Position& point) const
 {
     return HasPoint(point.GetX(), point.GetY());
+}
+
+template <typename T>
+FORCEINLINE bool Rect<T>::IsIntersect(const Rect<T>& other) const
+{
+    const Position thisRightBottomPos = GetRightBottomPos();
+    const Position otherRightBottomPos = other.GetRightBottomPos();
+    return (thisRightBottomPos.GetX() >= other.GetPosX()) && (GetPosX() <= otherRightBottomPos.GetX()) &&
+           (thisRightBottomPos.GetY() >= other.GetPosY()) && (GetPosY() <= otherRightBottomPos.GetY());
+}
+
+template <typename T>
+FORCEINLINE Rect<T> Rect<T>::Intersection(const Rect<T>& other) const
+{
+    const T leftX = std::max(GetPosX(), other.GetPosX());
+    const T rightX = std::min(GetRightBottomPosX(), other.GetRightBottomPosX());
+    const T topY = std::max(GetPosY(), other.GetPosY());
+    const T bottomY = std::min(GetRightBottomPosY(), other.GetRightBottomPosY());
+    return Rect<T>(leftX, topY, rightX - leftX, bottomY - topY);
 }
 
 } // Pacmannamespace

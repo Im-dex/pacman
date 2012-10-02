@@ -24,7 +24,6 @@ LOCAL_SRC_FILES := main.cpp\
                    jni_utility.cpp\
                    json_helper.cpp\
                    engine.cpp\
-		           mutex.cpp\
 				   utils.cpp\
                    input_manager.cpp\
                    json/json_reader.cpp\
@@ -37,6 +36,8 @@ LOCAL_SRC_FILES := main.cpp\
 				   game/dots_grid.cpp\
 				   game/scheduler.cpp\
 				   game/trigger.cpp\
+				   game/ghost.cpp\
+				   game/ghosts_factory.cpp\
 				   game/pacman_controller.cpp\
 				   game/ai_controller.cpp
 LOCAL_LDLIBS    := -llog -lGLESv2 -ljnigraphics

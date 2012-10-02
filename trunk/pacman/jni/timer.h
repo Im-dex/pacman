@@ -20,20 +20,20 @@ public:
 	}
 
 	// returns time in nanoseconds
-	uint64_t GetNanosec()
+	uint64_t GetNanosec() const
 	{
 		return GetCurrentTime() - mInitValue;
 	}
 
 	// returns time in milliseconds
-	uint64_t GetMillisec()
+	uint64_t GetMillisec() const
 	{
 		return GetNanosec() / 1000000;
 	}
 
 private:
 
-	uint64_t GetCurrentTime();
+	uint64_t GetCurrentTime() const;
 
 	uint64_t mInitValue;
 };

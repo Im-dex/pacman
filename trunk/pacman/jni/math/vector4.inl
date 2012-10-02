@@ -1,6 +1,4 @@
 #include <cmath>
-#include <algorithm>
-#include <utility>
 
 namespace Pacman {
 namespace Math {
@@ -39,28 +37,11 @@ FORCEINLINE Vector4<T>::Vector4(const Vector4<T>& other)
 }
 
 template <typename T>
-FORCEINLINE Vector4<T>::Vector4(Vector4<T>&& other)
-{ 
-	*this = std::move(other);
-}
-
-template <typename T>
 FORCEINLINE Vector4<T>& Vector4<T>::operator= (const Vector4<T>& other) 
 {
 	if (this != &other)
 	{
 		mData = other.mData;
-	}
-
-	return *this;
-}
-
-template <typename T>
-FORCEINLINE Vector4<T>& Vector4<T>::operator= (Vector4<T>&& other)
-{
-	if (this != &other)
-	{
-		std::swap(mData, other.mData);
 	}
 
 	return *this;
@@ -321,21 +302,6 @@ FORCEINLINE Vector4<T> Vector4<T>::Reverse() const
 {
 	return Vector4<T>(mW, mZ, mY, mX);
 }
-
-template <typename T>
-const Vector4<T> Vector4<T>::kZero = Vector4<T>(T(0), T(0), T(0), T(0));
-
-template <typename T>
-const Vector4<T> Vector4<T>::kXAxis = Vector4<T>(T(1), T(0), T(0), T(0));
-
-template <typename T>
-const Vector4<T> Vector4<T>::kYAxis = Vector4<T>(T(0), T(1), T(0), T(0));
-
-template <typename T>
-const Vector4<T> Vector4<T>::kZAxis = Vector4<T>(T(0), T(0), T(1), T(0));
-
-template <typename T>
-const Vector4<T> Vector4<T>::kWAxis = Vector4<T>(T(0), T(0), T(0), T(1));
 
 } // Math namespace
 } // Pacman namespace

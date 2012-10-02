@@ -3,10 +3,9 @@
 #include <GLES2/gl2.h>
 #include <exception>
 #include <vector>
-#include <string>
-#include <sstream>
 
 #include "log.h"
+#include "utils.h"
 #include "jni_utility.h"
 
 namespace Pacman {
@@ -19,7 +18,6 @@ const char* kErrorDescriptions[] =
 	"Shader program creation failed",
 	"Shader program linking failed",
 	"Shader attribute or uniform location search failed",
-	"Bad FVF format",
 	"Bad pixel format",
 
 	"Invalid result",
@@ -32,11 +30,8 @@ const char* kErrorDescriptions[] =
 	"JNI call failed",
 	"Android API call failed",
 	"Failed access timer",
-	"Thread creation failed",
-	"Thread joining failed",
 	"Mutex access failed",
-	"Bad format",
-	"Unsupported device"
+	"Bad format"
 };
 
 class BaseException : public std::exception
@@ -44,7 +39,9 @@ class BaseException : public std::exception
 protected:
 	BaseException() throw() = delete;
 	BaseException(const char* file, const size_t line) throw()
-				: std::exception(), mFile(file), mLine(line) {}
+				: std::exception(),
+                  mFile(file),
+                  mLine(line) {}
 
 	BaseException(const BaseException&) = default;
 	virtual ~BaseException() throw() {}
@@ -53,9 +50,7 @@ protected:
 
 	const std::string GetErrorFileLine() const
 	{
-		std::stringstream result("");
-		result << "at: " << mFile << ":" << mLine;
-		return result.str();
+        return MakeString("at: ", mFile, ":", mLine);
 	}
 
 private:
@@ -69,12 +64,9 @@ class Exception : public BaseException
 public:
 	Exception() throw() = delete;
 	Exception(const ErrorCode errorCode, const char* file, const size_t line, const char* message) throw()
-			: BaseException(file, line), mErrorCode(errorCode)
+			: BaseException(file, line)
 	{
-		std::stringstream result("");
-		result << kErrorDescriptions[static_cast<uint32_t>(mErrorCode)] << " " << GetErrorFileLine() << std::endl;
-		result << message;
-		mResult = result.str();
+		mResult = MakeString(kErrorDescriptions[EnumCast(errorCode)], " ", GetErrorFileLine(), message);
 	}
 
 	Exception(const Exception&) = default;
@@ -89,7 +81,6 @@ public:
 
 private:
 
-	ErrorCode mErrorCode;
 	std::string mResult;
 };
 
@@ -98,16 +89,15 @@ class GLException : public BaseException
 public:
 	GLException() throw() = delete;
 	GLException(const std::vector<GLint>& errorCodes, const char* file, const size_t line) throw()
-			: BaseException(file, line)
+			: BaseException(file, line),
+              mResult("")
 	{
-		std::stringstream result("");
 		for (GLint error : errorCodes)
 		{
-			result << GetGLErrorString(error) << std::endl;
+            mResult += GetGLErrorString(error);
 		}
 
-		result << GetErrorFileLine() << std::endl;
-		mResult = result.str();
+        mResult += GetErrorFileLine();
 	}
 
 	GLException(const GLException&) = default;
@@ -146,14 +136,14 @@ private:
 
 //===========================================================================================================================
 
-const char* FixEmptyString(const char* string)
+static FORCEINLINE const char* FixEmptyString(const char* string)
 {
 	return (string == nullptr) ? "" : string;
 }
 
 void ErrorHandler::CheckGLError(const char* file, const size_t line)
 {
-#ifndef ADRENO_PROFILER_COMPATIBILITY
+#ifndef PACMAN_ADRENO_PROFILER_COMPATIBILITY
 	std::vector<GLint> errors;
 	for (GLint err = glGetError(); err != GL_NO_ERROR; err = glGetError())
 	{
@@ -184,15 +174,15 @@ void ErrorHandler::Terminate()
 {
 	try
 	{
-		JNI::CallStaticObjectMethod("com/imdex/pacman/NativeLib", "terminateApplication", "()V");
+		JNI::CallStaticVoidMethod("com/imdex/pacman/NativeLib", "terminateApplication", "()V");
 	}
 	catch (std::exception& e)
 	{
-		LOGE("Can't terminate application: %s", e.what());
+		LogE("Can't terminate application: %s", e.what());
 	}
 	catch(...)
 	{
-		LOGE("Can't terminate application, unknown error");
+		LogE("Can't terminate application, unknown error");
 	}
 }
 

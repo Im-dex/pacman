@@ -21,8 +21,6 @@ enum class MapCellType : uint8_t
     Space = 3 // out of map area
 };
 
-static const size_t kCellTypesCount = 4;
-
 struct MapNeighborsInfo
 {
     MapCellType left;
@@ -44,7 +42,7 @@ class Map
 {
 public:
 
-	Map(const uint16_t cellSize, const uint16_t rowsCount, const size_t viewportWidth,
+	Map(const Size cellSize, const CellIndex::value_t rowsCount, const size_t viewportWidth,
         const size_t viewportHeight, const CellIndex& leftTunnelExit,
         const CellIndex& rightTunnelExit, const std::vector<MapCellType>& cells);
 
@@ -55,36 +53,40 @@ public:
 
 	void AttachToScene(SceneManager& sceneManager);
 
-    MapCellType GetCell(const uint16_t rowIndex, const uint16_t columnIndex) const;
+    MapCellType GetCell(const CellIndex::value_t rowIndex, const CellIndex::value_t columnIndex) const;
 
     MapCellType GetCell(const CellIndex& index) const;
 
-    SpritePosition GetCellCenterPos(const uint16_t rowIndex, const uint16_t columnIndex) const;
+    // return cell index that contains position point,
+    // if position not in map region returns kCellIndexNPos
+    CellIndex GetCellIndex(const Position& position) const;
 
-    SpritePosition GetCellCenterPos(const CellIndex& index) const;
+    Position GetCellCenterPos(const CellIndex::value_t rowIndex, const CellIndex::value_t columnIndex) const;
 
-    // find cell where placed region
-    CellIndex FindCell(const SpriteRegion& region) const;
+    Position GetCellCenterPos(const CellIndex& cell) const;
 
-    MapNeighborsInfo GetDirectNeighbors(const uint16_t rowIndex, const uint16_t columnIndex) const;
+    // find cells where placed region
+    CellIndexArray FindCells(const SpriteRegion& region) const;
+
+    MapNeighborsInfo GetDirectNeighbors(const CellIndex::value_t rowIndex, const CellIndex::value_t columnIndex) const;
 
     MapNeighborsInfo GetDirectNeighbors(const CellIndex& index) const;
 
-    FullMapNeighborsInfo GetFullNeighbors(const uint16_t rowIndex, const uint16_t columnIndex) const;
+    FullMapNeighborsInfo GetFullNeighbors(const CellIndex::value_t rowIndex, const CellIndex::value_t columnIndex) const;
 
     FullMapNeighborsInfo GetFullNeighbors(const CellIndex& index) const;
 
-	uint16_t GetCellSize() const
+	Size GetCellSize() const
 	{
 		return mCellSize;
 	}
 
-    uint16_t GetRowsCount() const
+    CellIndex::value_t GetRowsCount() const
     {
         return mRowsCount;
     }
 
-    uint16_t GetColumnsCount() const
+    CellIndex::value_t GetColumnsCount() const
     {
         return mColumnsCount;
     }
@@ -107,11 +109,11 @@ private:
 
 	void CleanArtifacts(byte_t* buffer, const size_t textureWidth);
 
-    const uint16_t			 mCellSize;
-    const uint16_t           mCellSizeHalf;
-    const uint16_t			 mCellSizeQuarter;
-    const uint16_t 			 mRowsCount;
-    const uint16_t 			 mColumnsCount;
+    const Size			     mCellSize;
+    const Size               mCellSizeHalf;
+    const Size			     mCellSizeQuarter;
+    const CellIndex::value_t mRowsCount;
+    const CellIndex::value_t mColumnsCount;
     const CellIndex          mLeftTunnelExit;
     const CellIndex          mRightTunnelExit;
 	std::vector<MapCellType> mCells;

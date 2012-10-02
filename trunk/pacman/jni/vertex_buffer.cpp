@@ -1,7 +1,6 @@
 #include "vertex_buffer.h"
 
 #include <cstring>
-#include <cassert>
 #include <cstddef>
 
 #include "error.h"
@@ -84,7 +83,7 @@ VertexBuffer::~VertexBuffer()
 
 void VertexBuffer::Bind() const
 {
-	assert(mAttributesCount > 0 && mAttributesCount <= GL_MAX_VERTEX_ATTRIBS);
+    PACMAN_CHECK_ERROR((mAttributesCount > 0) && (mAttributesCount <= GL_MAX_VERTEX_ATTRIBS), ErrorCode::InvalidState);
 
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
 	PACMAN_CHECK_GL_ERROR();

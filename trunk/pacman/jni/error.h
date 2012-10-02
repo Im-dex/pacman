@@ -28,7 +28,6 @@ enum class ErrorCode : uint32_t
 	CreateShaderProgram,
 	LinkShaderProgram,
 	ShaderLocationSearch,
-	BadFVF,
 	BadPixelFormat,
 
 	InvalidResult,
@@ -41,11 +40,8 @@ enum class ErrorCode : uint32_t
 	JNICallFailed,
 	AndroidAPICallFailed,
 	TimerFailed,
-	CreateThreadFailed,
-	JoinThreadFailed,
 	MutexError,
-	BadFormat,
-	UnsupportedDevice
+	BadFormat
 };
 
 struct ErrorHandler

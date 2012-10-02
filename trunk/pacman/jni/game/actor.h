@@ -13,16 +13,16 @@ class IDrawable;
 class SceneManager;
 class Map;
 
-class Actor : public std::enable_shared_from_this<Actor>
+class Actor
 {
 public:
 
-    static const uint16_t kMax;
+    static const CellIndex::value_t kMax;
 
     Actor() = delete;
-    Actor(const uint16_t size, const uint16_t speed, const uint16_t cellSize,
-          const SpritePosition& startPosition, const std::shared_ptr<IDrawable> startDrawable,
-          const std::shared_ptr<Map> map, const std::shared_ptr<IActorListener> listener);
+    Actor(const Size size, const Speed speed, const Size cellSize,
+          const Position& startPosition, const std::shared_ptr<IDrawable>& startDrawable,
+          const std::shared_ptr<Map>& map, const std::shared_ptr<IActorListener>& listener);
 
     Actor(const Actor&) = delete;
     virtual ~Actor() {}
@@ -35,18 +35,18 @@ public:
 
     void Update(const uint64_t dt);
 
-    SpritePosition GetCenterPos() const;
+    Position GetCenterPos() const;
 
     SpriteRegion GetRegion() const;
 
     void Rotate(const Rotation& rotation);
 
-    void Translate(const CellIndex& cell);
+    void TranslateTo(const CellIndex& cell);
 
     // if cellsCount == kMax then actor will move to the max available cell
-    void Move(const MoveDirection direction, const uint16_t cellsCount);
+    void Move(const MoveDirection direction, const CellIndex::value_t cellsCount);
 
-    void SetDrawable(const std::shared_ptr<IDrawable> drawable);
+    void SetDrawable(const std::shared_ptr<IDrawable>& drawable);
 
     MoveDirection GetDirection() const
     {
@@ -55,15 +55,16 @@ public:
 
 private:
 
-    CellIndex FindMaxAvailableCell(const CellIndex& curCell, const MoveDirection direction) const;
+    CellIndex FindMaxAvailableCell(const CellIndex& currentCellIndex, const MoveDirection direction) const;
 
-    const uint16_t                        mSize;
-    const uint16_t                        mSpeed;
-    const uint16_t                        mCellSize;
-    const SpritePosition                  mCenterOffset;
+    const Size                            mSize;
+    const Speed                           mSpeed;
+    const Size                            mCellSize;
+    const Position                        mPivotOffset;
     const std::shared_ptr<Map>            mMap;
     const std::shared_ptr<IActorListener> mListener;
-    SpritePosition                        mMoveTarget;
+    Size                                  mLastMoveCellsCount;
+    Position                              mMoveTarget;
     MoveDirection                         mDirection;
     std::shared_ptr<SceneNode>            mNode;
 };

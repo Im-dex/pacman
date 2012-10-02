@@ -29,7 +29,7 @@ static FORCEINLINE Rotation GetDirectionRotation(const MoveDirection direction)
     }
 }
 
-static std::shared_ptr<FrameAnimator> MakeAnimator(const std::weak_ptr<SpriteSheet> spriteSheetPtr, const uint16_t actorSize)
+static std::shared_ptr<FrameAnimator> MakeAnimator(const std::weak_ptr<SpriteSheet>& spriteSheetPtr, const Size actorSize)
 {
     static const size_t kFramesCount = 4;
     const SpriteRegion region(0, 0, actorSize, actorSize);
@@ -54,7 +54,7 @@ class ActorListener : public IActorListener
 {
 public:
 
-    ActorListener(const std::shared_ptr<FrameAnimator> animator)
+    ActorListener(const std::shared_ptr<FrameAnimator>& animator)
         : mAnimator(animator)
     {}
 
@@ -63,15 +63,13 @@ public:
 
     ActorListener& operator= (const ActorListener&) = delete;
 
-    void OnDirectionChanged(const std::weak_ptr<Actor> actorPtr, const MoveDirection newDirection)
+    void OnDirectionChanged(Actor& actor, const MoveDirection newDirection)
     {
-        std::shared_ptr<Actor> actor = actorPtr.lock();
-        PACMAN_CHECK_ERROR(actor != nullptr, ErrorCode::InvalidState);
         mAnimator->Resume();
-        actor->Rotate(GetDirectionRotation(newDirection));
+        actor.Rotate(GetDirectionRotation(newDirection));
     }
 
-    void OnTargetAchieved(const std::weak_ptr<Actor> actorPtr)
+    void OnTargetAchieved(Actor& actor)
     {
         mAnimator->Pause();
     }
@@ -81,8 +79,8 @@ private:
     const std::shared_ptr<FrameAnimator> mAnimator;
 };
 
-PacmanController::PacmanController(const GameLoader& loader, const uint16_t actorSize, const std::shared_ptr<Map> map,
-                                   const std::weak_ptr<SpriteSheet> spriteSheetPtr)
+PacmanController::PacmanController(const GameLoader& loader, const Size actorSize, const std::shared_ptr<Map>& map,
+                                   const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
 {
     mActorAnimator = MakeAnimator(spriteSheetPtr, actorSize);
     std::shared_ptr<ActorListener> listener = std::make_shared<ActorListener>(mActorAnimator);

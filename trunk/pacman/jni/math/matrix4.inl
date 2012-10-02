@@ -1,9 +1,24 @@
-#include <utility>
-#include <algorithm>
-#include <limits>
+#include <complex>
 
 namespace Pacman {
 namespace Math {
+
+template <typename T>
+Matrix4<T> Matrix4<T>::Ortho(const T left, const T right, const T bottom, const T top, const T near, const T far)
+{
+	const T val1 = T(2)  / (right - left);
+	const T val2 = T(2)  / (top - bottom);
+	const T val3 = T(-2) / (far - near);
+
+	const T tx = -(right + left) / (right - left);
+	const T ty = -(top + bottom) / (top - bottom);
+	const T tz = -(far + near) / (far - near);
+
+	return Matrix4<T>(val1, T(0), T(0), tx,
+					  T(0), val2, T(0), ty,
+					  T(0), T(0), val3, tz,
+					  T(0), T(0), T(0),	T(1));
+}
 
 template <typename T>
 FORCEINLINE Matrix4<T>::Matrix4(const T m00, const T m01, const T m02, const T m03,
@@ -53,28 +68,11 @@ FORCEINLINE Matrix4<T>::Matrix4(const Matrix4<T>& other)
 }
 
 template <typename T>
-FORCEINLINE Matrix4<T>::Matrix4(Matrix4<T>&& other)
-{ 
-	*this = std::move(other);
-}
-
-template <typename T>
 FORCEINLINE Matrix4<T>& Matrix4<T>::operator= (const Matrix4<T>& other) 
 {
 	if (this != &other)
 	{
 		mData = other.mData;
-	}
-
-	return *this;
-}
-
-template <typename T>
-FORCEINLINE Matrix4<T>& Matrix4<T>::operator= (Matrix4<T>&& other)
-{
-	if (this != &other)
-	{
-		std::swap(mData, other.mData);
 	}
 
 	return *this;
@@ -449,35 +447,6 @@ FORCEINLINE Vector4<T> operator* (const Vector4<T>& vec, const Matrix4<T>& mat)
 					  vec.m_X * m_M02 + vec.m_Y * m_M12 + vec.m_Z * m_M22 + vec.m_W * m_M32,
 					  vec.m_X * m_M03 + vec.m_Y * m_M13 + vec.m_Z * m_M23 + vec.m_W * m_M33);
 }*/
-
-template <typename T>
-const Matrix4<T> Matrix4<T>::kZero = Matrix4<T>(T(0), T(0), T(0), T(0),
-											    T(0), T(0), T(0), T(0),
-											    T(0), T(0), T(0), T(0),
-											    T(0), T(0), T(0), T(0));
-
-template <typename T>
-const Matrix4<T> Matrix4<T>::kIdentity = Matrix4<T>(T(1), T(0), T(0), T(0),
-												    T(0), T(1), T(0), T(0),
-												    T(0), T(0), T(1), T(0),
-												    T(0), T(0), T(0), T(1));
-
-template <typename T>
-Matrix4<T> Matrix4<T>::Ortho(const T left, const T right, const T bottom, const T top, const T near, const T far)
-{
-	const T val1 = T(2)  / (right - left);
-	const T val2 = T(2)  / (top - bottom);
-	const T val3 = T(-2) / (far - near);
-
-	const T tx = -(right + left) / (right - left);
-	const T ty = -(top + bottom) / (top - bottom);
-	const T tz = -(far + near) / (far - near);
-
-	return Matrix4<T>(val1, T(0), T(0), tx,
-					  T(0), val2, T(0), ty,
-					  T(0), T(0), val3, tz,
-					  T(0), T(0), T(0),	T(1));
-}
 
 template <typename T>
 Matrix4<T> Matrix4<T>::MakeTranslationX(const T x)

@@ -6,18 +6,20 @@
 
 namespace Pacman {
 
+class Engine;
+
 class IEngineListener
 {
 public:
 
-	virtual void OnLoad() = 0;
+	virtual void OnStart(Engine& engine) = 0;
 
-	virtual void OnUnload() = 0;
+	virtual void OnStop(Engine& engine) = 0;
 
-	virtual void OnUpdate(const uint64_t dt) = 0;
+	virtual void OnUpdate(Engine& engine, const uint64_t dt) = 0;
 };
 
-enum class GestureType
+enum class GestureType : uint8_t
 {
     None,
     LeftSwipe,

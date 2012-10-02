@@ -6,19 +6,19 @@ import android.app.Activity;
 public class MainActivity extends Activity {
 
 	private SurfaceView mView;
-	private ErrorReporter mErrorReporter;
+	private Reporter mReporter;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
         InputListener inputListener = new InputListener();
-        mErrorReporter = new ErrorReporter(this);
+        mReporter = new Reporter(this);
     	
         NativeLib.setContext(getApplicationContext());
-        NativeLib.setErrorReporter(mErrorReporter);
+        NativeLib.setReporter(mReporter);
         
-        mView = new SurfaceView(this, mErrorReporter);
+        mView = new SurfaceView(this, mReporter);
         mView.setOnTouchListener(inputListener);
         
         setContentView(mView);
@@ -27,24 +27,26 @@ public class MainActivity extends Activity {
     @Override
     public void onStart() {
     	super.onStart();
-    	NativeLib.init();
+    	NativeLib.start();
     }
     
     @Override
     public void onStop() {
     	super.onStop();
-    	NativeLib.deinit();
+    	NativeLib.stop();
     }
     
     @Override
     public void onResume() {
     	super.onResume();
+		NativeLib.resume();
     	mView.onResume();
     }
     
     @Override
     public void onPause() {
     	super.onPause();
+		NativeLib.pause();
     	mView.onPause();
     }
 

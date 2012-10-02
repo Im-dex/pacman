@@ -1,7 +1,5 @@
 #include "instanced_sprite.h"
 
-#include <cassert>
-
 #include "error.h"
 #include "texture.h"
 #include "vertex_buffer.h"
@@ -10,12 +8,12 @@
 namespace Pacman {
 
 static const size_t kSpriteVertexCount = 4;
-static const size_t kSpriteIndexCount = 6;
+static const uint16_t kSpriteIndexCount = 6;
 static const Color kDefaultColor = Color::kGreen;
 static const TextureRegion kDefaultRegion = TextureRegion(Math::Vector2f::kZero, 1.0f, 1.0f);
 
 template <typename VertexT>
-static FORCEINLINE void FillSpriteVertex(VertexT& vertex, const VertexT& baseVertex, const SpritePosition& position)
+static FORCEINLINE void FillSpriteVertex(VertexT& vertex, const VertexT& baseVertex, const Position& position)
 {
     vertex = baseVertex;
     vertex.x += position.GetX();
@@ -23,7 +21,7 @@ static FORCEINLINE void FillSpriteVertex(VertexT& vertex, const VertexT& baseVer
 }
 
 template <typename VertexT>
-static void FillVertexData(const SpriteRegion& region, const std::vector<SpritePosition>& positions,
+static void FillVertexData(const SpriteRegion& region, const std::vector<Position>& positions,
                            std::vector<VertexT>& vertices, std::vector<uint16_t>& indices)
 {
     //                  base sprite
@@ -57,8 +55,8 @@ static void FillVertexData(const SpriteRegion& region, const std::vector<SpriteP
     // fill position data
     for (size_t i = 0; i < positions.size(); i++)
     {
-        const SpritePosition& pos = positions[i];
-        for (size_t j = 0; j < kSpriteVertexCount; j++) // compiler will must apply loop unroll here
+        const Position& pos = positions[i];
+        for (size_t j = 0; j < kSpriteVertexCount; j++)
         {
             VertexT& vertex = vertices[i*kSpriteVertexCount + j];
             FillSpriteVertex(vertex, baseVertices[j], pos);
@@ -75,7 +73,7 @@ static void FillVertexData(const SpriteRegion& region, const std::vector<SpriteP
     }
 }
 
-static FORCEINLINE void FillColor(ColorVertex& vertex, const Color& color)
+static FORCEINLINE void FillColor(ColorVertex& vertex, const Color color)
 {
     vertex.r = color.GetRedFloat();
     vertex.g = color.GetGreenFloat();
@@ -83,7 +81,7 @@ static FORCEINLINE void FillColor(ColorVertex& vertex, const Color& color)
     vertex.a = color.GetAlphaFloat();
 }
 
-static FORCEINLINE void FillTexCoord(TextureVertex& vertex, const Math::Vector2f texCoord)
+static FORCEINLINE void FillTexCoord(TextureVertex& vertex, const Math::Vector2f& texCoord)
 {
     vertex.u = texCoord.GetX();
     vertex.v = texCoord.GetY();
@@ -91,9 +89,9 @@ static FORCEINLINE void FillTexCoord(TextureVertex& vertex, const Math::Vector2f
 
 //===========================================================================================================
 
-InstancedSprite::InstancedSprite(const SpriteRegion& region, const Color& leftTop, const Color& rightTop, const Color& leftBottom,
-			                     const Color& rightBottom, std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend,
-                                 const std::vector<SpritePosition>& instances, const bool instanceEraseEnabled)
+InstancedSprite::InstancedSprite(const SpriteRegion& region, const Color leftTop, const Color rightTop, const Color leftBottom,
+			                     const Color rightBottom, const std::shared_ptr<ShaderProgram>& shaderProgram, const bool alphaBlend,
+                                 const std::vector<Position>& instances, const bool instanceEraseEnabled)
 	           : mShaderProgram(shaderProgram),
 	             mTexture(nullptr),
 		         mVertexBuffer(nullptr),
@@ -105,8 +103,8 @@ InstancedSprite::InstancedSprite(const SpriteRegion& region, const Color& leftTo
     InitInstancesEraseState();
 }
 
-InstancedSprite::InstancedSprite(const SpriteRegion& region, std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend,
-                                 const std::vector<SpritePosition>& instances, const bool instanceEraseEnabled)
+InstancedSprite::InstancedSprite(const SpriteRegion& region, const std::shared_ptr<ShaderProgram>& shaderProgram, const bool alphaBlend,
+                                 const std::vector<Position>& instances, const bool instanceEraseEnabled)
 	           : mShaderProgram(shaderProgram),
 	             mTexture(nullptr),
 		         mVertexBuffer(nullptr),
@@ -118,8 +116,8 @@ InstancedSprite::InstancedSprite(const SpriteRegion& region, std::shared_ptr<Sha
     InitInstancesEraseState();
 }
 
-InstancedSprite::InstancedSprite(const SpriteRegion& region, const TextureRegion& textureRegion, std::shared_ptr<Texture2D> texture,
-			                     std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend, const std::vector<SpritePosition>& instances,
+InstancedSprite::InstancedSprite(const SpriteRegion& region, const TextureRegion& textureRegion, const std::shared_ptr<Texture2D>& texture,
+			                     const std::shared_ptr<ShaderProgram>& shaderProgram, const bool alphaBlend, const std::vector<Position>& instances,
                                  const bool instanceEraseEnabled)
 	           : mShaderProgram(shaderProgram),
 	             mTexture(texture),
@@ -132,8 +130,8 @@ InstancedSprite::InstancedSprite(const SpriteRegion& region, const TextureRegion
     InitInstancesEraseState();
 }
 
-InstancedSprite::InstancedSprite(const SpriteRegion& region, std::shared_ptr<Texture2D> texture, std::shared_ptr<ShaderProgram> shaderProgram,
-                                 const bool alphaBlend, const std::vector<SpritePosition>& instances, const bool instanceEraseEnabled)
+InstancedSprite::InstancedSprite(const SpriteRegion& region, const std::shared_ptr<Texture2D>& texture, const std::shared_ptr<ShaderProgram>& shaderProgram,
+                                 const bool alphaBlend, const std::vector<Position>& instances, const bool instanceEraseEnabled)
 	           : mShaderProgram(shaderProgram),
 	             mTexture(texture),
 		         mVertexBuffer(nullptr),
@@ -165,7 +163,6 @@ void InstancedSprite::EraseInstance(const size_t index)
     indexData.erase(indexData.begin() + instanceOffset, indexData.begin() + instanceOffset + kSpriteIndexCount);
 
     mVertexBuffer->UnlockIndexData();
-
     mInstancesEraseStates[index] = true;
 }
 
@@ -190,8 +187,8 @@ bool InstancedSprite::HasAlphaBlend() const
 }
 
 //TODO: remove copy paste!!!!!!!!!!!!!!!!!!!
-void InstancedSprite::InitByColor(const SpriteRegion& region, const Color& leftTop, const Color& rightTop, 
-					         	  const Color& leftBottom, const Color& rightBottom, const std::vector<SpritePosition>& instances)
+void InstancedSprite::InitByColor(const SpriteRegion& region, const Color leftTop, const Color rightTop, 
+					         	  const Color leftBottom, const Color rightBottom, const std::vector<Position>& instances)
 {
     PACMAN_CHECK_ERROR(instances.size() > 0, ErrorCode::BadArgument);
 
@@ -202,8 +199,8 @@ void InstancedSprite::InitByColor(const SpriteRegion& region, const Color& leftT
     indices.reserve(kSpriteIndexCount * instances.size());
     FillVertexData(region, instances, vertices, indices);
 
-    assert(vertices.size() / instances.size() == kSpriteVertexCount);
-    assert(indices.size() / instances.size() == kSpriteIndexCount);
+    PACMAN_CHECK_ERROR(vertices.size() / instances.size() == kSpriteVertexCount, ErrorCode::InvalidState);
+    PACMAN_CHECK_ERROR(indices.size() / instances.size() == kSpriteIndexCount, ErrorCode::InvalidState);
 
     for (size_t i = 0; i < instances.size(); i++)
     {
@@ -217,7 +214,7 @@ void InstancedSprite::InitByColor(const SpriteRegion& region, const Color& leftT
 	mVertexBuffer = std::make_shared<VertexBuffer>(vertices, indices, BufferUsage::Static, indexBufferUsage);
 }
 
-void InstancedSprite::InitByTexture(const SpriteRegion& region, const TextureRegion& textureRegion, const std::vector<SpritePosition>& instances)
+void InstancedSprite::InitByTexture(const SpriteRegion& region, const TextureRegion& textureRegion, const std::vector<Position>& instances)
 {
     PACMAN_CHECK_ERROR(instances.size() > 0, ErrorCode::BadArgument);
 
@@ -228,8 +225,8 @@ void InstancedSprite::InitByTexture(const SpriteRegion& region, const TextureReg
     indices.reserve(kSpriteIndexCount * instances.size());
     FillVertexData(region, instances, vertices, indices);
 
-    assert(vertices.size() / instances.size() == kSpriteVertexCount);
-    assert(indices.size() / instances.size() == kSpriteIndexCount);
+    PACMAN_CHECK_ERROR(vertices.size() / instances.size() == kSpriteVertexCount, ErrorCode::InvalidState);
+    PACMAN_CHECK_ERROR(indices.size() / instances.size() == kSpriteIndexCount, ErrorCode::InvalidState);
 
 	for (size_t i = 0; i < instances.size(); i++)
     {

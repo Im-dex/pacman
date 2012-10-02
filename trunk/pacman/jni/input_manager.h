@@ -1,9 +1,10 @@
 #pragma once
 
 #include <memory>
+#include <atomic>
 
 #include "base.h"
-#include "mutex.h"
+#include "utils.h"
 #include "engine_listeners.h"
 
 namespace Pacman {
@@ -14,8 +15,6 @@ enum class TouchEvent
     Down = 1,
     Move = 2
 };
-
-static const size_t kTouchEventsCount = 3;
 
 struct TouchInfo
 {
@@ -38,16 +37,17 @@ public:
 
     void Update();
 
-    void SetListener(std::shared_ptr<IGestureListener> listener)
+    void SetListener(const std::shared_ptr<IGestureListener>& listener)
     {
         mListener = listener;
     }
 
 private:
 
-    Mutex                             mMutex;
+    typedef EnumType<GestureType>::value GestureEnumType;
+
     TouchInfo                         mBeginGestureTouch;
-    GestureType                       mLastGesture;
+    std::atomic<GestureEnumType>      mLastGesture;
     std::shared_ptr<IGestureListener> mListener;
 };
 

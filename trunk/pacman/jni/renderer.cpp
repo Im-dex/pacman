@@ -50,14 +50,14 @@ void Renderer::DrawFrame()
 	glClear(GL_COLOR_BUFFER_BIT);
 	PACMAN_CHECK_GL_ERROR();
 
-	SceneManager& sceneManager = GetEngine()->GetSceneManager();
-	for (auto node : sceneManager.GetNodes())
+	SceneManager& sceneManager = GetEngine().GetSceneManager();
+	for (const std::shared_ptr<SceneNode>& node : sceneManager)
 	{
 		RenderDrawable(node->GetDrawable(), node->GetModelMatrix());
 	}
 }
 
-void Renderer::RenderDrawable(const std::shared_ptr<IDrawable> drawable, const Math::Matrix4f modelMatrix)
+void Renderer::RenderDrawable(const std::shared_ptr<IDrawable>& drawable, const Math::Matrix4f modelMatrix)
 {
     PACMAN_CHECK_ERROR(drawable != nullptr, ErrorCode::InvalidState);
 

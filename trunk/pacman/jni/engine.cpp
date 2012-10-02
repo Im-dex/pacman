@@ -9,9 +9,23 @@
 #include "renderer.h"
 #include "input_manager.h"
 #include "timer.h"
+#include "jni_utility.h"
 #include "json_helper.h"
 
 namespace Pacman {
+
+static const size_t kFramesPerSecond = 25;
+static const size_t kSkipTicks = 1000 / kFramesPerSecond;
+
+static FORCEINLINE void showLoadingDialog()
+{
+    JNI::CallStaticVoidMethod("com/imdex/pacman/NativeLib", "showLoadingDialog", "()V");
+}
+
+static FORCEINLINE void hideLoadingDialog()
+{
+    JNI::CallStaticVoidMethod("com/imdex/pacman/NativeLib", "hideLoadingDialog", "()V");
+}
 
 Engine::Engine()
 	  : mAssetManager(new AssetManager()),
@@ -21,47 +35,62 @@ Engine::Engine()
         mInputManager(new InputManager()),
 		mTimer(new Timer()),
 		mListener(nullptr),
-		mLastTime(0)
+		mLastTime(0),
+        mStarted(false)
 {
 	std::string configData = mAssetManager->LoadTextFile("config.json");
-	const Json::Value root = JsonHelper::ParseJson(configData);
-	PACMAN_CHECK_ERROR(root.isObject(), ErrorCode::BadFormat);
-	
-	const Json::Value resoution = root["base_resolution"];
-	PACMAN_CHECK_ERROR(resoution.isObject(), ErrorCode::BadFormat);
-	
-	const Json::Value width = resoution["width"];
-	const Json::Value height = resoution["height"];
-	PACMAN_CHECK_ERROR(width.isNumeric() && height.isNumeric(), ErrorCode::BadFormat);
+    const JsonHelper::Value root(configData);
 
-	mBaseWidth = width.asUInt();
-	mBaseHeight = height.asUInt();
+    const JsonHelper::Value resolution = root.GetValue<JsonHelper::Value>("base_resolution");
+	mBaseWidth = resolution.GetValue<size_t>("width");
+	mBaseHeight = resolution.GetValue<size_t>("height");
 }
 
 Engine::~Engine()
 {
 }
 
-void Engine::Init(const size_t screenWidth, const size_t screenHeight)
+void Engine::Start(const size_t screenWidth, const size_t screenHeight)
 {
-	size_t resolutionMultiplier = std::min(screenWidth / mBaseWidth, screenHeight / mBaseHeight);
+	const size_t resolutionMultiplier = std::min(screenWidth / mBaseWidth, screenHeight / mBaseHeight);
 	mAssetManager->SetMultiplier(resolutionMultiplier);
 	mRenderer->Init(screenWidth, screenHeight);
+    mStarted = true;
+
 	if (mListener != nullptr)
-		mListener->OnLoad();
+    {
+        showLoadingDialog();
+		mListener->OnStart(*this);
+        hideLoadingDialog();
+    }
 
 	mTimer->Start();
 	mLastTime = mTimer->GetMillisec();
 }
 
-static const size_t kFramesPerSecond = 25;
-static const size_t kSkipTicks = 1000 / kFramesPerSecond;
+void Engine::Stop()
+{
+    if (mListener != nullptr)
+        mListener->OnStop(*this);
+    mStarted = false;
+}
+
+void Engine::Pause()
+{
+}
+
+void Engine::Resume()
+{
+    showLoadingDialog();
+    // reloading
+    hideLoadingDialog();
+}
 
 void Engine::OnDrawFrame()
 {
     mInputManager->Update();
 	if (mListener != nullptr)
-		mListener->OnUpdate(kSkipTicks);
+		mListener->OnUpdate(*this, kSkipTicks);
 	mRenderer->DrawFrame();
 
 	mLastTime += kSkipTicks;
@@ -75,16 +104,10 @@ void Engine::OnDrawFrame()
 
 void Engine::OnTouch(const int event, const float x, const float y)
 {
-    PACMAN_CHECK_ERROR((event >= 0) && (event < kTouchEventsCount), ErrorCode::BadArgument);
-
-    const uint8_t u8event = static_cast<const uint8_t>(event);
-    const TouchInfo info = { static_cast<TouchEvent>(u8event), x, y };
+    typedef EnumType<TouchEvent>::value TouchEventValueT;
+    const TouchEventValueT eventValue = static_cast<TouchEventValueT>(event);
+    const TouchInfo info = { MakeEnum<TouchEvent>(eventValue), x, y };
 	mInputManager->PushInfo(info);
-}
-
-void Engine::Deinit()
-{
-	
 }
 
 } // Pacman namespace

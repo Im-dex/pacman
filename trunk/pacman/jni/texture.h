@@ -13,8 +13,6 @@ enum class TextureFiltering : uint8_t
 	Trilinear = 2
 };
 
-static const size_t kTextureFilteringsCount = 3;
-
 enum class TextureRepeat
 {
 	None = 0,
