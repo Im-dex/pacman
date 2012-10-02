@@ -1,12 +1,38 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 
+#include "engine_typedefs.h"
 #include "math/vector2.h"
 
 namespace Pacman {
 
+typedef uint16_t                Speed;
 typedef Math::Vector2<uint16_t> CellIndex;
+typedef std::vector<CellIndex>  CellIndexArray;
+
+static FORCEINLINE CellIndex::value_t GetRow(const CellIndex& cell)
+{
+    return cell.GetX();
+}
+
+static FORCEINLINE CellIndex::value_t GetColumn(const CellIndex& cell)
+{
+    return cell.GetY();
+}
+
+static FORCEINLINE CellIndex::value_t SetRow(CellIndex& cell, const CellIndex::value_t value)
+{
+    cell.SetX(value);
+}
+
+static FORCEINLINE CellIndex::value_t SetColumn(CellIndex& cell, const CellIndex::value_t value)
+{
+    cell.SetY(value);
+}
+
+//================================================
 
 enum class DotType : uint8_t
 {
@@ -15,6 +41,13 @@ enum class DotType : uint8_t
     Big   = 5
 };
 
-static const size_t kDotTypesCount = 2;
+//================================================
+
+enum class GhostState
+{
+    Start,
+    Chase,
+    Frightened
+};
 
 } // Pacman namespace

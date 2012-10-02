@@ -21,10 +21,10 @@ struct CustomHash;
 template <>
 struct CustomHash<CellIndex>
 {
-    size_t operator() (const CellIndex& index) const
+    size_t operator() (const CellIndex& cellIndex) const
     {
-        const size_t hash1 = std::hash<decltype(index.GetX())>() (index.GetX());
-        const size_t hash2 = std::hash<decltype(index.GetY())>() (index.GetY());
+        const size_t hash1 = std::hash<CellIndex::value_t>() (GetRow(cellIndex));
+        const size_t hash2 = std::hash<CellIndex::value_t>() (GetColumn(cellIndex));
         return hash1 ^ (hash2 << 1);
     }
 };
@@ -34,7 +34,7 @@ class DotsGrid
 public:
 
     DotsGrid() = delete;
-    DotsGrid(const std::vector<DotType>& dotsInfo, const std::weak_ptr<Map> mapPtr, const std::weak_ptr<SpriteSheet> spritesheetPtr);
+    DotsGrid(const std::vector<DotType>& dotsInfo, const std::weak_ptr<Map>& mapPtr, const std::weak_ptr<SpriteSheet>& spritesheetPtr);
     DotsGrid(const DotsGrid&) = delete;
     ~DotsGrid() = default;
 
@@ -44,20 +44,20 @@ public:
 
     void DetachFromScene(SceneManager& sceneManager);
 
-    void HideDot(const CellIndex& index);
+    void HideDot(const CellIndex& cellIndex);
 
 private:
 
-    typedef std::vector<SpritePosition> InstancesArray;
+    typedef std::vector<Position> InstancesArray;
     typedef std::tuple<InstancesArray, InstancesArray> DotsInstancesTuple;
-    typedef std::unordered_map<CellIndex, uint16_t, CustomHash<CellIndex>> DotsIndexMap; // cellIndex <-> mDotsInfo.position
+    typedef std::unordered_map<CellIndex, size_t, CustomHash<CellIndex>> DotsIndexMap; // cellIndex <-> mDotsInfo.position
 
-    DotsInstancesTuple MakeInstances(const std::shared_ptr<Map> map, const uint16_t smallDotSize, const uint16_t bigDotSize);
+    DotsInstancesTuple MakeInstances(const std::shared_ptr<Map>& map, const Size smallDotSize, const Size bigDotSize);
 
-    void AddDotInstance(const uint16_t dotOrderIndex, const uint16_t dotHalfSize, const std::shared_ptr<Map> map,
-                        std::vector<SpritePosition>& instances);
+    void AddDotInstance(const size_t dotOrderIndex, const Size dotHalfSize, const std::shared_ptr<Map>& map,
+                        std::vector<Position>& instances);
 
-    const uint16_t                   mMapColumnsCount;
+    const CellIndex::value_t         mMapColumnsCount;
     size_t                           mHiddenDotsCounts;
     std::vector<DotType>             mDotsInfo;
     DotsIndexMap                     mDotsIndexMap;

@@ -33,19 +33,21 @@ public class NativeLib {
 	}
 	
 	private static Context mContext = null;
-	private static ErrorReporter mErrorReporter = null;
+	private static Reporter mReporter = null;
 	
 	public static void setContext(Context context) {
 		mContext = context;
 	}
 	
-	public static void setErrorReporter(ErrorReporter errorReporter) {
-		mErrorReporter = errorReporter;
+	public static void setReporter(Reporter reporter) {
+		mReporter = reporter;
 	}
 	
-	public static native void init();
-	public static native void deinit();
-	public static native void resizeViewport(int width, int height);
+	public static native void start();
+	public static native void stop();
+	public static native void pause();
+	public static native void resume();
+	public static native void surfaceChanged(int width, int height);
 	public static native void drawFrame();
 	public static native boolean touchEvent(int event, float x, float y);
 	//public static native boolean keyEvent();
@@ -78,7 +80,15 @@ public class NativeLib {
 		}
 	}
 	
+	private static void showLoadingDialog() {
+		mReporter.showLoadingDialog();
+	}
+	
+	private static void hideLoadingDialog() {
+		mReporter.hideLoadingDialog();
+	}
+
 	private static void terminateApplication() {
-		mErrorReporter.terminateApplication("Internal error");
+		mReporter.terminateApplication("Internal error");
 	}
 }

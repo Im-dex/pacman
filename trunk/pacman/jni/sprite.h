@@ -11,16 +11,16 @@ public:
 
 	Sprite() = delete;
 
-	Sprite(const SpriteRegion& region, const Color& leftTop, const Color& rightTop, const Color& leftBottom,
-		   const Color& rightBottom, std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend);
+	Sprite(const SpriteRegion& region, const Color leftTop, const Color rightTop, const Color leftBottom,
+		   const Color rightBottom, const std::shared_ptr<ShaderProgram>& shaderProgram, const bool alphaBlend);
 
-	Sprite(const SpriteRegion& region, std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend);
+	Sprite(const SpriteRegion& region, const std::shared_ptr<ShaderProgram>& shaderProgram, const bool alphaBlend);
 
-	Sprite(const SpriteRegion& region, const TextureRegion& textureRegion, std::shared_ptr<Texture2D> texture,
-		   std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend);
+	Sprite(const SpriteRegion& region, const TextureRegion& textureRegion, const std::shared_ptr<Texture2D>& texture,
+		   const std::shared_ptr<ShaderProgram>& shaderProgram, const bool alphaBlend);
 
-	Sprite(const SpriteRegion& region, std::shared_ptr<Texture2D> texture,
-		   std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend);
+	Sprite(const SpriteRegion& region, const std::shared_ptr<Texture2D>& texture,
+		   const std::shared_ptr<ShaderProgram>& shaderProgram, const bool alphaBlend);
 
 	Sprite(const Sprite&) = default;
 	~Sprite() = default;

@@ -1,5 +1,7 @@
 #include "actor.h"
 
+#include <algorithm>
+
 #include "error.h"
 #include "scene_node.h"
 #include "scene_manager.h"
@@ -8,27 +10,96 @@
 
 namespace Pacman {
 
-static FORCEINLINE SpritePosition CalcActorPivotOffset(const uint16_t size)
+static FORCEINLINE Position CalcActorPivotOffset(const Size size)
 {
-    const uint16_t sizeHalf = size / 2;
-    return SpritePosition(sizeHalf, sizeHalf);
+    const Size sizeHalf = size / 2;
+    return Position(sizeHalf, sizeHalf);
 }
 
-const uint16_t Actor::kMax = uint16_t(-1);
+// if cells count greater than 1 select nearest cell for the current direction
+// (for example: if direction is left, select one of the most left placed cells)
+static CellIndex SelectNearestCell(const CellIndexArray& currentCellsIndices, const MoveDirection direction)
+{
+    CellIndex result = currentCellsIndices[0];
 
-Actor::Actor(const uint16_t size, const uint16_t speed, const uint16_t cellSize,
-             const SpritePosition& startPosition, const std::shared_ptr<IDrawable> startDrawable,
-             const std::shared_ptr<Map> map, const std::shared_ptr<IActorListener> listener)
+    for (size_t i = 1; i < currentCellsIndices.size(); i++)
+    {
+        const CellIndex& cellIndex = currentCellsIndices[i];
+        switch (direction)
+        {
+        case MoveDirection::Left:
+            if (GetColumn(cellIndex) < GetColumn(result))
+                result = cellIndex;
+            break;
+        case MoveDirection::Right:
+            if (GetColumn(cellIndex) > GetColumn(result))
+                result = cellIndex;
+            break;
+        case MoveDirection::Up:
+            if (GetRow(cellIndex) < GetRow(result))
+                result = cellIndex;
+            break;
+        case MoveDirection::Down:
+            if (GetRow(cellIndex) > GetRow(result))
+                result = cellIndex;
+            break;
+        }
+    }
+
+    return result;
+}
+
+static FORCEINLINE CellIndex FindCellWithOffset(const CellIndex& currentCellIndex, const MoveDirection direction,
+                                                const CellIndex::value_t indexOffset)
+{
+    switch (direction)
+    {
+    case MoveDirection::Left:
+        return currentCellIndex - CellIndex(0, indexOffset);
+    case MoveDirection::Right:
+        return currentCellIndex + CellIndex(0, indexOffset);
+    case MoveDirection::Up:
+        return currentCellIndex - CellIndex(indexOffset, 0);
+    case MoveDirection::Down:
+        return currentCellIndex + CellIndex(indexOffset, 0);
+    default:
+        return currentCellIndex;
+    }
+}
+
+const CellIndex::value_t Actor::kMax = 0;
+
+Actor::Actor(const Size size, const Speed speed, const Size cellSize,
+             const Position& startPosition, const std::shared_ptr<IDrawable>& startDrawable,
+             const std::shared_ptr<Map>& map, const std::shared_ptr<IActorListener>& listener)
      : mSize(size),
        mSpeed(speed),
        mCellSize(cellSize),
-       mCenterOffset(CalcActorPivotOffset(size)),
+       mPivotOffset(CalcActorPivotOffset(size)),
        mMap(map),
        mListener(listener),
-       mMoveTarget(0, 0),
+       mLastMoveCellsCount(0),
+       mMoveTarget(Position::kZero),
        mDirection(MoveDirection::None),
-       mNode(std::make_shared<SceneNode>(startDrawable, CalcActorPivotOffset(size), startPosition, Rotation::kZero))
+       mNode(std::make_shared<SceneNode>(startDrawable, startPosition, Rotation::kZero))
 {
+}
+
+const FORCEINLINE MoveDirection GetBackDirection(const MoveDirection direction)
+{
+    switch (direction)
+    {
+    case MoveDirection::Left:
+        return MoveDirection::Right;
+    case MoveDirection::Right:
+        return MoveDirection::Left;
+    case MoveDirection::Up:
+        return MoveDirection::Down;
+    case MoveDirection::Down:
+        return MoveDirection::Up;
+    default:
+        return MoveDirection::None;
+    }
 }
 
 void Actor::AttachToScene(SceneManager& sceneManager) const
@@ -43,14 +114,15 @@ void Actor::DetachFromScene(SceneManager& sceneManager) const
 
 void Actor::Update(const uint64_t dt)
 {
-    const int32_t offset = static_cast<const int32_t>(mSpeed * mCellSize * dt / 1000);
+    const float accurateOffset = ((static_cast<float>(dt) * 0.001f) * static_cast<float>(mSpeed)) * static_cast<float>(mCellSize);
+    const PosOffset offset = static_cast<PosOffset>(accurateOffset);
 
-    const SpritePosition currentPosition = GetCenterPos();
-    const int32_t xDiff = static_cast<const int32_t>(mMoveTarget.GetX()) - currentPosition.GetX();
-    const int32_t yDiff = static_cast<const int32_t>(mMoveTarget.GetY()) - currentPosition.GetY();
+    const Position currentPosition = GetCenterPos();
+    const PosOffset xDiff = static_cast<PosOffset>(mMoveTarget.GetX()) - currentPosition.GetX();
+    const PosOffset yDiff = static_cast<PosOffset>(mMoveTarget.GetY()) - currentPosition.GetY();
 
-    const int32_t xOffset = ((xDiff < 0) ? -1 : 1) * (std::min(offset, std::abs(xDiff)));
-    const int32_t yOffset = ((yDiff < 0) ? -1 : 1) * (std::min(offset, std::abs(yDiff)));
+    const PosOffset xOffset = ((xDiff < 0) ? -1 : 1) * (std::min(offset, std::abs(xDiff)));
+    const PosOffset yOffset = ((yDiff < 0) ? -1 : 1) * (std::min(offset, std::abs(yDiff)));
 
     if ((xOffset != 0) || (yOffset != 0))
     {
@@ -59,13 +131,13 @@ void Actor::Update(const uint64_t dt)
     else
     {
         if (mListener != nullptr)
-            mListener->OnTargetAchieved(shared_from_this());
+            mListener->OnTargetAchieved(*this);
     }
 }
 
-SpritePosition Actor::GetCenterPos() const
+Position Actor::GetCenterPos() const
 {
-    return mNode->GetPosition() + mCenterOffset;
+    return mNode->GetPosition() + mPivotOffset;
 }
 
 SpriteRegion Actor::GetRegion() const
@@ -75,76 +147,96 @@ SpriteRegion Actor::GetRegion() const
 
 void Actor::Rotate(const Rotation& rotation)
 {
-    mNode->Rotate(rotation);
+    mNode->SetRotation(rotation, mPivotOffset);
 }
 
-void Actor::Translate(const CellIndex& cell)
+void Actor::TranslateTo(const CellIndex& cell)
 {
     PACMAN_CHECK_ERROR(mMap->GetCell(cell) == MapCellType::Empty, ErrorCode::BadArgument);
-    mNode->Translate(mMap->GetCellCenterPos(cell) - mCenterOffset);
+    mNode->Translate(mMap->GetCellCenterPos(cell) - mPivotOffset);
 }
 
-void Actor::Move(const MoveDirection direction, const uint16_t cellsCount)
+void Actor::Move(const MoveDirection direction, const CellIndex::value_t cellsCount)
 {
-    CellIndex targetCell(0, 0);
-    const CellIndex currentCell = mMap->FindCell(GetRegion());
-
-    if (cellsCount == kMax)
-    {
-        targetCell = FindMaxAvailableCell(currentCell, direction);
-    }
-    else
-    {
-        switch (direction)
-        {
-        case MoveDirection::Left:
-            targetCell = currentCell - CellIndex(cellsCount, 0);
-            break;
-        case MoveDirection::Right:
-            targetCell = currentCell + CellIndex(cellsCount, 0);
-            break;
-        case MoveDirection::Up:
-            targetCell = currentCell - CellIndex(0, cellsCount);
-            break;
-        case MoveDirection::Down:
-            targetCell = currentCell + CellIndex(0, cellsCount);
-            break;
-        default:
-            targetCell = currentCell;
-        }
-    }
-
-    PACMAN_CHECK_ERROR(mMap->GetCell(targetCell) == MapCellType::Empty, ErrorCode::BadArgument);
-
-    if (targetCell == currentCell) // no way
+    // do nothing if actor already moves in this direction to the max available position
+    if ((mDirection == direction) && (cellsCount == kMax) && (mLastMoveCellsCount == kMax))
         return;
 
-    mMoveTarget = mMap->GetCellCenterPos(targetCell);
+    const CellIndexArray currentCells = mMap->FindCells(GetRegion());
+    const CellIndex currentCell = SelectNearestCell(currentCells, direction);
+    const CellIndex targetCell = (cellsCount == kMax) ? FindMaxAvailableCell(currentCell, direction)
+                                                      : FindCellWithOffset(currentCell, direction, cellsCount);
+
+    PACMAN_CHECK_ERROR(mMap->GetCell(targetCell) == MapCellType::Empty, ErrorCode::BadArgument);
+    if (std::find(currentCells.begin(), currentCells.end(), targetCell) != currentCells.end())
+        return; // no way
+
+    // ONLY FOR PACMAN ACTOR!!! (only pacman uses kMax, we are can check him by this value)
+    // when pacman change move direction on a crossroads, move him to the current cell center.
+    // works only if pacman change direction to the perpendicular of current.
+    // ("cornering", see Dosier guide)
+    if ((cellsCount == kMax) && (mDirection != direction) && (GetBackDirection(mDirection) != direction))
+        TranslateTo(currentCell);
+
+    // calc next movement
+    const Position targetCellCenterPos = mMap->GetCellCenterPos(targetCell);
+    const Position currentCenterPos = GetCenterPos();
+    switch (direction)
+    {
+    case MoveDirection::Left:
+        {
+            const Size distance = currentCenterPos.GetX() - targetCellCenterPos.GetX();
+            mMoveTarget = currentCenterPos - Position(distance, 0);
+            break;
+        }
+    case MoveDirection::Right:
+        {
+            const Size distance = targetCellCenterPos.GetX() - currentCenterPos.GetX();
+            mMoveTarget = currentCenterPos + Position(distance, 0);
+            break;
+        }
+    case MoveDirection::Up:
+        {
+            const Size distance = currentCenterPos.GetY() - targetCellCenterPos.GetY();
+            mMoveTarget = currentCenterPos - Position(0, distance);
+            break;
+        }
+    case MoveDirection::Down:
+        {
+            const Size distance = targetCellCenterPos.GetY() - currentCenterPos.GetY();
+            mMoveTarget = currentCenterPos + Position(0, distance);
+            break;
+        }
+    default:
+        mMoveTarget = currentCenterPos;
+    }
+
     mDirection = direction;
+    mLastMoveCellsCount = cellsCount;
     if (mListener != nullptr)
-        mListener->OnDirectionChanged(shared_from_this(), direction);
+        mListener->OnDirectionChanged(*this, direction);
 }
 
-void Actor::SetDrawable(const std::shared_ptr<IDrawable> drawable)
+void Actor::SetDrawable(const std::shared_ptr<IDrawable>& drawable)
 {
     mNode->SetDrawable(drawable);
 }
 
-CellIndex Actor::FindMaxAvailableCell(const CellIndex& curCell, const MoveDirection direction) const
+CellIndex Actor::FindMaxAvailableCell(const CellIndex& currentCellIndex, const MoveDirection direction) const
 {
-    CellIndex index = curCell;
+    CellIndex cellIndex = currentCellIndex;
     bool canMove = true;
 
     while (canMove)
     {
-        const MapNeighborsInfo neighbors = mMap->GetDirectNeighbors(index);
+        const MapNeighborsInfo neighbors = mMap->GetDirectNeighbors(cellIndex);
 
         switch (direction)
         {
         case MoveDirection::Left:
             {
                 if (neighbors.left == MapCellType::Empty)
-                    index.SetY(index.GetY() - 1);
+                    SetColumn(cellIndex, GetColumn(cellIndex) - 1);
                 else
                     canMove = false;
                 break;
@@ -152,7 +244,7 @@ CellIndex Actor::FindMaxAvailableCell(const CellIndex& curCell, const MoveDirect
         case MoveDirection::Right:
             {
                 if (neighbors.right == MapCellType::Empty)
-                    index.SetY(index.GetY() + 1);
+                    SetColumn(cellIndex, GetColumn(cellIndex) + 1);
                 else
                     canMove = false;
                 break;
@@ -160,7 +252,7 @@ CellIndex Actor::FindMaxAvailableCell(const CellIndex& curCell, const MoveDirect
         case MoveDirection::Up:
             {
                 if (neighbors.top == MapCellType::Empty)
-                    index.SetX(index.GetX() - 1);
+                    SetRow(cellIndex, GetRow(cellIndex) - 1);
                 else
                     canMove = false;
                 break;
@@ -168,7 +260,7 @@ CellIndex Actor::FindMaxAvailableCell(const CellIndex& curCell, const MoveDirect
         case MoveDirection::Down:
             {
                 if (neighbors.bottom == MapCellType::Empty)
-                    index.SetX(index.GetX() + 1);
+                    SetRow(cellIndex, GetRow(cellIndex) + 1);
                 else
                     canMove = false;
                 break;
@@ -178,7 +270,7 @@ CellIndex Actor::FindMaxAvailableCell(const CellIndex& curCell, const MoveDirect
         }
     }
 
-    return index;
+    return cellIndex;
 }
 
 } // Pacman namespace

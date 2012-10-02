@@ -3,6 +3,7 @@
 #include <cassert>
 #include <complex>
 #include <algorithm>
+#include <cmath>
 
 #include "log.h"
 #include "utils.h"
@@ -39,7 +40,7 @@ static FORCEINLINE Color GetColor(const MapCellType type)
 }
 
 // Fill region by color, all sizes is given in pixels (not in bytes!!!)
-static void FillRegion(byte_t* colorBuffer, const uint16_t rowWidth, const SpriteRegion region, const Color color)
+static void FillRegion(byte_t* colorBuffer, const Size rowWidth, const SpriteRegion region, const Color color)
 {
 	const size_t bytesInRow = rowWidth * kColorComponentsCount;
 	const size_t bytesInRegionRow = region.GetWidth() * kColorComponentsCount;
@@ -60,34 +61,34 @@ static void FillRegion(byte_t* colorBuffer, const uint16_t rowWidth, const Sprit
 }
 
 // cut cutSize pixels from left
-static FORCEINLINE void CutLeft(SpriteRegion& region, const uint16_t cutSize)
+static FORCEINLINE void CutLeft(SpriteRegion& region, const Size cutSize)
 {
 	region.SetPosX(region.GetPosX() + cutSize);
 	region.SetWidth(region.GetWidth() - cutSize);	
 }
 
 // cut cutSize pixels from right
-static FORCEINLINE void CutRight(SpriteRegion& region, const uint16_t cutSize)
+static FORCEINLINE void CutRight(SpriteRegion& region, const Size cutSize)
 {
 	region.SetWidth(region.GetWidth() - cutSize);
 }
 
 // cut cutSize pixels from top
-static FORCEINLINE void CutTop(SpriteRegion& region, const uint16_t cutSize)
+static FORCEINLINE void CutTop(SpriteRegion& region, const Size cutSize)
 {
 	region.SetPosY(region.GetPosY() + cutSize);
 	region.SetHeight(region.GetHeight() - cutSize);
 }
 
 // cut cutSize pixels from bottom
-static FORCEINLINE void CutBottom(SpriteRegion& region, const uint16_t cutSize)
+static FORCEINLINE void CutBottom(SpriteRegion& region, const Size cutSize)
 {
 	region.SetHeight(region.GetHeight() - cutSize);
 }
 
 //============================================================================================================================================
 
-Map::Map(const uint16_t cellSize, const uint16_t rowsCount, const size_t viewportWidth,
+Map::Map(const Size cellSize, const CellIndex::value_t rowsCount, const size_t viewportWidth,
          const size_t viewportHeight, const CellIndex& leftTunnelExit,
          const CellIndex& rightTunnelExit, const std::vector<MapCellType>& cells)
    : mCellSize(cellSize),
@@ -100,16 +101,16 @@ Map::Map(const uint16_t cellSize, const uint16_t rowsCount, const size_t viewpor
      mCells(cells),
      mRect(0, 0, 0, 0)
 {
-    const uint16_t mapWidth = mColumnsCount * mCellSize;
-    const uint16_t mapHeight = mRowsCount * mCellSize;
+    const Size mapWidth = mColumnsCount * mCellSize;
+    const Size mapHeight = mRowsCount * mCellSize;
 
-    const uint16_t leftRightPadding = (viewportWidth - mapWidth) / 2;
-    const uint16_t topBottomPadding = (viewportHeight - mapHeight) / 2;
+    const Size leftRightPadding = (viewportWidth - mapWidth) / 2;
+    const Size topBottomPadding = (viewportHeight - mapHeight) / 2;
 
     mRect = SpriteRegion(leftRightPadding, topBottomPadding, mapWidth, mapHeight);
-    LOGI("mRect: posx: %u, posy: %u", mRect.GetPosX(), mRect.GetPosY());
+    LogI("mRect: posx: %u, posy: %u", mRect.GetPosX(), mRect.GetPosY());
     std::shared_ptr<Sprite> sprite = GenerateSprite();
-	mNode = std::make_shared<SceneNode>(sprite, SpritePosition::kZero, SpritePosition::kZero, Rotation::kZero);
+	mNode = std::make_shared<SceneNode>(sprite, Position::kZero, Rotation::kZero);
 }
 
 void Map::AttachToScene(SceneManager& sceneManager)
@@ -117,40 +118,100 @@ void Map::AttachToScene(SceneManager& sceneManager)
 	sceneManager.AttachNode(mNode);
 }
 
-MapCellType Map::GetCell(const uint16_t rowIndex, const uint16_t columnIndex) const
+MapCellType Map::GetCell(const CellIndex::value_t rowIndex, const CellIndex::value_t columnIndex) const
 {
     PACMAN_CHECK_ERROR2((rowIndex <= mRowsCount) && (columnIndex <= mColumnsCount), ErrorCode::BadArgument,
                         MakeString("rowIndex: ", rowIndex, ", columnIndex: ", columnIndex).c_str());
     return mCells[(rowIndex * mColumnsCount) + columnIndex];
 }
 
-MapCellType Map::GetCell(const CellIndex& index) const
+MapCellType Map::GetCell(const CellIndex& cell) const
 {
-    return GetCell(index.GetX(), index.GetY());
+    return GetCell(GetRow(cell), GetColumn(cell));
+}
+#include <float.h>
+CellIndex Map::GetCellIndex(const Position& position) const
+{
+    const Position pos = position - mRect.GetPosition();
+    const float row = std::floor(static_cast<float>(pos.GetY()) / static_cast<float>(mCellSize));
+    const float column = std::floor(static_cast<float>(pos.GetX()) / static_cast<float>(mCellSize));
+    return CellIndex(static_cast<CellIndex::value_t>(row), static_cast<CellIndex::value_t>(column));
 }
 
-SpritePosition Map::GetCellCenterPos(const uint16_t rowIndex, const uint16_t columnIndex) const
+Position Map::GetCellCenterPos(const CellIndex::value_t rowIndex, const CellIndex::value_t columnIndex) const
 {
-    return mRect.GetPosition() + (SpritePosition(columnIndex * mCellSize, rowIndex * mCellSize) + mCellSizeHalf);
+    return mRect.GetPosition() + (Position(columnIndex * mCellSize, rowIndex * mCellSize) + mCellSizeHalf);
 }
 
-SpritePosition Map::GetCellCenterPos(const CellIndex& index) const
+Position Map::GetCellCenterPos(const CellIndex& index) const
 {
-    return GetCellCenterPos(index.GetX(), index.GetY());   
+    return GetCellCenterPos(GetRow(index), GetColumn(index));   
 }
 
-// TODO: optimize by quad-tree scene split
-CellIndex Map::FindCell(const SpriteRegion& region) const
+CellIndexArray Map::FindCells(const SpriteRegion& region) const
 {
-    for (size_t i = 0; i < mRowsCount; i++)
-        for (size_t j = 0; j < mColumnsCount; j++)
-        {
-            if (region.HasPoint(GetCellCenterPos(i, j)))
-                return CellIndex(i, j);
-        }
+    static const size_t kMaxCellsCount = 6;
+    CellIndexArray result;
+    result.reserve(kMaxCellsCount);
+
+    const auto addCell = [this, &result, &region](const CellIndex& cell)
+    {
+        const Position cellCenterPos = GetCellCenterPos(cell);
+        if (region.HasPoint(cellCenterPos))
+            result.push_back(cell);
+    };
+
+    // find cells that contain the region vertices
+    PACMAN_CHECK_ERROR(mRect.IsIntersect(region), ErrorCode::InvalidState);
+    SpriteRegion intersection = mRect.Intersection(region);
+    const CellIndex leftTopPosCell = GetCellIndex(intersection.GetPosition());
+    const CellIndex rightTopPosCell = GetCellIndex(intersection.GetRightTopPos());
+    const CellIndex leftBottomPosCell = GetCellIndex(intersection.GetLeftBottomPos());
+    const CellIndex rightBottomPosCell = GetCellIndex(intersection.GetRightBottomPos());
+
+    // find cells
+
+    // between leftTop and rightTop
+    if (GetColumn(rightTopPosCell) - GetColumn(leftTopPosCell) > 1)
+    {
+        const CellIndex cellIndex(GetRow(leftTopPosCell), GetColumn(leftTopPosCell) + 1);
+        addCell(cellIndex);
+    }
+
+    // between leftBottom and rightBottom
+    if (GetColumn(rightBottomPosCell) - GetColumn(leftBottomPosCell) > 1)
+    {
+        const CellIndex cellIndex(GetRow(leftBottomPosCell), GetColumn(leftBottomPosCell) + 1);
+        addCell(cellIndex);
+    }
+
+    // between leftTop and leftBottom
+    if (GetRow(leftBottomPosCell) - GetRow(leftTopPosCell) > 1)
+    {
+        const CellIndex cellIndex(GetRow(leftTopPosCell) + 1, GetColumn(leftTopPosCell));
+        addCell(cellIndex);
+    }
+
+    // between rightTop and rightBottom
+    if (GetRow(rightBottomPosCell) - GetRow(rightTopPosCell) > 1)
+    {
+        const CellIndex cellIndex(GetRow(rightTopPosCell) + 1, GetColumn(rightTopPosCell));
+        addCell(cellIndex);
+    }
+
+    // between all (middle)
+    if ((GetRow(rightBottomPosCell) - GetRow(leftTopPosCell) > 1) &&
+        (GetColumn(rightBottomPosCell) - GetColumn(leftTopPosCell) > 1))
+    {
+        const CellIndex cellIndex(GetRow(leftTopPosCell) + 1, GetColumn(leftTopPosCell) + 1);
+        addCell(cellIndex);
+    }
+
+    PACMAN_CHECK_ERROR((result.size() <= kMaxCellsCount) && result.size() > 0, ErrorCode::InvalidState);
+    return result;
 }
 
-MapNeighborsInfo Map::GetDirectNeighbors(const uint16_t rowIndex, const uint16_t columnIndex) const
+MapNeighborsInfo Map::GetDirectNeighbors(const CellIndex::value_t rowIndex, const CellIndex::value_t columnIndex) const
 {
     MapNeighborsInfo info;
 
@@ -183,10 +244,10 @@ MapNeighborsInfo Map::GetDirectNeighbors(const uint16_t rowIndex, const uint16_t
 
 MapNeighborsInfo Map::GetDirectNeighbors(const CellIndex& index) const
 {
-    return GetDirectNeighbors(index.GetX(), index.GetY());
+    return GetDirectNeighbors(GetRow(index), GetColumn(index));
 }
 
-FullMapNeighborsInfo Map::GetFullNeighbors(const uint16_t rowIndex, const uint16_t columnIndex) const
+FullMapNeighborsInfo Map::GetFullNeighbors(const CellIndex::value_t rowIndex, const CellIndex::value_t columnIndex) const
 {
     FullMapNeighborsInfo info;
     info.directInfo = GetDirectNeighbors(rowIndex, columnIndex);
@@ -220,7 +281,7 @@ FullMapNeighborsInfo Map::GetFullNeighbors(const uint16_t rowIndex, const uint16
 
 FullMapNeighborsInfo Map::GetFullNeighbors(const CellIndex& index) const
 {
-    return GetFullNeighbors(index.GetX(), index.GetY());
+    return GetFullNeighbors(GetRow(index), GetColumn(index));
 }
 
 std::shared_ptr<Sprite> Map::GenerateSprite()
@@ -229,7 +290,7 @@ std::shared_ptr<Sprite> Map::GenerateSprite()
 	TextureRegion textureRegion(Math::Vector2f::kZero, 0.0f, 0.0f);
 	std::shared_ptr<Texture2D> texture = GenerateTexture(&textureRegion);
 
-	AssetManager& assetManager = GetEngine()->GetAssetManager();
+	AssetManager& assetManager = GetEngine().GetAssetManager();
 	std::shared_ptr<ShaderProgram> shaderProgram = assetManager.LoadShaderProgram(AssetManager::kDefaultTextureVertexShader, AssetManager::kDefaultTextureFragmentShader);
 
 	return std::make_shared<Sprite>(mRect, textureRegion, texture, shaderProgram, false);
@@ -238,8 +299,8 @@ std::shared_ptr<Sprite> Map::GenerateSprite()
 std::shared_ptr<Texture2D> Map::GenerateTexture(TextureRegion* textureRegion)
 {
     // expand to POT --> TODO: check that device supports this texture size  <--
-    const size_t textureWidth = NextPOT(mRect.GetWidth());
-    const size_t textureHeight = NextPOT(mRect.GetHeight());
+    const Size textureWidth = NextPOT(mRect.GetWidth());
+    const Size textureHeight = NextPOT(mRect.GetHeight());
 
 	const size_t bufferSize = textureWidth * textureHeight * kColorComponentsCount;
 	const size_t bytesInRow = textureWidth * kColorComponentsCount;
@@ -336,7 +397,7 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.directInfo.right == MapCellType::Wall &&
 				neighbors.directInfo.top == MapCellType::Wall)
 			{
-				SpritePosition pos = cellRegion.GetRightTopPos();
+				Position pos = cellRegion.GetRightTopPos();
 				pos.SetX(pos.GetX() - mCellSizeQuarter);
 				SpriteRegion artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.rightTop));
@@ -346,7 +407,7 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.directInfo.left == MapCellType::Wall &&
 				neighbors.directInfo.bottom == MapCellType::Wall)
 			{
-				SpritePosition pos = cellRegion.GetLeftBottomPos();
+				Position pos = cellRegion.GetLeftBottomPos();
 				pos.SetY(pos.GetY() - mCellSizeQuarter);
 				SpriteRegion artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.leftBottom));
@@ -356,7 +417,7 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.directInfo.right == MapCellType::Wall &&
 				neighbors.directInfo.bottom == MapCellType::Wall)
 			{
-				SpritePosition pos = cellRegion.GetRightBottomPos();
+				Position pos = cellRegion.GetRightBottomPos();
 				pos.SetX(pos.GetX() - mCellSizeQuarter);
 				pos.SetY(pos.GetY() - mCellSizeQuarter);
 				SpriteRegion artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);

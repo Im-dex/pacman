@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <cstdint>
-#include <cassert>
 
 #include "base.h"
 #include "engine_listeners.h"
@@ -26,47 +25,51 @@ public:
 
 	Engine& operator= (const Engine&) = delete;
 
-	void Init(const size_t screenWidth, const size_t screenHeight);
+	void Start(const size_t screenWidth, const size_t screenHeight);
+
+    void Stop();
+
+    void Pause();
+
+    void Resume();
 
 	void OnDrawFrame();
 
 	void OnTouch(const int event, const float x, const float y);
-
-	void Deinit();
 
 	void SetListener(std::shared_ptr<IEngineListener> listener)
 	{
 		mListener = listener;
 	}
 
-	AssetManager& GetAssetManager()
+	AssetManager& GetAssetManager() const
 	{
-		assert(mAssetManager != nullptr);
 		return *mAssetManager;
 	}
 
-	FontManager& GetFontManager()
+	FontManager& GetFontManager() const
 	{
-		assert(mFontManager != nullptr);
 		return *mFontManager;
 	}
 
-	SceneManager& GetSceneManager()
+	SceneManager& GetSceneManager() const
 	{
-		assert(mSceneManager != nullptr);
 		return *mSceneManager;
 	}
 
 	Renderer& GetRenderer()
 	{
-		assert(mRenderer != nullptr);
 		return *mRenderer;
 	}
 
-    InputManager& GetInputManager()
+    InputManager& GetInputManager() const
     {
-        assert(mInputManager != nullptr);
         return *mInputManager;
+    }
+
+    bool IsStarted() const
+    {
+        return mStarted;
     }
 
 private:
@@ -83,8 +86,9 @@ private:
 
 	size_t mBaseWidth;
 	size_t mBaseHeight;
+    bool   mStarted;
 };
 
-Engine* GetEngine();
+Engine& GetEngine();
 
 } // Pacman namespace

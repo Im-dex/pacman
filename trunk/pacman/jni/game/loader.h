@@ -25,13 +25,13 @@ public:
 
     GameLoader& operator= (const GameLoader&) = delete;
 
-    std::shared_ptr<Map> LoadMap(const std::string& fileName, const uint16_t cellSize);
+    std::shared_ptr<Map> LoadMap(const std::string& fileName, const Size cellSize);
 
-    std::shared_ptr<DotsGrid> MakeDotsGrid(const std::weak_ptr<Map> mapPtr, const std::weak_ptr<SpriteSheet> spritesheetPtr);
+    std::shared_ptr<DotsGrid> MakeDotsGrid(const std::weak_ptr<Map>& mapPtr, const std::weak_ptr<SpriteSheet>& spritesheetPtr);
 
-    std::shared_ptr<Actor> LoadActor(const std::string& fileName, const uint16_t actorSize,
-                                     const std::shared_ptr<IDrawable> drawable, const std::shared_ptr<Map> map,
-                                     const std::shared_ptr<IActorListener> listener) const;
+    std::shared_ptr<Actor> LoadActor(const std::string& fileName, const Size actorSize,
+                                     const std::shared_ptr<IDrawable>& drawable, const std::shared_ptr<Map>& map,
+                                     const std::shared_ptr<IActorListener>& listener) const;
 private:
 
     std::vector<DotType> mDotsInfo;

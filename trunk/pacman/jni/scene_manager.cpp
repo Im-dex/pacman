@@ -7,12 +7,12 @@
 
 namespace Pacman{
 
-void SceneManager::AttachNode(std::shared_ptr<SceneNode> node)
+void SceneManager::AttachNode(const std::shared_ptr<SceneNode>& node)
 {
 	mNodes.push_back(node);
 }
 
-void SceneManager::DetachNode(std::shared_ptr<SceneNode> node)
+void SceneManager::DetachNode(const std::shared_ptr<SceneNode>& node)
 {
 	mNodes.remove(node);
 }

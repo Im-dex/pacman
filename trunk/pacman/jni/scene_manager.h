@@ -19,21 +19,28 @@ public:
 
 	SceneManager& operator= (const SceneManager&) = delete;
 
-	void AttachNode(std::shared_ptr<SceneNode> node);
+	void AttachNode(const std::shared_ptr<SceneNode>& node);
 
-	void DetachNode(std::shared_ptr<SceneNode> node);
-
-	std::list<std::shared_ptr<SceneNode>> GetNodes() const
-	{
-		return mNodes;
-	}
+	void DetachNode(const std::shared_ptr<SceneNode>& node);
 
 private:
 
-	float mSceneWidth;
-	float mSceneHeigth;
+    typedef std::list<std::shared_ptr<SceneNode>> NodesList;
 
-	std::list<std::shared_ptr<SceneNode>> mNodes;
+	 NodesList mNodes;
+
+// range-based for loop support
+public:
+
+    NodesList::const_iterator begin() const
+    {
+        return mNodes.cbegin();
+    }
+
+    NodesList::const_iterator end() const
+    {
+        return mNodes.cend();
+    }
 };
 
 } // Pacman namespace

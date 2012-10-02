@@ -19,16 +19,12 @@ public:
 	Color() = delete;
 	Color(const byte_t r, const byte_t g, const byte_t b, const byte_t a);
 	Color(const Color& other) = default;
-	Color(Color&& other);
 	~Color() = default;
 
 	Color& operator= (const Color& other) = default;
-	Color& operator= (Color&& other);
 
 	bool operator== (const Color& other) const;
 	bool operator!= (const Color& other) const;
-
-	void Fill(byte_t* buffer, const size_t componentsCount) const;
 
 	byte_t GetRed() const
 	{
@@ -102,7 +98,7 @@ private:
 
 	float ConvertToFloat(const byte_t value) const
 	{
-		return static_cast<float>(value) * (1.0f / 255.0f);
+		return static_cast<float>(value) / 255.0f;
 	}
 
 	union

@@ -16,17 +16,17 @@ public class SurfaceView extends GLSurfaceView {
 	private static final boolean DEBUG = false;
 	private static final String TAG = "PACMAN";
 	
-	private final ErrorReporter mErrorReporter;
+	private final Reporter mErrorReporter;
 	private boolean mStopRendering = false;
 	
-	public SurfaceView(Context context, ErrorReporter errorReporter) {
+	public SurfaceView(Context context, Reporter errorReporter) {
 		super(context);
 		mErrorReporter = errorReporter;
 		errorReporter.setGLView(this);
 		init(0, 0, false);
 	}
 
-	public SurfaceView(Context context, ErrorReporter errorReporter, int depth, int stencil, boolean translucent) {
+	public SurfaceView(Context context, Reporter errorReporter, int depth, int stencil, boolean translucent) {
 		super(context);
 		mErrorReporter = errorReporter;
 		errorReporter.setGLView(this);
@@ -267,7 +267,7 @@ public class SurfaceView extends GLSurfaceView {
 
 		public void onSurfaceChanged(GL10 gl, int width, int height) {
 			try {
-				NativeLib.resizeViewport(width, height);
+				NativeLib.surfaceChanged(width, height);
 			} catch (Exception e) {
 				mErrorReporter.terminateApplication(e.getMessage());
 			}

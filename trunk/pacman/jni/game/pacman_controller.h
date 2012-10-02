@@ -3,6 +3,7 @@
 #include <memory>
 #include <cstdint>
 
+#include "base.h"
 #include "game_listeners.h"
 
 namespace Pacman {
@@ -17,8 +18,8 @@ class PacmanController
 {
 public:
 
-    PacmanController(const GameLoader& loader, const uint16_t actorSize, const std::shared_ptr<Map> map,
-                     const std::weak_ptr<SpriteSheet> spriteSheetPtr);
+    PacmanController(const GameLoader& loader, const Size actorSize, const std::shared_ptr<Map>& map,
+                     const std::weak_ptr<SpriteSheet>& spriteSheetPtr);
     PacmanController(const PacmanController&) = delete;
     ~PacmanController() = default;
 

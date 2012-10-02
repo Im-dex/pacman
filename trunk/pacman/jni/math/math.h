@@ -13,14 +13,14 @@ namespace Pacman {
 namespace Math {
 
 template <typename T>
-T DegreesToRadians(const T degrees)
+T FORCEINLINE DegreesToRadians(const T degrees)
 {
 	PACMAN_CHECK_ARITHMETIC_TYPE;
 	return degrees * (T(M_PI) / T(180));
 }
 
 template <typename T>
-T RadiansToDegrees(const T radians)
+T FORCEINLINE RadiansToDegrees(const T radians)
 {
 	PACMAN_CHECK_ARITHMETIC_TYPE;
 	return radians * (T(180) / T(M_PI));

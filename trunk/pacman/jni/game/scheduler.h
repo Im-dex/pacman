@@ -20,9 +20,9 @@ public:
 
     void Update(const uint64_t dt);
 
-    void RegisterAction(const std::shared_ptr<Action> action, const uint64_t delay, const bool repeatable);
+    void RegisterAction(const std::shared_ptr<Action>& action, const uint64_t delay, const bool repeatable);
 
-    void RegisterTrigger(const std::shared_ptr<Trigger> trigger);
+    void RegisterTrigger(const std::shared_ptr<Trigger>& trigger);
 
 private:
 

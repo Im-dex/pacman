@@ -26,8 +26,7 @@ static GestureType ConvertToGesture(const TouchInfo& begin, const TouchInfo& end
 }
 
 InputManager::InputManager()
-            : mMutex(),
-              mLastGesture(GestureType::None),
+            : mLastGesture(EnumCast(GestureType::None)),
               mListener(nullptr)
 {
     mBeginGestureTouch = { TouchEvent::Move, 0.0f, 0.0f };
@@ -39,26 +38,18 @@ void InputManager::PushInfo(const TouchInfo& touchInfo)
         return;
 
     if (touchInfo.event == TouchEvent::Down)
-    {
         mBeginGestureTouch = touchInfo;
-    }
     else
-    {
-        mMutex.Lock();
-        mLastGesture = ConvertToGesture(mBeginGestureTouch, touchInfo);
-        mMutex.Unlock();
-    }
+        mLastGesture = EnumCast(ConvertToGesture(mBeginGestureTouch, touchInfo));
 }
 
 void InputManager::Update()
 {
-    mMutex.Lock();
-    if (mLastGesture != GestureType::None && mListener != nullptr)
+    if ((mLastGesture != EnumCast(GestureType::None)) && (mListener != nullptr))
     {
-        mListener->OnGesture(mLastGesture);
-        mLastGesture = GestureType::None;
+        const GestureEnumType none = EnumCast(GestureType::None);
+        mListener->OnGesture(MakeEnum<GestureType>(mLastGesture.exchange(none)));
     }
-    mMutex.Unlock();
 }
 
 } // Pacman namespace

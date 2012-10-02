@@ -6,9 +6,10 @@
 
 namespace Pacman {
 
-typedef Rect<float> TextureRegion;
-typedef Rect<uint16_t> SpriteRegion;
-typedef SpriteRegion::Position SpritePosition;
-typedef Math::Vector3f Rotation;
+typedef Rect<float>             TextureRegion;
+typedef Rect<Size>              SpriteRegion;
+typedef SpriteRegion::Position  Position;
+typedef Math::Vector3f          Rotation;
+typedef SizeOffset              PosOffset;
 
 } // Pacman namespace

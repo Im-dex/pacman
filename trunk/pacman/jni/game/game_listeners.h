@@ -15,15 +15,15 @@ enum class MoveDirection : uint8_t
     Down  = 4
 };
 
-static const size_t kMoveDirectionsCount = 5;
-
 class IActorListener
 {
 public:
 
-    virtual void OnDirectionChanged(const std::weak_ptr<Actor> actorPtr, const MoveDirection newDirection) = 0;
+    virtual ~IActorListener() {}
 
-    virtual void OnTargetAchieved(const std::weak_ptr<Actor> actorPtr) = 0;
+    virtual void OnDirectionChanged(Actor& actor, const MoveDirection newDirection) = 0;
+
+    virtual void OnTargetAchieved(Actor& actor) = 0;
 };
 
 } // Pacman namespace

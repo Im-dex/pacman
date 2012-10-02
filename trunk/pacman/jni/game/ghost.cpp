@@ -3,53 +3,48 @@
 #include "error.h"
 #include "sprite.h"
 #include "spritesheet.h"
-#include "scene_node.h"
+#include "drawable.h"
+#include "actor.h"
 
 namespace Pacman {
 
-static std::shared_ptr<Sprite> MakeLookSprite(const std::weak_ptr<SpriteSheet> spriteSheetPtr, const std::string& spriteName,
-                                              const uint16_t actorSize)
+Ghost::Ghost(const std::shared_ptr<Actor>& actor, const Size size,
+             const std::weak_ptr<SpriteSheet>& spriteSheetPtr,
+             const std::string& leftDrawableName, const std::string& rightDrawableName,
+             const std::string& topDrawableName, const std::string& bottomDrawableName)
+     : mState(GhostState::Start),
+       mActor(actor)
 {
     const std::shared_ptr<SpriteSheet> spriteSheet = spriteSheetPtr.lock();
     PACMAN_CHECK_ERROR(spriteSheet != nullptr, ErrorCode::BadArgument);
-    return spriteSheet->MakeSprite(spriteName, SpriteRegion(0, 0, actorSize, actorSize));
+
+    const SpriteRegion region(0, 0, size, size);
+    mLeftSprite = spriteSheet->MakeSprite(leftDrawableName, region);
+    mRightSprite = spriteSheet->MakeSprite(rightDrawableName, region);
+    mTopSprite = spriteSheet->MakeSprite(topDrawableName, region);
+    mBottomSprite = spriteSheet->MakeSprite(bottomDrawableName, region);
+
+    mActor->SetDrawable(mLeftSprite);
 }
 
-GhostActor::GhostActor(const uint16_t size, const uint16_t speed, const uint16_t cellSize,
-                       const SpritePosition& startPosition, const MoveDirection startDirection,
-                       const std::weak_ptr<SpriteSheet> spriteSheet,
-                       const std::string& leftSpriteName, const std::string& rightSpriteName,
-                       const std::string& topSpriteName, const std::string& bottomSpriteName)
-     : Actor(size, speed, cellSize, startPosition, startDirection, nullptr),
-       mLeftSprite(MakeLookSprite(spriteSheet, leftSpriteName, size)),
-       mRightSprite(MakeLookSprite(spriteSheet, rightSpriteName, size)),
-       mTopSprite(MakeLookSprite(spriteSheet, topSpriteName, size)),
-       mBottomSprite(MakeLookSprite(spriteSheet, bottomSpriteName, size))
+std::shared_ptr<IDrawable> Ghost::GetLeftDrawable() const
 {
-    Actor::mNode->SetDrawable(mLeftSprite);
-    //MoveTo();
+    return mLeftSprite;
 }
 
-void GhostActor::DirectionChanged(const MoveDirection newDirection)
+std::shared_ptr<IDrawable> Ghost::GetRightDrawable() const
 {
-    switch (newDirection)
-    {
-    case MoveDirection::Left:
-        Actor::mNode->SetDrawable(mLeftSprite);
-        break;
-    case MoveDirection::Right:
-        Actor::mNode->SetDrawable(mRightSprite);
-        break;
-    case MoveDirection::Up:
-        Actor::mNode->SetDrawable(mTopSprite);
-        break;
-    case MoveDirection::Down:
-        Actor::mNode->SetDrawable(mBottomSprite);
-        break;
-    case MoveDirection::None:
-    default:
-        break;
-    }
+    return mRightSprite;
+}
+
+std::shared_ptr<IDrawable> Ghost::GetTopDrawable() const
+{
+    return mTopSprite;
+}
+
+std::shared_ptr<IDrawable> Ghost::GetBottomDrawable() const
+{
+    return mBottomSprite;
 }
 
 } // Pacman namespace

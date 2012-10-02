@@ -2,6 +2,10 @@
 
 #include "base.h"
 
-void OnPacmanApplicationStart();
+namespace Pacman {
 
-void OnPacmanApplicationEnd();
+class Engine;
+
+} // Pacman namespace
+
+void PacmanSetEngineListener(Pacman::Engine& engine);
