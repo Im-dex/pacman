@@ -98,23 +98,30 @@ void Game::OnUpdate(Engine& engine, const uint64_t dt)
 
 void Game::OnGesture(const GestureType gestureType)
 {
+    MoveDirection newDirection = MoveDirection::None;
     switch (gestureType)
     {
     case GestureType::LeftSwipe:
-        mPacmanController->ChangeDirection(MoveDirection::Left);
+        newDirection = MoveDirection::Left;
         break;
     case GestureType::RightSwipe:
-        mPacmanController->ChangeDirection(MoveDirection::Right);
+        newDirection = MoveDirection::Right;
         break;
     case GestureType::TopSwipe:
-        mPacmanController->ChangeDirection(MoveDirection::Up);
+        newDirection = MoveDirection::Up;
         break;
     case GestureType::BottomSwipe:
-        mPacmanController->ChangeDirection(MoveDirection::Down);
+        newDirection = MoveDirection::Down;
         break;
     case GestureType::None:
     default:
         break;
+    }
+
+    if ((newDirection != MoveDirection::None) && 
+        (mPacmanController->GetActor()->GetDirection() != newDirection))
+    {
+        mPacmanController->ChangeDirection(newDirection);
     }
 }
 

@@ -63,7 +63,6 @@ private:
     const Position                        mPivotOffset;
     const std::shared_ptr<Map>            mMap;
     const std::shared_ptr<IActorListener> mListener;
-    Size                                  mLastMoveCellsCount;
     Position                              mMoveTarget;
     MoveDirection                         mDirection;
     std::shared_ptr<SceneNode>            mNode;

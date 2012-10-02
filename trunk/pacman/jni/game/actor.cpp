@@ -78,7 +78,6 @@ Actor::Actor(const Size size, const Speed speed, const Size cellSize,
        mPivotOffset(CalcActorPivotOffset(size)),
        mMap(map),
        mListener(listener),
-       mLastMoveCellsCount(0),
        mMoveTarget(Position::kZero),
        mDirection(MoveDirection::None),
        mNode(std::make_shared<SceneNode>(startDrawable, startPosition, Rotation::kZero))
@@ -158,10 +157,6 @@ void Actor::TranslateTo(const CellIndex& cell)
 
 void Actor::Move(const MoveDirection direction, const CellIndex::value_t cellsCount)
 {
-    // do nothing if actor already moves in this direction to the max available position
-    if ((mDirection == direction) && (cellsCount == kMax) && (mLastMoveCellsCount == kMax))
-        return;
-
     const CellIndexArray currentCells = mMap->FindCells(GetRegion());
     const CellIndex currentCell = SelectNearestCell(currentCells, direction);
     const CellIndex targetCell = (cellsCount == kMax) ? FindMaxAvailableCell(currentCell, direction)
@@ -212,7 +207,6 @@ void Actor::Move(const MoveDirection direction, const CellIndex::value_t cellsCo
     }
 
     mDirection = direction;
-    mLastMoveCellsCount = cellsCount;
     if (mListener != nullptr)
         mListener->OnDirectionChanged(*this, direction);
 }
