@@ -46,23 +46,36 @@ static void WriteValue(std::ostringstream& stream, const First& first, const Arg
     WriteValue(stream, args...);
 }
 
+template <typename First, typename... Args>
+static void WriteValue(std::ostringstream& stream, const First&& first, const Args... args)
+{
+    stream << std::forward<const First>(first);
+    WriteValue(stream, args...);
+}
+
 template <typename T>
 static void WriteValue(std::ostringstream& stream, const T& var)
 {
     stream << var;
 }
 
+template <typename T>
+static void WriteValue(std::ostringstream& stream, const T&& var)
+{
+    stream << std::forward<const T>(var);
+}
+
 template <typename... Args>
 static std::string MakeString(Args... args)
 {
-    std::ostringstream stream;
+    std::ostringstream stream("");
     WriteValue(stream, args...);
     return stream.str();
 }
 
 //===============================================================================
 
-// temporary solution (reason: gcc 4.6.0 not support std::underlying_type)
+// temporary solution (reason: gcc 4.6.0 doesn't support std::underlying_type)
 template<typename T>
 struct UnderlyingType
 {
