@@ -1,11 +1,11 @@
 #pragma once
 
-#include "base.h"
-#include "color.h"
-
 #include <GLES2/gl2.h>
 #include <array>
 #include <vector>
+
+#include "base.h"
+#include "color.h"
 
 namespace Pacman {
 

@@ -87,6 +87,7 @@ void Game::OnStop(Engine& engine)
 
     inputManager.SetListener(nullptr);
     engine.SetListener(nullptr);
+    gGame = nullptr;
 }
 
 void Game::OnUpdate(Engine& engine, const uint64_t dt)

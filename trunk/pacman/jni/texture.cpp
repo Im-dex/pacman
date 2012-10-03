@@ -83,7 +83,7 @@ Texture2D::Texture2D(const size_t width, const size_t height, const byte_t* data
 
 Texture2D::~Texture2D()
 {
-	glDeleteTextures(1, &mTextureHandle);
+    glDeleteTextures(1, &mTextureHandle);
 }
 
 void Texture2D::Bind() const

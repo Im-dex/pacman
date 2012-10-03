@@ -18,7 +18,7 @@ Shader::Shader(const ShaderType type, const std::string& shaderSource)
 
 Shader::~Shader()
 {
-	glDeleteShader(mShaderHandle);
+    glDeleteShader(mShaderHandle);
 }
 
 void Shader::Compile()
@@ -46,6 +46,7 @@ void Shader::Compile()
 		}
 	}
 
+    mShaderSource.clear();
 	mIsCompiled = true;
 }
 

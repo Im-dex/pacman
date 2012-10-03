@@ -2,9 +2,10 @@
 
 #include <unistd.h>
 
+#include "log.h"
+#include "main.h"
 #include "error.h"
 #include "asset_manager.h"
-#include "font_manager.h"
 #include "scene_manager.h"
 #include "renderer.h"
 #include "input_manager.h"
@@ -29,21 +30,16 @@ static FORCEINLINE void hideLoadingDialog()
 
 Engine::Engine()
 	  : mAssetManager(new AssetManager()),
-	    mFontManager(new FontManager()),
 		mSceneManager(new SceneManager()),
 		mRenderer(new Renderer()),
         mInputManager(new InputManager()),
 		mTimer(new Timer()),
 		mListener(nullptr),
 		mLastTime(0),
+        mBaseWidth(0),
+        mBaseHeight(0),
         mStarted(false)
 {
-	std::string configData = mAssetManager->LoadTextFile("config.json");
-    const JsonHelper::Value root(configData);
-
-    const JsonHelper::Value resolution = root.GetValue<JsonHelper::Value>("base_resolution");
-	mBaseWidth = resolution.GetValue<size_t>("width");
-	mBaseHeight = resolution.GetValue<size_t>("height");
 }
 
 Engine::~Engine()
@@ -52,38 +48,49 @@ Engine::~Engine()
 
 void Engine::Start(const size_t screenWidth, const size_t screenHeight)
 {
+    if (!mStarted)
+    {
+        LogI("Engine start");
+        std::string configData = mAssetManager->LoadTextFile("config.json");
+        const JsonHelper::Value root(configData);
+
+        const JsonHelper::Value resolution = root.GetValue<JsonHelper::Value>("base_resolution");
+        mBaseWidth = resolution.GetValue<size_t>("width");
+        mBaseHeight = resolution.GetValue<size_t>("height");
+    }
+    else
+    {
+        mListener->OnStop(*this);
+        mListener = nullptr;
+        mAssetManager = nullptr;
+        mSceneManager = nullptr;
+        mRenderer = nullptr;
+        mInputManager = nullptr;
+        mTimer = nullptr;
+        mLastTime = 0;
+        ErrorHandler::CleanGLErrors();
+        PACMAN_CHECK_GL_ERROR();
+    }
+    
+    mAssetManager = std::unique_ptr<AssetManager>(new AssetManager());
+    mSceneManager = std::unique_ptr<SceneManager>(new SceneManager());
+    mRenderer = std::unique_ptr<Renderer>(new Renderer());
+    mInputManager = std::unique_ptr<InputManager>(new InputManager());
+    mTimer = std::unique_ptr<Timer>(new Timer());
+    PacmanSetEngineListener(*this);
+    PACMAN_CHECK_ERROR(mListener != nullptr, ErrorCode::InvalidState);
+
 	const size_t resolutionMultiplier = std::min(screenWidth / mBaseWidth, screenHeight / mBaseHeight);
 	mAssetManager->SetMultiplier(resolutionMultiplier);
 	mRenderer->Init(screenWidth, screenHeight);
     mStarted = true;
 
-	if (mListener != nullptr)
-    {
-        showLoadingDialog();
-		mListener->OnStart(*this);
-        hideLoadingDialog();
-    }
+    showLoadingDialog();
+    mListener->OnStart(*this);
+    hideLoadingDialog();
 
 	mTimer->Start();
 	mLastTime = mTimer->GetMillisec();
-}
-
-void Engine::Stop()
-{
-    if (mListener != nullptr)
-        mListener->OnStop(*this);
-    mStarted = false;
-}
-
-void Engine::Pause()
-{
-}
-
-void Engine::Resume()
-{
-    showLoadingDialog();
-    // reloading
-    hideLoadingDialog();
 }
 
 void Engine::OnDrawFrame()

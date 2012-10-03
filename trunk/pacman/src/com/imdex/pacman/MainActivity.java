@@ -23,30 +23,16 @@ public class MainActivity extends Activity {
         
         setContentView(mView);
     }
-    
-    @Override
-    public void onStart() {
-    	super.onStart();
-    	NativeLib.start();
-    }
-    
-    @Override
-    public void onStop() {
-    	super.onStop();
-    	NativeLib.stop();
-    }
-    
+        
     @Override
     public void onResume() {
     	super.onResume();
-		NativeLib.resume();
     	mView.onResume();
     }
     
     @Override
     public void onPause() {
     	super.onPause();
-		NativeLib.pause();
     	mView.onPause();
     }
 

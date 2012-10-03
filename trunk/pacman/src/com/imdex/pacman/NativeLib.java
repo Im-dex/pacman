@@ -43,10 +43,6 @@ public class NativeLib {
 		mReporter = reporter;
 	}
 	
-	public static native void start();
-	public static native void stop();
-	public static native void pause();
-	public static native void resume();
 	public static native void surfaceChanged(int width, int height);
 	public static native void drawFrame();
 	public static native boolean touchEvent(int event, float x, float y);

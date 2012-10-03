@@ -2,6 +2,7 @@
 
 #include <GLES2/gl2.h>
 
+#include "log.h"
 #include "error.h"
 #include "engine.h"
 #include "scene_manager.h"
@@ -37,7 +38,6 @@ void Renderer::Init(const size_t viewportWidth, const size_t viewportHeigth)
 										static_cast<const float>(viewportHeigth), 0.0f, -1.0f, 1.0f);
 
 	glViewport(0, 0, static_cast<const int>(viewportWidth), static_cast<const int>(viewportHeigth));
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	PACMAN_CHECK_GL_ERROR();
 }
 
