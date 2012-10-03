@@ -27,12 +27,6 @@ public:
 
 	void Start(const size_t screenWidth, const size_t screenHeight);
 
-    void Stop();
-
-    void Pause();
-
-    void Resume();
-
 	void OnDrawFrame();
 
 	void OnTouch(const int event, const float x, const float y);
@@ -45,11 +39,6 @@ public:
 	AssetManager& GetAssetManager() const
 	{
 		return *mAssetManager;
-	}
-
-	FontManager& GetFontManager() const
-	{
-		return *mFontManager;
 	}
 
 	SceneManager& GetSceneManager() const
@@ -75,7 +64,6 @@ public:
 private:
 
 	std::unique_ptr<AssetManager> mAssetManager;
-	std::unique_ptr<FontManager>  mFontManager;
 	std::unique_ptr<SceneManager> mSceneManager;
 	std::unique_ptr<Renderer>	  mRenderer;
     std::unique_ptr<InputManager> mInputManager;

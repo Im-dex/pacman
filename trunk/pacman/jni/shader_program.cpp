@@ -19,7 +19,7 @@ ShaderProgram::ShaderProgram(const std::string& vertexShaderSource, const std::s
 
 ShaderProgram::~ShaderProgram()
 {
-	glDeleteProgram(mProgramHandle);
+    glDeleteProgram(mProgramHandle);
 }
 
 void ShaderProgram::SetVertexShader(const std::string& shaderSource)

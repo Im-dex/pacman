@@ -78,7 +78,7 @@ VertexBuffer::VertexBuffer(const std::vector<TextureVertex>& vertexData, const s
 
 VertexBuffer::~VertexBuffer()
 {
-	glDeleteBuffers(2, mBuffers.data());
+    glDeleteBuffers(2, mBuffers.data());
 }
 
 void VertexBuffer::Bind() const

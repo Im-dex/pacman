@@ -15,6 +15,7 @@ class SpriteSheet;
 enum class TextureFiltering : uint8_t;
 enum class TextureRepeat;
 
+// TODO: add context lost support
 class AssetManager
 {
 public:
