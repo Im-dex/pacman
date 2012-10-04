@@ -88,7 +88,8 @@ const FORCEINLINE MoveDirection GetBackDirection(const MoveDirection direction)
 const CellIndex::value_t Actor::kMax = 0;
 
 Actor::Actor(const Size size, const Speed speed, const Size cellSize,
-             const Position& startPosition, const std::shared_ptr<IDrawable>& startDrawable,
+             const Position& startPosition, const MoveDirection startDirection,
+             const std::shared_ptr<IDrawable>& startDrawable,
              const std::shared_ptr<Map>& map)
      : mSize(size),
        mSpeed(speed),
@@ -96,7 +97,7 @@ Actor::Actor(const Size size, const Speed speed, const Size cellSize,
        mPivotOffset(CalcActorPivotOffset(size)),
        mMap(map),
        mMoveTarget(Position::kZero),
-       mDirection(MoveDirection::None),
+       mDirection(startDirection),
        mNode(std::make_shared<SceneNode>(startDrawable, startPosition, Rotation::kZero)),
        mDirectionChanged(false)
 {
@@ -163,7 +164,7 @@ void Actor::TranslateTo(const CellIndex& cell)
     mNode->Translate(mMap->GetCellCenterPos(cell) - mPivotOffset);
 }
 
-void Actor::Move(const MoveDirection direction, const CellIndex::value_t cellsCount)
+void Actor::Move(const MoveDirection direction, const CellIndex::value_t cellsCount, const bool hasCornering)
 {
     const CellIndexArray currentCells = mMap->FindCells(GetRegion());
     const CellIndex currentCell = SelectNearestCell(currentCells, direction);
@@ -174,11 +175,11 @@ void Actor::Move(const MoveDirection direction, const CellIndex::value_t cellsCo
     if (std::find(currentCells.begin(), currentCells.end(), targetCell) != currentCells.end())
         return; // no way
 
-    // ONLY FOR PACMAN ACTOR!!! (only pacman uses kMax, we are can check him by this value)
+    // ONLY FOR PACMAN ACTOR!!!
     // when pacman change move direction on a crossroads, move him to the current cell center.
     // works only if pacman change direction to the perpendicular of current.
     // ("cornering", see Dosier guide)
-    if ((cellsCount == kMax) && (mDirection != direction) && (GetBackDirection(mDirection) != direction))
+    if (hasCornering && (mDirection != direction) && (GetBackDirection(mDirection) != direction))
         TranslateTo(currentCell);
 
     // calc next movement
