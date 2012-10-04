@@ -30,8 +30,7 @@ public:
     std::shared_ptr<DotsGrid> MakeDotsGrid(const std::weak_ptr<Map>& mapPtr, const std::weak_ptr<SpriteSheet>& spritesheetPtr);
 
     std::shared_ptr<Actor> LoadActor(const std::string& fileName, const Size actorSize,
-                                     const std::shared_ptr<IDrawable>& drawable, const std::shared_ptr<Map>& map,
-                                     const std::shared_ptr<IActorListener>& listener) const;
+                                     const std::shared_ptr<IDrawable>& drawable, const std::shared_ptr<Map>& map) const;
 private:
 
     std::vector<DotType> mDotsInfo;

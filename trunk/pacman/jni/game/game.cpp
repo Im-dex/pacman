@@ -68,8 +68,8 @@ void Game::OnStart(Engine& engine)
     std::shared_ptr<DotsGrid> dots = loader.MakeDotsGrid(map, spriteSheet);
     dots->AttachToScene(sceneManager);
 
-    mPacmanController = std::unique_ptr<PacmanController>(new PacmanController(loader, actorSize, map, spriteSheet));
-    mAIController = std::unique_ptr<AIController>(new AIController(loader, actorSize, map, spriteSheet));
+    mPacmanController = std::make_shared<PacmanController>(loader, actorSize, map, spriteSheet);
+    mAIController = std::make_shared<AIController>(loader, actorSize, map, spriteSheet);
 
     mPacmanController->GetActor()->AttachToScene(sceneManager);
     for (size_t i = 0; i < AIController::kGhostsCount; i++)
@@ -83,9 +83,6 @@ void Game::OnStart(Engine& engine)
 void Game::OnStop(Engine& engine)
 {
     LogI("UNLOAD!");
-    InputManager& inputManager = engine.GetInputManager();
-
-    inputManager.SetListener(nullptr);
     engine.SetListener(nullptr);
     gGame = nullptr;
 }

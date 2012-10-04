@@ -37,9 +37,9 @@ public:
 
     void Update();
 
-    void SetListener(const std::shared_ptr<IGestureListener>& listener)
+    void SetListener(const std::weak_ptr<IGestureListener>& listenerPtr)
     {
-        mListener = listener;
+        mListenerPtr = listenerPtr;
     }
 
 private:
@@ -48,7 +48,7 @@ private:
 
     TouchInfo                         mBeginGestureTouch;
     std::atomic<GestureEnumType>      mLastGesture;
-    std::shared_ptr<IGestureListener> mListener;
+    std::weak_ptr<IGestureListener>   mListenerPtr;
 };
 
 } // Pacman namespace

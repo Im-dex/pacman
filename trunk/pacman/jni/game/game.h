@@ -37,8 +37,8 @@ private:
     void InitActionsAndTriggers(const std::shared_ptr<Map>& map, const std::shared_ptr<DotsGrid>& dots);
 
     std::unique_ptr<Scheduler>        mScheduler;
-    std::unique_ptr<PacmanController> mPacmanController;
-    std::unique_ptr<AIController>     mAIController;
+    std::shared_ptr<PacmanController> mPacmanController;
+    std::shared_ptr<AIController>     mAIController;
 };
 
 } // Pacman namespace

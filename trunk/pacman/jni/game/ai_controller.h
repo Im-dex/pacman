@@ -6,7 +6,7 @@
 #include <cassert>
 
 #include "base.h"
-#include "game_listeners.h"
+#include "actor_controller.h"
 
 namespace Pacman {
 
@@ -16,7 +16,7 @@ class GameLoader;
 class SpriteSheet;
 class Map;
 
-class AIController
+class AIController : public IActorController
 {
 public:
 
@@ -32,6 +32,10 @@ public:
     void Update(const uint64_t dt);
 
     std::shared_ptr<Actor> GetActor(const size_t index) const;
+
+    virtual void OnDirectionChanged(const MoveDirection newDirection);
+
+    virtual void OnTargetAchieved();
 
 private:
 

@@ -27,7 +27,7 @@ static GestureType ConvertToGesture(const TouchInfo& begin, const TouchInfo& end
 
 InputManager::InputManager()
             : mLastGesture(EnumCast(GestureType::None)),
-              mListener(nullptr)
+              mListenerPtr()
 {
     mBeginGestureTouch = { TouchEvent::Move, 0.0f, 0.0f };
 }
@@ -45,10 +45,11 @@ void InputManager::PushInfo(const TouchInfo& touchInfo)
 
 void InputManager::Update()
 {
-    if ((mLastGesture != EnumCast(GestureType::None)) && (mListener != nullptr))
+    const std::shared_ptr<IGestureListener> listener = mListenerPtr.lock();
+    if ((mLastGesture != EnumCast(GestureType::None)) && (listener != nullptr))
     {
         const GestureEnumType none = EnumCast(GestureType::None);
-        mListener->OnGesture(MakeEnum<GestureType>(mLastGesture.exchange(none)));
+        listener->OnGesture(MakeEnum<GestureType>(mLastGesture.exchange(none)));
     }
 }
 

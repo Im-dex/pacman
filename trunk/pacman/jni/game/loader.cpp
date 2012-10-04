@@ -76,8 +76,7 @@ std::shared_ptr<DotsGrid> GameLoader::MakeDotsGrid(const std::weak_ptr<Map>& map
 }
 
 std::shared_ptr<Actor> GameLoader::LoadActor(const std::string& fileName, const Size actorSize,
-                                             const std::shared_ptr<IDrawable>& drawable, const std::shared_ptr<Map>& map,
-                                             const std::shared_ptr<IActorListener>& listener) const
+                                             const std::shared_ptr<IDrawable>& drawable, const std::shared_ptr<Map>& map) const
 {
     typedef EnumType<MoveDirection>::value MoveDirectionValueT;
     AssetManager& assetManager = GetEngine().GetAssetManager();
@@ -97,7 +96,7 @@ std::shared_ptr<Actor> GameLoader::LoadActor(const std::string& fileName, const 
     const Size cellSize = map->GetCellSize();
     const Position startPosition = CalcActorPosition(cellSize, actorSize, map->GetCellCenterPos(startCellIndex));
 
-    const std::shared_ptr<Actor> actor = std::make_shared<Actor>(actorSize, startSpeed, cellSize, startPosition, drawable, map, listener);
+    const std::shared_ptr<Actor> actor = std::make_shared<Actor>(actorSize, startSpeed, cellSize, startPosition, drawable, map);
     actor->Move(MakeEnum<MoveDirection>(startDirection), startWayLenght);
     return actor;
 }

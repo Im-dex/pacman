@@ -4,10 +4,10 @@
 
 #include "engine_typedefs.h"
 #include "game_typedefs.h"
-#include "game_listeners.h"
 
 namespace Pacman {
 
+class IActorController;
 class SceneNode;
 class IDrawable;
 class SceneManager;
@@ -22,7 +22,7 @@ public:
     Actor() = delete;
     Actor(const Size size, const Speed speed, const Size cellSize,
           const Position& startPosition, const std::shared_ptr<IDrawable>& startDrawable,
-          const std::shared_ptr<Map>& map, const std::shared_ptr<IActorListener>& listener);
+          const std::shared_ptr<Map>& map);
 
     Actor(const Actor&) = delete;
     virtual ~Actor() {}
@@ -33,7 +33,7 @@ public:
 
     void DetachFromScene(SceneManager& sceneManager) const;
 
-    void Update(const uint64_t dt);
+    void Update(const uint64_t dt, IActorController* controller);
 
     Position GetCenterPos() const;
 
@@ -62,10 +62,10 @@ private:
     const Size                            mCellSize;
     const Position                        mPivotOffset;
     const std::shared_ptr<Map>            mMap;
-    const std::shared_ptr<IActorListener> mListener;
     Position                              mMoveTarget;
     MoveDirection                         mDirection;
     std::shared_ptr<SceneNode>            mNode;
+    bool                                  mDirectionChanged;
 };
 
 } // Pacman namespace
