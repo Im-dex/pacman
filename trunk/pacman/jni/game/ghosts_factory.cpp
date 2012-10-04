@@ -98,28 +98,28 @@ public:
 std::shared_ptr<Ghost> GhostsFactory::CreateGhost(const GameLoader& loader, const Size actorSize,
                                                  const std::shared_ptr<Map>& map, 
                                                  const std::weak_ptr<SpriteSheet>& spriteSheetPtr,
-                                                 const std::shared_ptr<IActorListener>& listener, const size_t ghostId) const
+                                                 const size_t ghostId) const
 {
     switch (ghostId)
     {
     case kBlinky:
         {
-            const std::shared_ptr<Actor> actor = loader.LoadActor("blinky.json", actorSize, nullptr, map, listener);
+            const std::shared_ptr<Actor> actor = loader.LoadActor("blinky.json", actorSize, nullptr, map);
             return std::make_shared<Blinky>(actor, actorSize, spriteSheetPtr);
         }
     case kPinky:
         {
-            const std::shared_ptr<Actor> actor = loader.LoadActor("pinky.json", actorSize, nullptr, map, listener);
+            const std::shared_ptr<Actor> actor = loader.LoadActor("pinky.json", actorSize, nullptr, map);
             return std::make_shared<Pinky>(actor, actorSize, spriteSheetPtr);
         }
     case kInky:
         {
-            const std::shared_ptr<Actor> actor = loader.LoadActor("inky.json", actorSize, nullptr, map, listener);
+            const std::shared_ptr<Actor> actor = loader.LoadActor("inky.json", actorSize, nullptr, map);
             return std::make_shared<Inky>(actor, actorSize, spriteSheetPtr);
         }
     case kClyde:
         {
-            const std::shared_ptr<Actor> actor = loader.LoadActor("clyde.json", actorSize, nullptr, map, listener);
+            const std::shared_ptr<Actor> actor = loader.LoadActor("clyde.json", actorSize, nullptr, map);
             return std::make_shared<Clyde>(actor, actorSize, spriteSheetPtr);
         }
     default:

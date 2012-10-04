@@ -50,52 +50,33 @@ static std::shared_ptr<FrameAnimator> MakeAnimator(const std::weak_ptr<SpriteShe
     return std::make_shared<FrameAnimator>(frames, kAnimationFrameDuration);
 }
 
-class ActorListener : public IActorListener
-{
-public:
-
-    ActorListener(const std::shared_ptr<FrameAnimator>& animator)
-        : mAnimator(animator)
-    {}
-
-    ActorListener(const ActorListener&) = delete;
-    ~ActorListener() = default;
-
-    ActorListener& operator= (const ActorListener&) = delete;
-
-    void OnDirectionChanged(Actor& actor, const MoveDirection newDirection)
-    {
-        mAnimator->Resume();
-        actor.Rotate(GetDirectionRotation(newDirection));
-    }
-
-    void OnTargetAchieved(Actor& actor)
-    {
-        mAnimator->Pause();
-    }
-
-private:
-
-    const std::shared_ptr<FrameAnimator> mAnimator;
-};
-
 PacmanController::PacmanController(const GameLoader& loader, const Size actorSize, const std::shared_ptr<Map>& map,
                                    const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
 {
     mActorAnimator = MakeAnimator(spriteSheetPtr, actorSize);
-    std::shared_ptr<ActorListener> listener = std::make_shared<ActorListener>(mActorAnimator);
-    mActor = loader.LoadActor(kActorFileName, actorSize, mActorAnimator, map, listener);
+    mActor = loader.LoadActor(kActorFileName, actorSize, mActorAnimator, map);
 }
 
 void PacmanController::Update(const uint64_t dt)
 {
-    mActor->Update(dt);
+    mActor->Update(dt, this);
     mActorAnimator->Update(dt);
 }
 
 void PacmanController::ChangeDirection(const MoveDirection newDirection)
 {
     mActor->Move(newDirection, Actor::kMax);
+}
+
+void PacmanController::OnDirectionChanged(const MoveDirection newDirection)
+{
+    mActorAnimator->Resume();
+    mActor->Rotate(GetDirectionRotation(newDirection));
+}
+
+void PacmanController::OnTargetAchieved()
+{
+    mActorAnimator->Pause();
 }
 
 } // Pacman namespace

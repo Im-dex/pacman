@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #include "base.h"
-#include "game_listeners.h"
+#include "actor_controller.h"
 
 namespace Pacman {
 
@@ -14,7 +14,7 @@ class SpriteSheet;
 class Map;
 class FrameAnimator;
 
-class PacmanController
+class PacmanController : public IActorController
 {
 public:
 
@@ -33,6 +33,10 @@ public:
     {
         return mActor;
     }
+
+    virtual void OnDirectionChanged(const MoveDirection newDirection);
+
+    virtual void OnTargetAchieved();
 
 private:
 

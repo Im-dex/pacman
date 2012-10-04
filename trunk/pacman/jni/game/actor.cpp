@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "error.h"
+#include "actor_controller.h"
 #include "scene_node.h"
 #include "scene_manager.h"
 #include "json_helper.h"
@@ -67,23 +68,6 @@ static FORCEINLINE CellIndex FindCellWithOffset(const CellIndex& currentCellInde
     }
 }
 
-const CellIndex::value_t Actor::kMax = 0;
-
-Actor::Actor(const Size size, const Speed speed, const Size cellSize,
-             const Position& startPosition, const std::shared_ptr<IDrawable>& startDrawable,
-             const std::shared_ptr<Map>& map, const std::shared_ptr<IActorListener>& listener)
-     : mSize(size),
-       mSpeed(speed),
-       mCellSize(cellSize),
-       mPivotOffset(CalcActorPivotOffset(size)),
-       mMap(map),
-       mListener(listener),
-       mMoveTarget(Position::kZero),
-       mDirection(MoveDirection::None),
-       mNode(std::make_shared<SceneNode>(startDrawable, startPosition, Rotation::kZero))
-{
-}
-
 const FORCEINLINE MoveDirection GetBackDirection(const MoveDirection direction)
 {
     switch (direction)
@@ -101,6 +85,23 @@ const FORCEINLINE MoveDirection GetBackDirection(const MoveDirection direction)
     }
 }
 
+const CellIndex::value_t Actor::kMax = 0;
+
+Actor::Actor(const Size size, const Speed speed, const Size cellSize,
+             const Position& startPosition, const std::shared_ptr<IDrawable>& startDrawable,
+             const std::shared_ptr<Map>& map)
+     : mSize(size),
+       mSpeed(speed),
+       mCellSize(cellSize),
+       mPivotOffset(CalcActorPivotOffset(size)),
+       mMap(map),
+       mMoveTarget(Position::kZero),
+       mDirection(MoveDirection::None),
+       mNode(std::make_shared<SceneNode>(startDrawable, startPosition, Rotation::kZero)),
+       mDirectionChanged(false)
+{
+}
+
 void Actor::AttachToScene(SceneManager& sceneManager) const
 {
     sceneManager.AttachNode(mNode);
@@ -111,8 +112,15 @@ void Actor::DetachFromScene(SceneManager& sceneManager) const
     sceneManager.DetachNode(mNode);
 }
 
-void Actor::Update(const uint64_t dt)
+void Actor::Update(const uint64_t dt, IActorController* controller)
 {
+    if (mDirectionChanged)
+    {
+        if (controller != nullptr)
+            controller->OnDirectionChanged(mDirection);
+        mDirectionChanged = false;
+    }
+
     const float accurateOffset = ((static_cast<float>(dt) * 0.001f) * static_cast<float>(mSpeed)) * static_cast<float>(mCellSize);
     const PosOffset offset = static_cast<PosOffset>(accurateOffset);
 
@@ -129,8 +137,8 @@ void Actor::Update(const uint64_t dt)
     }
     else
     {
-        if (mListener != nullptr)
-            mListener->OnTargetAchieved(*this);
+        if (controller != nullptr)
+            controller->OnTargetAchieved();
     }
 }
 
@@ -207,8 +215,7 @@ void Actor::Move(const MoveDirection direction, const CellIndex::value_t cellsCo
     }
 
     mDirection = direction;
-    if (mListener != nullptr)
-        mListener->OnDirectionChanged(*this, direction);
+    mDirectionChanged = true;
 }
 
 void Actor::SetDrawable(const std::shared_ptr<IDrawable>& drawable)

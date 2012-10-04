@@ -43,6 +43,17 @@ enum class DotType : uint8_t
 
 //================================================
 
+enum class MoveDirection : uint8_t
+{
+    None  = 0,
+    Left  = 1,
+    Right = 2,
+    Up    = 3,
+    Down  = 4
+};
+
+//================================================
+
 enum class GhostState
 {
     Start,
