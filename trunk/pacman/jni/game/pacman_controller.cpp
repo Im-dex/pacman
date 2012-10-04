@@ -55,6 +55,7 @@ PacmanController::PacmanController(const GameLoader& loader, const Size actorSiz
 {
     mActorAnimator = MakeAnimator(spriteSheetPtr, actorSize);
     mActor = loader.LoadActor(kActorFileName, actorSize, mActorAnimator, map);
+    mActor->Move(mActor->GetDirection(), Actor::kMax, true);
 }
 
 void PacmanController::Update(const uint64_t dt)
@@ -65,7 +66,7 @@ void PacmanController::Update(const uint64_t dt)
 
 void PacmanController::ChangeDirection(const MoveDirection newDirection)
 {
-    mActor->Move(newDirection, Actor::kMax);
+    mActor->Move(newDirection, Actor::kMax, true);
 }
 
 void PacmanController::OnDirectionChanged(const MoveDirection newDirection)

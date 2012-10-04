@@ -151,10 +151,11 @@ void Game::InitActionsAndTriggers(const std::shared_ptr<Map>& map, const std::sh
          return false;
      };
  
-     auto leftAction = [pacman, rightTunnelExit](SchedulerContext& context) -> ActionResult
+     auto leftAction = [pacman, rightTunnelExit, mPacmanController](SchedulerContext& context) -> ActionResult
      {
          pacman->TranslateTo(rightTunnelExit);
-         pacman->Move(pacman->GetDirection(), Actor::kMax);
+         //pacman->Move(pacman->GetDirection(), Actor::kMax);
+         mPacmanController->ChangeDirection(pacman->GetDirection());
          return ActionResult::None;
      };
  
@@ -167,10 +168,11 @@ void Game::InitActionsAndTriggers(const std::shared_ptr<Map>& map, const std::sh
          return false;
      };
  
-     auto rightAction = [pacman, leftTunnelExit](SchedulerContext& context) -> ActionResult
+     auto rightAction = [pacman, leftTunnelExit, mPacmanController](SchedulerContext& context) -> ActionResult
      {
          pacman->TranslateTo(leftTunnelExit);
-         pacman->Move(pacman->GetDirection(), Actor::kMax);
+         //pacman->Move(pacman->GetDirection(), Actor::kMax);
+         mPacmanController->ChangeDirection(pacman->GetDirection());
          return ActionResult::None;
      };
  

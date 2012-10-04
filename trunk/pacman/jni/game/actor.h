@@ -21,7 +21,8 @@ public:
 
     Actor() = delete;
     Actor(const Size size, const Speed speed, const Size cellSize,
-          const Position& startPosition, const std::shared_ptr<IDrawable>& startDrawable,
+          const Position& startPosition, const MoveDirection startDirection,
+          const std::shared_ptr<IDrawable>& startDrawable,
           const std::shared_ptr<Map>& map);
 
     Actor(const Actor&) = delete;
@@ -44,7 +45,7 @@ public:
     void TranslateTo(const CellIndex& cell);
 
     // if cellsCount == kMax then actor will move to the max available cell
-    void Move(const MoveDirection direction, const CellIndex::value_t cellsCount);
+    void Move(const MoveDirection direction, const CellIndex::value_t cellsCount, const bool hasCornering);
 
     void SetDrawable(const std::shared_ptr<IDrawable>& drawable);
 

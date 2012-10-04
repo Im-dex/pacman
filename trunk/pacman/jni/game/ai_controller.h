@@ -42,6 +42,7 @@ private:
     typedef std::array<std::shared_ptr<Ghost>, kGhostsCount> GhostsArray; 
 
     GhostsArray mGhosts;
+    Ghost*      mCurrentGhost;
 };
 
 } // Pacman namespace

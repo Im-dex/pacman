@@ -90,15 +90,12 @@ std::shared_ptr<Actor> GameLoader::LoadActor(const std::string& fileName, const 
     const CellIndex startCellIndex(startCellIndexArray[0].GetAs<CellIndex::value_t>(),
                                    startCellIndexArray[1].GetAs<CellIndex::value_t>());
     const MoveDirectionValueT startDirection = root.GetValue<MoveDirectionValueT>("startDirection");
-    const Size startWayLenght = root.GetValue<Size>("startWayLenght");
     const Speed startSpeed = root.GetValue<Speed>("startSpeed");
 
     const Size cellSize = map->GetCellSize();
     const Position startPosition = CalcActorPosition(cellSize, actorSize, map->GetCellCenterPos(startCellIndex));
 
-    const std::shared_ptr<Actor> actor = std::make_shared<Actor>(actorSize, startSpeed, cellSize, startPosition, drawable, map);
-    actor->Move(MakeEnum<MoveDirection>(startDirection), startWayLenght);
-    return actor;
+    return std::make_shared<Actor>(actorSize, startSpeed, cellSize, startPosition, MakeEnum<MoveDirection>(startDirection), drawable, map);
 }
 
 } // Pacman namespace
