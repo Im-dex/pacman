@@ -27,8 +27,9 @@ public:
 
     Blinky& operator= (const Blinky&) = delete;
 
-    virtual void SelectTargetCell() const
+    virtual CellIndex SelectTargetCell() const
     {
+        return CellIndex::kZero;
     }
 };
 
@@ -48,8 +49,9 @@ public:
 
     Pinky& operator= (const Pinky&) = delete;
 
-    virtual void SelectTargetCell() const
+    virtual CellIndex SelectTargetCell() const
     {
+        return CellIndex::kZero;
     }
 };
 
@@ -69,8 +71,9 @@ public:
 
     Inky& operator= (const Inky&) = delete;
 
-    virtual void SelectTargetCell() const
+    virtual CellIndex SelectTargetCell() const
     {
+        return CellIndex::kZero;
     }
 };
 
@@ -90,8 +93,9 @@ public:
 
     Clyde& operator= (const Clyde&) = delete;
 
-    virtual void SelectTargetCell() const
+    virtual CellIndex SelectTargetCell() const
     {
+        return CellIndex::kZero;
     }
 };
 

@@ -4,6 +4,8 @@ namespace Pacman {
 
 void Scheduler::Update(const uint64_t dt)
 {
+    mContext.SetValue("dt", dt);
+
     // update actions
     for (ActionData& actionData : mActions)
     {

@@ -14,6 +14,7 @@ class IDrawable;
 class DotsGrid;
 class Actor;
 class IActorListener;
+struct AIInfo;
 
 class GameLoader
 {
@@ -31,6 +32,9 @@ public:
 
     std::shared_ptr<Actor> LoadActor(const std::string& fileName, const Size actorSize,
                                      const std::shared_ptr<IDrawable>& drawable, const std::shared_ptr<Map>& map) const;
+
+    AIInfo LoadAIInfo(const std::string& fileName) const;
+
 private:
 
     std::vector<DotType> mDotsInfo;

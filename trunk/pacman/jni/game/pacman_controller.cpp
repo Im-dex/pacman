@@ -69,6 +69,12 @@ void PacmanController::ChangeDirection(const MoveDirection newDirection)
     mActor->Move(newDirection, Actor::kMax, true);
 }
 
+void PacmanController::TranslateTo(const CellIndex cell)
+{
+    mActor->TranslateTo(cell);
+    ChangeDirection(mActor->GetDirection());
+}
+
 void PacmanController::OnDirectionChanged(const MoveDirection newDirection)
 {
     mActorAnimator->Resume();
