@@ -16,6 +16,24 @@ class GameLoader;
 class SpriteSheet;
 class Map;
 
+struct ChaseDirectionDiscard
+{
+    CellIndex mCell;
+    MoveDirection mDirection;
+};
+
+struct AIInfo
+{
+    CellIndex                          mBlinkyScatterTarget;
+    CellIndex                          mPinkyScatterTarget;
+    CellIndex                          mInkyScatterTarget;
+    CellIndex                          mClydeScatterTarget;
+    uint64_t                           mScatterDuration;
+    uint64_t                           mScatterInterval;
+    std::vector<ChaseDirectionDiscard> mDiscardCells;
+    uint64_t                           mFrightDuration;
+};
+
 class AIController : public IActorController
 {
 public:
@@ -41,8 +59,9 @@ private:
 
     typedef std::array<std::shared_ptr<Ghost>, kGhostsCount> GhostsArray; 
 
-    GhostsArray mGhosts;
-    Ghost*      mCurrentGhost;
+    const AIInfo mAIInfo;
+    GhostsArray  mGhosts;
+    Ghost*       mCurrentGhost;
 };
 
 } // Pacman namespace

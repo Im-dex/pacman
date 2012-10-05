@@ -9,9 +9,12 @@
 
 namespace Pacman {
 
+static const CellIndex::value_t kWayLength = 1;
+
 AIController::AIController(const GameLoader& loader, const Size actorSize, const std::shared_ptr<Map>& map,
                            const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
-            : mCurrentGhost(nullptr)
+            : mAIInfo(loader.LoadAIInfo("ai.json")),
+              mCurrentGhost(nullptr)
 {
     GhostsFactory factory;
     mGhosts[0] = factory.CreateGhost(loader, actorSize, map, spriteSheetPtr, GhostsFactory::kBlinky);
@@ -22,7 +25,7 @@ AIController::AIController(const GameLoader& loader, const Size actorSize, const
     for (const std::shared_ptr<Ghost>& ghost : mGhosts)
     {
         const std::shared_ptr<Actor>& actor = ghost->GetActor();
-        actor->Move(actor->GetDirection(), 1, false);
+        actor->Move(actor->GetDirection(), kWayLength, false);
     }
 }
 
@@ -33,6 +36,8 @@ void AIController::Update(const uint64_t dt)
         mCurrentGhost = ghost.get();
         ghost->GetActor()->Update(dt, this);
     }
+
+    mCurrentGhost = nullptr;
 }
 
 std::shared_ptr<Actor> AIController::GetActor(const size_t index) const

@@ -8,6 +8,7 @@
 #include "drawable.h"
 #include "asset_manager.h"
 #include "renderer.h"
+#include "ai_controller.h"
 #include "json_helper.h"
 #include "utils.h"
 
@@ -96,6 +97,56 @@ std::shared_ptr<Actor> GameLoader::LoadActor(const std::string& fileName, const 
     const Position startPosition = CalcActorPosition(cellSize, actorSize, map->GetCellCenterPos(startCellIndex));
 
     return std::make_shared<Actor>(actorSize, startSpeed, cellSize, startPosition, MakeEnum<MoveDirection>(startDirection), drawable, map);
+}
+
+AIInfo GameLoader::LoadAIInfo(const std::string& fileName) const
+{
+    AssetManager& assetManager = GetEngine().GetAssetManager();
+
+    const std::string jsonData = assetManager.LoadTextFile(fileName);
+    const JsonHelper::Value root(jsonData);
+
+    const JsonHelper::Value scatterTarget = root.GetValue<JsonHelper::Value>("scatter_target");
+    const JsonHelper::Array blinkyScatterTarget = scatterTarget.GetValue<JsonHelper::Array>("blinky");
+    const JsonHelper::Array pinkyScatterTarget = scatterTarget.GetValue<JsonHelper::Array>("pinky");
+    const JsonHelper::Array inkyScatterTarget = scatterTarget.GetValue<JsonHelper::Array>("inky");
+    const JsonHelper::Array clydeScatterTarget = scatterTarget.GetValue<JsonHelper::Array>("clyde");
+    PACMAN_CHECK_ERROR((blinkyScatterTarget.GetSize() == 2) &&
+                        (pinkyScatterTarget.GetSize() == 2) &&
+                        (inkyScatterTarget.GetSize() == 2) &&
+                        (clydeScatterTarget.GetSize() == 2), ErrorCode::BadFormat);
+
+    std::vector<ChaseDirectionDiscard> discardCells;
+    const JsonHelper::Array chaseDirectionDiscard = root.GetValue<JsonHelper::Array>("chase_direction_discard");
+    for (const JsonHelper::Value& value : chaseDirectionDiscard)
+    {
+        typedef EnumType<MoveDirection>::value MoveDirectionValueT;
+        const JsonHelper::Array tuple = value.GetAs<JsonHelper::Array>();
+        const JsonHelper::Array cell = tuple[0].GetAs<JsonHelper::Array>();
+        const MoveDirectionValueT direction = tuple[1].GetAs<MoveDirectionValueT>();
+
+        discardCells.push_back(ChaseDirectionDiscard{
+            CellIndex(cell[0].GetAs<CellIndex::value_t>(),
+                      cell[1].GetAs<CellIndex::value_t>()),
+            MakeEnum<MoveDirection>(direction)
+        });
+    }
+
+    return AIInfo
+    {
+        CellIndex(blinkyScatterTarget[0].GetAs<CellIndex::value_t>(),
+                  blinkyScatterTarget[1].GetAs<CellIndex::value_t>()),
+        CellIndex(pinkyScatterTarget[0].GetAs<CellIndex::value_t>(),
+                  pinkyScatterTarget[1].GetAs<CellIndex::value_t>()),
+        CellIndex(inkyScatterTarget[0].GetAs<CellIndex::value_t>(),
+                  inkyScatterTarget[1].GetAs<CellIndex::value_t>()),
+        CellIndex(clydeScatterTarget[0].GetAs<CellIndex::value_t>(),
+                  clydeScatterTarget[1].GetAs<CellIndex::value_t>()),
+        root.GetValue<uint64_t>("scatter_duration"),
+        root.GetValue<uint64_t>("scatter_interval"),
+        discardCells,
+        root.GetValue<uint64_t>("fright_duration")
+    };
 }
 
 } // Pacman namespace

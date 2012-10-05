@@ -90,8 +90,6 @@ void Game::OnStop(Engine& engine)
 void Game::OnUpdate(Engine& engine, const uint64_t dt)
 {
     mScheduler->Update(dt);
-    mPacmanController->Update(dt);
-    mAIController->Update(dt);
 }
 
 void Game::OnGesture(const GestureType gestureType)
@@ -130,59 +128,67 @@ void Game::InitActionsAndTriggers(const std::shared_ptr<Map>& map, const std::sh
  
     const std::shared_ptr<Actor> pacman = mPacmanController->GetActor();
 
-     // create dots eating action
-     auto eatAction = [pacman, map, dots](SchedulerContext& context) -> ActionResult
-     {
-         const CellIndexArray pacmanCellsIndices = GetPacmanCellsIndices(context, map, pacman);
-         if (pacmanCellsIndices.size() == 1) // eat if pacman stays on one cell only
-            dots->HideDot(pacmanCellsIndices[0]);
-         return ActionResult::None;
-     };
+    // create controllers update action
+    auto ctrlsUpdateActionFunc = [mPacmanController, mAIController](SchedulerContext& context) -> ActionResult
+    {
+        const boost::any dtAny = context.GetValue("dt");
+        const uint64_t dt = boost::any_cast<uint64_t>(dtAny);
+        mPacmanController->Update(dt);
+        mAIController->Update(dt);
+        return ActionResult::None;
+    };
+
+    // create dots eating action
+    auto eatAction = [pacman, map, dots](SchedulerContext& context) -> ActionResult
+    {
+        const CellIndexArray pacmanCellsIndices = GetPacmanCellsIndices(context, map, pacman);
+        if (pacmanCellsIndices.size() == 1) // eat if pacman stays on one cell only
+           dots->HideDot(pacmanCellsIndices[0]);
+        return ActionResult::None;
+    };
  
-     std::shared_ptr<Action> pacmanEatAction = std::make_shared<Action>(eatAction);
+    std::shared_ptr<Action> ctrlsUpdateAction = std::make_shared<Action>(ctrlsUpdateActionFunc);
+    std::shared_ptr<Action> pacmanEatAction = std::make_shared<Action>(eatAction);
  
-     // middle tunnels link triggers
-     // left
-     auto leftCondition = [pacman, map, leftTunnelExit](SchedulerContext& context) -> bool
-     {
-         const CellIndexArray pacmanCellsIndices = GetPacmanCellsIndices(context, map, pacman);
-         if (pacmanCellsIndices.size() == 1) // move if pacman stays on the one cell only
-            return (pacmanCellsIndices[0] == leftTunnelExit) && (pacman->GetDirection() == MoveDirection::Left);
-         return false;
-     };
+    // middle tunnels link triggers
+    // left
+    auto leftCondition = [pacman, map, leftTunnelExit](SchedulerContext& context) -> bool
+    {
+        const CellIndexArray pacmanCellsIndices = GetPacmanCellsIndices(context, map, pacman);
+        if (pacmanCellsIndices.size() == 1) // move if pacman stays on the one cell only
+           return (pacmanCellsIndices[0] == leftTunnelExit) && (pacman->GetDirection() == MoveDirection::Left);
+        return false;
+    };
  
-     auto leftAction = [pacman, rightTunnelExit, mPacmanController](SchedulerContext& context) -> ActionResult
-     {
-         pacman->TranslateTo(rightTunnelExit);
-         //pacman->Move(pacman->GetDirection(), Actor::kMax);
-         mPacmanController->ChangeDirection(pacman->GetDirection());
-         return ActionResult::None;
-     };
+    auto leftAction = [rightTunnelExit, mPacmanController](SchedulerContext& context) -> ActionResult
+    {
+        mPacmanController->TranslateTo(rightTunnelExit);
+        return ActionResult::None;
+    };
  
-     // right
-     auto rightCondition = [pacman, map, rightTunnelExit](SchedulerContext& context) -> bool
-     {
-         const CellIndexArray pacmanCellsIndices = GetPacmanCellsIndices(context, map, pacman);
-         if (pacmanCellsIndices.size() == 1) // move if pacman stays on the one cell only
-            return (pacmanCellsIndices[0] == rightTunnelExit)  && (pacman->GetDirection() == MoveDirection::Right);
-         return false;
-     };
+    // right
+    auto rightCondition = [pacman, map, rightTunnelExit](SchedulerContext& context) -> bool
+    {
+        const CellIndexArray pacmanCellsIndices = GetPacmanCellsIndices(context, map, pacman);
+        if (pacmanCellsIndices.size() == 1) // move if pacman stays on the one cell only
+           return (pacmanCellsIndices[0] == rightTunnelExit)  && (pacman->GetDirection() == MoveDirection::Right);
+        return false;
+    };
  
-     auto rightAction = [pacman, leftTunnelExit, mPacmanController](SchedulerContext& context) -> ActionResult
-     {
-         pacman->TranslateTo(leftTunnelExit);
-         //pacman->Move(pacman->GetDirection(), Actor::kMax);
-         mPacmanController->ChangeDirection(pacman->GetDirection());
-         return ActionResult::None;
-     };
+    auto rightAction = [leftTunnelExit, mPacmanController](SchedulerContext& context) -> ActionResult
+    {
+        mPacmanController->TranslateTo(leftTunnelExit);
+        return ActionResult::None;
+    };
  
-     std::shared_ptr<Trigger> leftTunnelTrigger = std::make_shared<Trigger>(leftCondition, leftAction);
-     std::shared_ptr<Trigger> rightTunnelTrigger = std::make_shared<Trigger>(rightCondition, rightAction);
+    std::shared_ptr<Trigger> leftTunnelTrigger = std::make_shared<Trigger>(leftCondition, leftAction);
+    std::shared_ptr<Trigger> rightTunnelTrigger = std::make_shared<Trigger>(rightCondition, rightAction);
  
-     // register actions and triggers
-     mScheduler->RegisterAction(pacmanEatAction, 0, true);
-     mScheduler->RegisterTrigger(leftTunnelTrigger);
-     mScheduler->RegisterTrigger(rightTunnelTrigger);
+    // register actions and triggers
+    mScheduler->RegisterAction(ctrlsUpdateAction, 0, true);
+    mScheduler->RegisterAction(pacmanEatAction, 0, true);
+    mScheduler->RegisterTrigger(leftTunnelTrigger);
+    mScheduler->RegisterTrigger(rightTunnelTrigger);
 }
 
 } // Pacman namespace

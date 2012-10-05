@@ -56,8 +56,8 @@ enum class MoveDirection : uint8_t
 
 enum class GhostState
 {
-    Start,
     Chase,
+    Scatter,
     Frightened
 };
 

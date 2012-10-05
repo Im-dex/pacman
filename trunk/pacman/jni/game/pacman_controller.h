@@ -29,6 +29,8 @@ public:
 
     void ChangeDirection(const MoveDirection newDirection);
 
+    void TranslateTo(const CellIndex cell);
+
     std::shared_ptr<Actor> GetActor() const
     {
         return mActor;

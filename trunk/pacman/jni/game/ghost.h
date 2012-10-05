@@ -25,7 +25,7 @@ public:
 
     Ghost& operator= (const Ghost&) = delete;
 
-    virtual void SelectTargetCell() const = 0;
+    virtual CellIndex SelectTargetCell() const = 0;
 
     std::shared_ptr<IDrawable> GetLeftDrawable() const;
 
