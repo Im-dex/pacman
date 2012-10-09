@@ -6,6 +6,7 @@
 
 namespace Pacman {
 
+class Actor;
 class SharedDataContext;
 
 class SharedDataManager
@@ -22,7 +23,11 @@ public:
 
     CellIndexArray GetPacmanCells();
 
+    CellIndexArray GetGhostCells(const GhostId ghostId);
+
 private:
+
+    CellIndexArray GetActorCells(const std::shared_ptr<Actor>& actor, const std::string& keyName);
 
     std::unique_ptr<SharedDataContext> mContext;
 };

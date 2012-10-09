@@ -1,7 +1,10 @@
 #include "ai_controller.h"
 
+#include <cstdlib>
+
 #include "log.h"
 #include "common.h"
+#include "utils.h"
 #include "math.h"
 #include "game.h"
 #include "actor.h"
@@ -12,6 +15,7 @@
 #include "map.h"
 #include "ghosts_factory.h"
 #include "pacman_controller.h"
+#include "shared_data_manager.h"
 #include "scheduler.h"
 #include "dots_grid.h"
 
@@ -24,10 +28,10 @@ AIController::AIController(const Size actorSize, const std::weak_ptr<SpriteSheet
               mCurrentGhost(kGhostsCount)
 {
     GhostsFactory factory;
-    mGhosts[GhostsFactory::kBlinky] = factory.CreateGhost(actorSize, spriteSheetPtr, GhostsFactory::kBlinky);
-    mGhosts[GhostsFactory::kPinky] = factory.CreateGhost(actorSize, spriteSheetPtr, GhostsFactory::kPinky);
-    mGhosts[GhostsFactory::kInky] = factory.CreateGhost(actorSize, spriteSheetPtr, GhostsFactory::kInky);
-    mGhosts[GhostsFactory::kClyde] = factory.CreateGhost(actorSize, spriteSheetPtr, GhostsFactory::kClyde);
+    mGhosts[EnumCast(GhostId::Blinky)] = factory.CreateGhost(actorSize, spriteSheetPtr, GhostId::Blinky);
+    mGhosts[EnumCast(GhostId::Pinky)] = factory.CreateGhost(actorSize, spriteSheetPtr, GhostId::Pinky);
+    mGhosts[EnumCast(GhostId::Inky)] = factory.CreateGhost(actorSize, spriteSheetPtr, GhostId::Inky);
+    mGhosts[EnumCast(GhostId::Clyde)] = factory.CreateGhost(actorSize, spriteSheetPtr, GhostId::Clyde);
 
     for (const std::shared_ptr<Ghost>& ghost : mGhosts)
     {
@@ -37,6 +41,10 @@ AIController::AIController(const Size actorSize, const std::weak_ptr<SpriteSheet
     }
 
     SetupScheduler();
+
+    const std::shared_ptr<SpriteSheet> spriteSheet = spriteSheetPtr.lock();
+    PACMAN_CHECK_ERROR(spriteSheet != nullptr, ErrorCode::BadArgument);
+    mFrightenedDrawable = spriteSheet->MakeSprite("enemy_frightened", SpriteRegion(0, 0, actorSize, actorSize));
 }
 
 void AIController::Update(const uint64_t dt)
@@ -46,18 +54,23 @@ void AIController::Update(const uint64_t dt)
         mCurrentGhost = i;
         mGhosts[i]->GetActor()->Update(dt, this);
     }
-    //mCurrentGhost = GhostsFactory::kInky;
-    //mGhosts[mCurrentGhost]->GetActor()->Update(dt, this);
 }
 
-std::shared_ptr<Actor> AIController::GetActor(const size_t index) const
+std::shared_ptr<Actor> AIController::GetActor(const GhostId ghostId) const
 {
-    return mGhosts[index]->GetActor();
+    return mGhosts[EnumCast(ghostId)]->GetActor();
+}
+
+CellIndex AIController::GetScatterTarget(const GhostId ghostid) const
+{
+    return mAIInfo.mScatterTargets[EnumCast(ghostid)];
 }
 
 void AIController::OnDirectionChanged(const MoveDirection newDirection)
 {
     const std::shared_ptr<Ghost> ghost = mGhosts[mCurrentGhost];
+    if (ghost->GetState() == GhostState::Frightened)
+        return;
 
     switch (newDirection)
     {
@@ -99,6 +112,46 @@ void AIController::OnTargetAchieved()
         break;
     default:
         PACMAN_CHECK_ERROR(false, ErrorCode::InvalidState);
+    }
+}
+
+void AIController::EnableFrightenedState()
+{
+    for (const std::shared_ptr<Ghost>& ghost : mGhosts)
+    {
+        const std::shared_ptr<Actor> actor = ghost->GetActor();
+
+        if ((ghost->GetState() == GhostState::Wait) ||
+            (ghost->GetState() == GhostState::LeaveHouse))
+        {
+            continue;
+        }
+
+        ghost->SetState(GhostState::Frightened);
+        actor->SetDrawable(mFrightenedDrawable);
+
+        const MoveDirection backDirection = GetBackDirection(actor->GetDirection());
+        const CellIndex currentCell = SelectNearestCell(GetGame().GetMap().FindCells(actor->GetRegion()), backDirection);
+        const CellIndex newTarget = FindMoveTarget(currentCell, backDirection);
+        actor->MoveTo(backDirection, newTarget);
+    }
+
+    const auto restore = []() -> ActionResult
+    {
+        GetGame().GetAIController().DisableFrightenedState();
+        return ActionResult::Unregister;
+    };
+
+    const std::shared_ptr<Action> restoreAction = std::make_shared<Action>(restore);
+    GetGame().GetScheduler().RegisterAction(restoreAction, mAIInfo.mFrightDuration, false);
+}
+
+void AIController::DisableFrightenedState()
+{
+    for (const std::shared_ptr<Ghost>& ghost : mGhosts)
+    {
+        if (ghost->GetState() == GhostState::Frightened)
+            ghost->SetState(GhostState::Chase);
     }
 }
 
@@ -146,27 +199,34 @@ void AIController::FindWayOnLeaveHouse()
 // move to the nearest crossroad
 void AIController::FindWayOnChaseState()
 {
-    const std::shared_ptr<Ghost> ghost = mGhosts[mCurrentGhost];
-    const std::shared_ptr<Actor> actor = ghost->GetActor();
-
-    const CellIndex currentCell = SelectNearestCell(GetGame().GetMap().FindCells(actor->GetRegion()), actor->GetDirection());;
-    const CellIndex targetCell = ghost->SelectTargetCell();
-    const MoveDirection backDirection = GetBackDirection(actor->GetDirection());
-
-    // select turn
-    const MoveDirection nextDirection = SelectBestDirection(currentCell, targetCell, backDirection);
-    const CellIndex moveTarget = FindMoveTarget(currentCell, nextDirection);
-    actor->MoveTo(nextDirection, moveTarget);
+    FindWay(SelectDirectionMethod::Best, SelectTargetMethod::OwnBehavior);
 }
 
 void AIController::FindWayOnScatterState()
 {
-
+    FindWay(SelectDirectionMethod::Best, SelectTargetMethod::Scatter);
 }
 
 void AIController::FindWayOnFrightenedState()
 {
+    FindWay(SelectDirectionMethod::Random, SelectTargetMethod::OwnBehavior);
+}
 
+void AIController::FindWay(const SelectDirectionMethod directionMethod, const SelectTargetMethod targetMethod)
+{
+    const std::shared_ptr<Ghost> ghost = mGhosts[mCurrentGhost];
+    const std::shared_ptr<Actor> actor = ghost->GetActor();
+
+    const CellIndex currentCell = SelectNearestCell(GetGame().GetMap().FindCells(actor->GetRegion()), actor->GetDirection());
+    const CellIndex targetCell = (targetMethod == SelectTargetMethod::OwnBehavior) ? ghost->SelectTargetCell()
+                                                                                   : GetScatterTarget(MakeEnum<GhostId>(static_cast<EnumType<GhostId>::value>(mCurrentGhost)));
+    const MoveDirection backDirection = GetBackDirection(actor->GetDirection());
+
+    // select turn
+    const MoveDirection nextDirection = (directionMethod == SelectDirectionMethod::Best) ? SelectBestDirection(currentCell, targetCell, backDirection)
+                                                                                         : SelectRandomDirection(currentCell, backDirection);
+    const CellIndex moveTarget = FindMoveTarget(currentCell, nextDirection);
+    actor->MoveTo(nextDirection, moveTarget);
 }
 
 MoveDirection AIController::SelectBestDirection(const CellIndex& currentCell, const CellIndex& targetCell,
@@ -209,6 +269,25 @@ MoveDirection AIController::SelectBestDirection(const CellIndex& currentCell, co
     return result;
 }
 
+MoveDirection AIController::SelectRandomDirection(const CellIndex& currentCell, const MoveDirection backDirection) const
+{
+    const MapNeighborsInfo neighbors = GetGame().GetMap().GetDirectNeighbors(currentCell);
+    std::vector<MoveDirection> possibleDirections;
+
+    for (const Neighbor& neighbor : neighbors.mNeighbors)
+    {
+        if ((neighbor.mCellType == MapCellType::Empty) &&
+            (neighbor.mDirection != backDirection))
+        {
+            possibleDirections.push_back(neighbor.mDirection);
+        }
+    }
+
+    srand(time(nullptr));
+    const size_t randVal = static_cast<size_t>(rand() % possibleDirections.size());
+    return possibleDirections[randVal];
+}
+
 CellIndex AIController::FindMoveTarget(const CellIndex& currentCell, const MoveDirection direction)
 {
     Map& map = GetGame().GetMap();
@@ -238,8 +317,8 @@ CellIndex AIController::FindMoveTarget(const CellIndex& currentCell, const MoveD
 
 void AIController::SetupScheduler()
 {
-    const std::shared_ptr<Ghost> inky = mGhosts[GhostsFactory::kInky];
-    const std::shared_ptr<Ghost> clyde = mGhosts[GhostsFactory::kClyde];
+    const std::shared_ptr<Ghost> inky = mGhosts[EnumCast(GhostId::Inky)];
+    const std::shared_ptr<Ghost> clyde = mGhosts[EnumCast(GhostId::Clyde)];
 
     auto inkyStart = [inky]() -> ActionResult
     {
@@ -273,6 +352,45 @@ void AIController::SetupScheduler()
 
     scheduler.RegisterAction(inkyStartAction, 0, true);
     scheduler.RegisterAction(clydeStartAction, 0, true);
+
+    Map& map = GetGame().GetMap();
+    const CellIndex leftTunnelExit = map.GetLeftTunnelExit();
+    const CellIndex rightTunnelExit = map.GetRightTunnelExit();
+
+    for (EnumType<GhostId>::value i = 0; i < kGhostsCount; i++)
+    {
+        const GhostId ghostId = MakeEnum<GhostId>(i);
+
+        auto leftTunnel = [ghostId, leftTunnelExit, rightTunnelExit]() -> ActionResult
+        {
+            const CellIndexArray ghostCells = GetGame().GetSharedDataManager().GetGhostCells(ghostId);
+            if (ghostCells.size() == 1)
+            {
+                const std::shared_ptr<Actor> actor = GetGame().GetAIController().GetActor(ghostId);
+                if ((ghostCells[0] == leftTunnelExit) && (actor->GetDirection() == MoveDirection::Left))
+                    actor->TranslateToCell(rightTunnelExit);
+            }
+            return ActionResult::None;
+        };
+
+        auto rightTunnel = [ghostId, leftTunnelExit, rightTunnelExit]() -> ActionResult
+        {
+            const CellIndexArray ghostCells = GetGame().GetSharedDataManager().GetGhostCells(ghostId);
+            if (ghostCells.size() == 1)
+            {
+                const std::shared_ptr<Actor> actor = GetGame().GetAIController().GetActor(ghostId);
+                if ((ghostCells[0] == rightTunnelExit) && (actor->GetDirection() == MoveDirection::Right))
+                    actor->TranslateToCell(leftTunnelExit);
+            }
+            return ActionResult::None;
+        };
+
+        Scheduler& scheduler = GetGame().GetScheduler();
+        const std::shared_ptr<Action> leftTunnelAction = std::make_shared<Action>(leftTunnel);
+        const std::shared_ptr<Action> rightTunnelAction = std::make_shared<Action>(rightTunnel);
+        scheduler.RegisterAction(leftTunnelAction, 0, true);
+        scheduler.RegisterAction(rightTunnelAction, 0, true);
+    }
 }
 
 } // Pacman namespace

@@ -196,7 +196,16 @@ CellIndexArray Map::FindCells(const SpriteRegion& region) const
         addCell(cellIndex);
     }
 
-    PACMAN_CHECK_ERROR((result.size() <= kMaxCellsCount) && result.size() > 0, ErrorCode::InvalidState);
+    if (result.size() == 0)
+    {
+        addCell(leftTopPosCell);
+        addCell(rightTopPosCell);
+        addCell(leftBottomPosCell);
+        addCell(rightBottomPosCell);
+    }
+
+    PACMAN_CHECK_ERROR2((result.size() <= kMaxCellsCount) && result.size() > 0, ErrorCode::InvalidState,
+                        MakeString("Count: ", result.size()).c_str());
     return result;
 }
 

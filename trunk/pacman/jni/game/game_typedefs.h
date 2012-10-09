@@ -75,6 +75,16 @@ enum class GhostState
 
 //================================================
 
+enum class GhostId : uint8_t
+{
+    Blinky = 0,
+    Pinky,
+    Inky,
+    Clyde
+};
+
+//================================================
+
 struct Neighbor
 {
     MapCellType   mCellType;

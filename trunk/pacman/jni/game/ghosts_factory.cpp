@@ -1,5 +1,6 @@
 #include "ghosts_factory.h"
 
+#include "math.h"
 #include "game.h"
 #include "common.h"
 #include "ghost.h"
@@ -7,15 +8,10 @@
 #include "error.h"
 #include "loader.h"
 #include "pacman_controller.h"
+#include "ai_controller.h"
 #include "shared_data_manager.h"
-#include "math.h"
 
 namespace Pacman {
-
-const size_t GhostsFactory::kBlinky = 0;
-const size_t GhostsFactory::kPinky = 1;
-const size_t GhostsFactory::kInky = 2;
-const size_t GhostsFactory::kClyde = 3;
 
 static CellIndex FindWithOffset(const CellIndex& cellIndex, const MoveDirection direction,
                                 const CellIndex::value_t offset)
@@ -113,19 +109,26 @@ public:
 
     Inky& operator= (const Inky&) = delete;
 
-    // target is double vector from blinky to pacman cell + 2 cells by pacman direction
+    // target is double vector from blinky to (pacman cell + 2 cells by pacman direction)
     virtual CellIndex SelectTargetCell() const
     {
-        //static const CellIndex::value_t kOffset = 2;
-        //const CellIndex controlCell = FindWithOffset(pacmanCell, pacmanDirection, kOffset);
-        //const CellIndex::value_t rowIncrement = (GetRow(controlCell) > GetRow(blinkyCell)) ? GetRow(controlCell) - GetRow(blinkyCell)
-        //                                                                                   : GetRow(blinkyCell) - GetRow(controlCell);
-        //const CellIndex::value_t columnIncrement = (GetColumn(controlCell) > GetColumn(blinkyCell)) ? GetColumn(controlCell) - GetColumn(blinkyCell)
-        //                                                                                            : GetColumn(blinkyCell) - GetColumn(controlCell);
-        //return controlCell + CellIndex(rowIncrement, columnIncrement);
+        static const CellIndex::value_t kOffset = 2;
+
         Game& game = GetGame();
         const std::shared_ptr<Actor> pacman = game.GetPacmanController().GetActor();
-        return SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman->GetDirection());
+        const std::shared_ptr<Actor> blinky = game.GetAIController().GetActor(GhostId::Blinky);
+        const CellIndex pacmanCell = SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman->GetDirection());
+        const CellIndex blinkyCell = SelectNearestCell(game.GetSharedDataManager().GetGhostCells(GhostId::Blinky), blinky->GetDirection());
+        const CellIndex pacmanOffsetCell = FindWithOffset(pacmanCell, pacman->GetDirection(), kOffset);
+
+        typedef Math::Vector2<SizeOffset> VectorT;
+        VectorT vector = VectorT(static_cast<SizeOffset>(blinkyCell.GetX()), static_cast<SizeOffset>(blinkyCell.GetY())) - 
+                         VectorT(static_cast<SizeOffset>(pacmanCell.GetX()), static_cast<SizeOffset>(pacmanCell.GetY()));
+        vector *= 2;
+
+        const CellIndex::value_t row = (vector.GetX() > 0) ? vector.GetX() : 0;
+        const CellIndex::value_t column = (vector.GetY() > 0) ? vector.GetY() : 0;
+        return CellIndex(row, column);
     }
 };
 
@@ -149,44 +152,47 @@ public:
     // if distance to pacman greater than 8 cells - as blinky, scatter target otherwise
     virtual CellIndex SelectTargetCell() const
     {
-        /*static const float kMaxDistance = 8.0f;
-        const CellIndex currentCell = this->GetActor()->GetNearestCellIndex();
+        static const float kMaxDistance = 8.0f;
+
+        Game& game = GetGame();
+        const std::shared_ptr<Actor> pacman = game.GetPacmanController().GetActor();
+        const std::shared_ptr<Actor> clyde = game.GetAIController().GetActor(GhostId::Clyde);
+        const CellIndex pacmanCell = SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman->GetDirection());
+        const CellIndex currentCell = SelectNearestCell(game.GetSharedDataManager().GetGhostCells(GhostId::Clyde), clyde->GetDirection());
+
         const Math::Vector2f currentPoint(static_cast<float>(GetRow(currentCell)), static_cast<float>(GetColumn(currentCell)));
         const Math::Vector2f pacmanPoint(static_cast<float>(GetRow(pacmanCell)), static_cast<float>(GetColumn(pacmanCell)));
         const float distance = (pacmanPoint - currentPoint).Length();
         if (Math::Comparator<float>::Greater(distance, kMaxDistance))
-        return pacmanCell;
+            return pacmanCell;
         else
-        return scatterTarget;*/
-        Game& game = GetGame();
-        const std::shared_ptr<Actor> pacman = game.GetPacmanController().GetActor();
-        return SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman->GetDirection());
+            return game.GetAIController().GetScatterTarget(GhostId::Clyde);
     }
 };
 
 std::shared_ptr<Ghost> GhostsFactory::CreateGhost(const Size actorSize, const std::weak_ptr<SpriteSheet>& spriteSheetPtr,
-                                                 const size_t ghostId) const
+                                                 const GhostId ghostId) const
 {
     GameLoader& loader = GetGame().GetLoader();
 
     switch (ghostId)
     {
-    case kBlinky:
+    case GhostId::Blinky:
         {
             const std::shared_ptr<Actor> actor = loader.LoadActor("blinky.json", actorSize, nullptr);
             return std::make_shared<Blinky>(actor, actorSize, spriteSheetPtr);
         }
-    case kPinky:
+    case GhostId::Pinky:
         {
             const std::shared_ptr<Actor> actor = loader.LoadActor("pinky.json", actorSize, nullptr);
             return std::make_shared<Pinky>(actor, actorSize, spriteSheetPtr);
         }
-    case kInky:
+    case GhostId::Inky:
         {
             const std::shared_ptr<Actor> actor = loader.LoadActor("inky.json", actorSize, nullptr);
             return std::make_shared<Inky>(actor, actorSize, spriteSheetPtr);
         }
-    case kClyde:
+    case GhostId::Clyde:
         {
             const std::shared_ptr<Actor> actor = loader.LoadActor("clyde.json", actorSize, nullptr);
             return std::make_shared<Clyde>(actor, actorSize, spriteSheetPtr);

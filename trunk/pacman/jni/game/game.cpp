@@ -71,7 +71,8 @@ void Game::OnStart(Engine& engine)
     mPacmanController->GetActor()->AttachToScene(sceneManager);
     for (size_t i = 0; i < kGhostsCount; i++)
     {
-        mAIController->GetActor(i)->AttachToScene(sceneManager);
+        const GhostId ghostId = MakeEnum<GhostId>(static_cast<EnumType<GhostId>::value>(i));
+        mAIController->GetActor(ghostId)->AttachToScene(sceneManager);
     }
 
     InitActionsAndTriggers();

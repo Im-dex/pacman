@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "base.h"
+#include "game_typedefs.h"
 
 namespace Pacman {
 
@@ -16,11 +17,6 @@ class GhostsFactory
 {
 public:
 
-    static const size_t kBlinky;
-    static const size_t kPinky;
-    static const size_t kInky;
-    static const size_t kClyde;
-
     GhostsFactory() = default;
     GhostsFactory(const GhostsFactory&) = delete;
     ~GhostsFactory() = default;
@@ -28,7 +24,7 @@ public:
     GhostsFactory& operator= (const GhostsFactory&) = delete;
 
     std::shared_ptr<Ghost> CreateGhost(const Size actorSize, const std::weak_ptr<SpriteSheet>& spriteSheetPtr,
-                                       const size_t ghostId) const;
+                                       const GhostId ghostId) const;
 };
 
 } // Pacman namespace

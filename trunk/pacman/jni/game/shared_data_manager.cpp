@@ -5,8 +5,25 @@
 #include "map.h"
 #include "actor.h"
 #include "pacman_controller.h"
+#include "ai_controller.h"
+#include "ghosts_factory.h"
 
 namespace Pacman {
+
+static FORCEINLINE std::string GetGhostKeyName(const GhostId ghostId)
+{
+    switch (ghostId)
+    {
+    case GhostId::Blinky:
+        return "blinkyCells";
+    case GhostId::Pinky:
+        return "inkyCells";
+    case GhostId::Inky:
+        return "pinkyCells";
+    case GhostId::Clyde:
+        return "clydeCells";
+    }
+}
 
 SharedDataManager::SharedDataManager()
                  : mContext(new SharedDataContext())
@@ -25,18 +42,26 @@ void SharedDataManager::Reset()
 CellIndexArray SharedDataManager::GetPacmanCells()
 {
     static const std::string kKey = "pacmanCells";
+    return GetActorCells(GetGame().GetPacmanController().GetActor(), kKey);
+}
 
-    if (mContext->HasValue(kKey))
+CellIndexArray SharedDataManager::GetGhostCells(const GhostId ghostId)
+{
+    return GetActorCells(GetGame().GetAIController().GetActor(ghostId), GetGhostKeyName(ghostId));
+}
+
+CellIndexArray SharedDataManager::GetActorCells(const std::shared_ptr<Actor>& actor, const std::string& keyName)
+{
+    if (mContext->HasValue(keyName))
     {
-        return mContext->GetValue<CellIndexArray>(kKey);
+        return mContext->GetValue<CellIndexArray>(keyName);
     }
     else
     {
         Game& game = GetGame();
-        PacmanController& pacmanController = game.GetPacmanController();
         Map& map = game.GetMap();
-        const CellIndexArray cells = map.FindCells(pacmanController.GetActor()->GetRegion());
-        mContext->SetValue(kKey, cells);
+        const CellIndexArray cells = map.FindCells(actor->GetRegion());
+        mContext->SetValue(keyName, cells);
         return cells;
     }
 }

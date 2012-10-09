@@ -7,6 +7,7 @@
 #include "error.h"
 #include "game.h"
 #include "map.h"
+#include "ai_controller.h"
 #include "instanced_sprite.h"
 #include "spritesheet.h"
 #include "shader_program.h"
@@ -94,6 +95,7 @@ void DotsGrid::HideDot(const CellIndex& cellIndex)
         mBigDotsSprite->EraseInstance(iter->second);
         mDotsInfo[dotIndex] = DotType::None;
         mHiddenDotsCounts++;
+        GetGame().GetAIController().EnableFrightenedState();
         break;
     }
 }
