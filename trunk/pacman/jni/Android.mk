@@ -30,15 +30,16 @@ LOCAL_SRC_FILES := main.cpp\
                    json/json_writer.cpp\
 				   game/game.cpp\
 				   game/loader.cpp\
+				   game/common.cpp\
 				   game/actor.cpp\
 				   game/map.cpp\
 				   game/dots_grid.cpp\
 				   game/scheduler.cpp\
-				   game/trigger.cpp\
 				   game/ghost.cpp\
 				   game/ghosts_factory.cpp\
 				   game/pacman_controller.cpp\
-				   game/ai_controller.cpp
+				   game/ai_controller.cpp\
+				   game/shared_data_manager.cpp
 LOCAL_LDLIBS    := -llog -lGLESv2 -ljnigraphics
 
 include $(BUILD_SHARED_LIBRARY)

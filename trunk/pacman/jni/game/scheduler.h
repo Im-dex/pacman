@@ -1,12 +1,19 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 #include <list>
 #include <memory>
 
-#include "trigger.h"
-
 namespace Pacman {
+
+enum class ActionResult
+{
+    None,
+    Unregister
+};
+
+typedef std::function<ActionResult()> Action;
 
 class Scheduler
 {
@@ -22,8 +29,6 @@ public:
 
     void RegisterAction(const std::shared_ptr<Action>& action, const uint64_t delay, const bool repeatable);
 
-    void RegisterTrigger(const std::shared_ptr<Trigger>& trigger);
-
 private:
 
     struct ActionData
@@ -36,21 +41,13 @@ private:
 
     typedef std::list<ActionData> ActionDataList;
     typedef std::list<std::shared_ptr<Action>>  ActionList;
-    typedef std::list<std::shared_ptr<Trigger>> TriggerList;
 
     void UnregisterAction(const std::shared_ptr<Action>& action);
-
-    void UnregisterTrigger(const std::shared_ptr<Trigger>& trigger);
 
     void Cleanup();
 
     ActionDataList mActions;
-    TriggerList    mTriggers;
-
     ActionList  mUnregisteredActions;
-    TriggerList mUnregisteredTriggers;
-
-    SchedulerContext mContext;
 };
 
 } // Pacman namespace

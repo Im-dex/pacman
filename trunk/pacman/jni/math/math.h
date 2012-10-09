@@ -53,7 +53,7 @@ struct Comparator
 
 	static bool Equals(const T lhs, const T rhs)
 	{
-		return std::abs<T>(lhs - rhs) <= std::numeric_limits<T>::epsilon();
+		return std::abs(lhs - rhs) <= std::numeric_limits<T>::epsilon();
 	}
 };
 

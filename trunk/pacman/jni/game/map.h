@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <array>
 
 #include "sprite.h"
 #include "game_typedefs.h"
@@ -13,29 +14,28 @@ class SceneNode;
 class Texture2D;
 class SceneManager;
 
-enum class MapCellType : uint8_t
-{
-	Empty = 0,
-	Wall  = 1,
-	Door  = 2,
-    Space = 3 // out of map area
-};
-
 struct MapNeighborsInfo
 {
-    MapCellType left;
-    MapCellType right;
-    MapCellType top;
-    MapCellType bottom;
+    union
+    {
+        struct 
+        {
+            Neighbor            mLeft;
+            Neighbor            mRight;
+            Neighbor            mTop;
+            Neighbor            mBottom;
+        };
+        std::array<Neighbor, 4> mNeighbors;
+    };
 };
 
 struct FullMapNeighborsInfo
 {
-    MapNeighborsInfo directInfo;
-    MapCellType      leftTop;
-    MapCellType      rightTop;
-    MapCellType      leftBottom;
-    MapCellType      rightBottom;
+    MapNeighborsInfo mDirectInfo;
+    MapCellType      mLeftTop;
+    MapCellType      mRightTop;
+    MapCellType      mLeftBottom;
+    MapCellType      mRightBottom;
 };
 
 class Map

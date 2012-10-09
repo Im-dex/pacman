@@ -34,6 +34,16 @@ static FORCEINLINE CellIndex::value_t SetColumn(CellIndex& cell, const CellIndex
 
 //================================================
 
+enum class MapCellType : uint8_t
+{
+    Empty = 0,
+    Wall  = 1,
+    Door  = 2,
+    Space = 3 // out of map area
+};
+
+//================================================
+
 enum class DotType : uint8_t
 {
     None  = 0,
@@ -56,9 +66,18 @@ enum class MoveDirection : uint8_t
 
 enum class GhostState
 {
+    Wait,
     Chase,
     Scatter,
     Frightened
+};
+
+//================================================
+
+struct Neighbor
+{
+    MapCellType   mCellType;
+    MoveDirection mDirection;
 };
 
 } // Pacman namespace

@@ -34,7 +34,7 @@ class DotsGrid
 public:
 
     DotsGrid() = delete;
-    DotsGrid(const std::vector<DotType>& dotsInfo, const std::weak_ptr<Map>& mapPtr, const std::weak_ptr<SpriteSheet>& spritesheetPtr);
+    DotsGrid(const std::vector<DotType>& dotsInfo, const std::weak_ptr<SpriteSheet>& spritesheetPtr);
     DotsGrid(const DotsGrid&) = delete;
     ~DotsGrid() = default;
 
@@ -46,16 +46,25 @@ public:
 
     void HideDot(const CellIndex& cellIndex);
 
+    size_t GetDotsCount() const
+    {
+        return mDotsIndexMap.size();
+    }
+
+    size_t GetEatenDotsCount() const
+    {
+        return mHiddenDotsCounts;
+    }
+
 private:
 
     typedef std::vector<Position> InstancesArray;
     typedef std::tuple<InstancesArray, InstancesArray> DotsInstancesTuple;
     typedef std::unordered_map<CellIndex, size_t, CustomHash<CellIndex>> DotsIndexMap; // cellIndex <-> mDotsInfo.position
 
-    DotsInstancesTuple MakeInstances(const std::shared_ptr<Map>& map, const Size smallDotSize, const Size bigDotSize);
+    DotsInstancesTuple MakeInstances(const Size smallDotSize, const Size bigDotSize);
 
-    void AddDotInstance(const size_t dotOrderIndex, const Size dotHalfSize, const std::shared_ptr<Map>& map,
-                        std::vector<Position>& instances);
+    void AddDotInstance(const size_t dotOrderIndex, const Size dotHalfSize, std::vector<Position>& instances);
 
     const CellIndex::value_t         mMapColumnsCount;
     size_t                           mHiddenDotsCounts;

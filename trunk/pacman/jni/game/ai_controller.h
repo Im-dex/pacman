@@ -13,8 +13,13 @@ namespace Pacman {
 class Actor;
 class Ghost;
 class GameLoader;
+class Scheduler;
 class SpriteSheet;
 class Map;
+class DotsGrid;
+class PacmanController;
+
+static const size_t kGhostsCount = 4;
 
 struct ChaseDirectionDiscard
 {
@@ -24,24 +29,18 @@ struct ChaseDirectionDiscard
 
 struct AIInfo
 {
-    CellIndex                          mBlinkyScatterTarget;
-    CellIndex                          mPinkyScatterTarget;
-    CellIndex                          mInkyScatterTarget;
-    CellIndex                          mClydeScatterTarget;
-    uint64_t                           mScatterDuration;
-    uint64_t                           mScatterInterval;
-    std::vector<ChaseDirectionDiscard> mDiscardCells;
-    uint64_t                           mFrightDuration;
+    std::array<CellIndex, kGhostsCount> mScatterTargets;
+    uint64_t                            mScatterDuration;
+    uint64_t                            mScatterInterval;
+    std::vector<ChaseDirectionDiscard>  mDiscardCells;
+    uint64_t                            mFrightDuration;
 };
 
 class AIController : public IActorController
 {
 public:
 
-    static const size_t kGhostsCount = 4;
-
-    AIController(const GameLoader& loader, const Size actorSize, const std::shared_ptr<Map>& map,
-                 const std::weak_ptr<SpriteSheet>& spriteSheetPtr);
+    AIController(const Size actorSize, const std::weak_ptr<SpriteSheet>& spriteSheetPtr);
     AIController(const AIController&) = delete;
     ~AIController() = default;
 
@@ -59,9 +58,24 @@ private:
 
     typedef std::array<std::shared_ptr<Ghost>, kGhostsCount> GhostsArray; 
 
+    void FindWayOnWaitState();
+
+    void FindWayOnChaseState();
+
+    void FindWayOnScatterState();
+
+    void FindWayOnFrightenedState();
+
+    MoveDirection SelectBestDirection(const CellIndex& currentCell, const CellIndex& targetCell,
+                                      const MoveDirection backDirection) const;
+
+    CellIndex FindMoveTarget(const CellIndex& currentCell, const MoveDirection direction);
+
+    void SetupScheduler();
+
     const AIInfo mAIInfo;
     GhostsArray  mGhosts;
-    Ghost*       mCurrentGhost;
+    size_t       mCurrentGhost;
 };
 
 } // Pacman namespace

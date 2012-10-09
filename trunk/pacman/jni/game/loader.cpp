@@ -1,6 +1,7 @@
 #include "loader.h"
 
 #include "error.h"
+#include "game.h"
 #include "map.h"
 #include "dots_grid.h"
 #include "actor.h"
@@ -22,7 +23,7 @@ static Position CalcActorPosition(const Size cellSize, const Size actorSize,
     return startCellCenterPos - Position(cellSizeHalf + actorsSizeHalf, actorsSizeHalf);
 }
 
-std::shared_ptr<Map> GameLoader::LoadMap(const std::string& fileName, const Size cellSize)
+std::unique_ptr<Map> GameLoader::LoadMap(const std::string& fileName, const Size cellSize)
 {
     Engine& engine = GetEngine();
     AssetManager& assetManager = engine.GetAssetManager();
@@ -67,17 +68,17 @@ std::shared_ptr<Map> GameLoader::LoadMap(const std::string& fileName, const Size
         mDotsInfo.push_back(dot);
     }
 
-    return std::make_shared<Map>(cellSize, rowsCount, renderer.GetViewportWidth(), renderer.GetViewportHeight(),
-                                 leftTunnelExitValue, rightTunnelExitValue, cellsValues);
+    return std::unique_ptr<Map>(new Map(cellSize, rowsCount, renderer.GetViewportWidth(), renderer.GetViewportHeight(),
+                                        leftTunnelExitValue, rightTunnelExitValue, cellsValues));
 }
 
-std::shared_ptr<DotsGrid> GameLoader::MakeDotsGrid(const std::weak_ptr<Map>& mapPtr, const std::weak_ptr<SpriteSheet>& spritesheetPtr)
+std::unique_ptr<DotsGrid> GameLoader::MakeDotsGrid(const std::weak_ptr<SpriteSheet>& spritesheetPtr)
 {
-    return std::make_shared<DotsGrid>(mDotsInfo, mapPtr, spritesheetPtr);
+    return std::unique_ptr<DotsGrid>(new DotsGrid(mDotsInfo, spritesheetPtr));
 }
 
 std::shared_ptr<Actor> GameLoader::LoadActor(const std::string& fileName, const Size actorSize,
-                                             const std::shared_ptr<IDrawable>& drawable, const std::shared_ptr<Map>& map) const
+                                             const std::shared_ptr<IDrawable>& drawable) const
 {
     typedef EnumType<MoveDirection>::value MoveDirectionValueT;
     AssetManager& assetManager = GetEngine().GetAssetManager();
@@ -93,10 +94,11 @@ std::shared_ptr<Actor> GameLoader::LoadActor(const std::string& fileName, const 
     const MoveDirectionValueT startDirection = root.GetValue<MoveDirectionValueT>("startDirection");
     const Speed startSpeed = root.GetValue<Speed>("startSpeed");
 
-    const Size cellSize = map->GetCellSize();
-    const Position startPosition = CalcActorPosition(cellSize, actorSize, map->GetCellCenterPos(startCellIndex));
+    Map& map = GetGame().GetMap();
+    const Size cellSize = map.GetCellSize();
+    const Position startPosition = CalcActorPosition(cellSize, actorSize, map.GetCellCenterPos(startCellIndex));
 
-    return std::make_shared<Actor>(actorSize, startSpeed, cellSize, startPosition, MakeEnum<MoveDirection>(startDirection), drawable, map);
+    return std::make_shared<Actor>(actorSize, startSpeed, startPosition, MakeEnum<MoveDirection>(startDirection), drawable);
 }
 
 AIInfo GameLoader::LoadAIInfo(const std::string& fileName) const

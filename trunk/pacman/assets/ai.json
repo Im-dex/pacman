@@ -5,8 +5,8 @@
 		"inky":[29, 1],
 		"clyde":[29, 26]
 	},
-	"scatter_duration":2000,
-	"scatter_interval":30000,
+	"scatter_duration":5000,
+	"scatter_interval":40000,
 	"chase_direction_discard":[
 		[[11, 13], 2], // cell, direction
 		[[11, 14], 2],
@@ -15,5 +15,5 @@
 		[[23, 12], 3],
 		[[23, 15], 3]
 	],
-	"fright_duration":5000
+	"fright_duration":7000
 }

@@ -7,6 +7,7 @@
 
 #include "log.h"
 #include "utils.h"
+#include "common.h"
 #include "error.h"
 #include "color.h"
 #include "scene_node.h"
@@ -129,7 +130,7 @@ MapCellType Map::GetCell(const CellIndex& cell) const
 {
     return GetCell(GetRow(cell), GetColumn(cell));
 }
-#include <float.h>
+
 CellIndex Map::GetCellIndex(const Position& position) const
 {
     const Position pos = position - mRect.GetPosition();
@@ -173,31 +174,19 @@ CellIndexArray Map::FindCells(const SpriteRegion& region) const
 
     // between leftTop and rightTop
     if (GetColumn(rightTopPosCell) - GetColumn(leftTopPosCell) > 1)
-    {
-        const CellIndex cellIndex(GetRow(leftTopPosCell), GetColumn(leftTopPosCell) + 1);
-        addCell(cellIndex);
-    }
+        addCell(GetNext(leftTopPosCell, MoveDirection::Right));
 
     // between leftBottom and rightBottom
     if (GetColumn(rightBottomPosCell) - GetColumn(leftBottomPosCell) > 1)
-    {
-        const CellIndex cellIndex(GetRow(leftBottomPosCell), GetColumn(leftBottomPosCell) + 1);
-        addCell(cellIndex);
-    }
+        addCell(GetNext(leftBottomPosCell, MoveDirection::Right));
 
     // between leftTop and leftBottom
     if (GetRow(leftBottomPosCell) - GetRow(leftTopPosCell) > 1)
-    {
-        const CellIndex cellIndex(GetRow(leftTopPosCell) + 1, GetColumn(leftTopPosCell));
-        addCell(cellIndex);
-    }
+        addCell(GetNext(leftTopPosCell, MoveDirection::Down));
 
     // between rightTop and rightBottom
     if (GetRow(rightBottomPosCell) - GetRow(rightTopPosCell) > 1)
-    {
-        const CellIndex cellIndex(GetRow(rightTopPosCell) + 1, GetColumn(rightTopPosCell));
-        addCell(cellIndex);
-    }
+        addCell(GetNext(rightTopPosCell, MoveDirection::Down));
 
     // between all (middle)
     if ((GetRow(rightBottomPosCell) - GetRow(leftTopPosCell) > 1) &&
@@ -216,28 +205,32 @@ MapNeighborsInfo Map::GetDirectNeighbors(const CellIndex::value_t rowIndex, cons
     MapNeighborsInfo info;
 
     // left
+    info.mLeft.mDirection = MoveDirection::Left;
     if (columnIndex == 0)
-        info.left = MapCellType::Space;
+        info.mLeft.mCellType = MapCellType::Space;
     else
-        info.left = GetCell(rowIndex, columnIndex - 1);
+        info.mLeft.mCellType = GetCell(rowIndex, columnIndex - 1);
 
     // right
+    info.mRight.mDirection = MoveDirection::Right;
     if (columnIndex >= (mColumnsCount - 1))
-        info.right = MapCellType::Space;
+        info.mRight.mCellType = MapCellType::Space;
     else
-        info.right = GetCell(rowIndex, columnIndex + 1);
+        info.mRight.mCellType = GetCell(rowIndex, columnIndex + 1);
 
     // top
+    info.mTop.mDirection = MoveDirection::Up;
     if (rowIndex == 0)
-        info.top = MapCellType::Space;
+        info.mTop.mCellType = MapCellType::Space;
     else
-        info.top = GetCell(rowIndex - 1, columnIndex);
+        info.mTop.mCellType = GetCell(rowIndex - 1, columnIndex);
 
     // bottom
+    info.mBottom.mDirection = MoveDirection::Down;
     if (rowIndex >= (mRowsCount - 1))
-        info.bottom = MapCellType::Space;
+        info.mBottom.mCellType = MapCellType::Space;
     else
-        info.bottom = GetCell(rowIndex + 1, columnIndex);
+        info.mBottom.mCellType = GetCell(rowIndex + 1, columnIndex);
 
     return info;
 }
@@ -250,31 +243,31 @@ MapNeighborsInfo Map::GetDirectNeighbors(const CellIndex& index) const
 FullMapNeighborsInfo Map::GetFullNeighbors(const CellIndex::value_t rowIndex, const CellIndex::value_t columnIndex) const
 {
     FullMapNeighborsInfo info;
-    info.directInfo = GetDirectNeighbors(rowIndex, columnIndex);
+    info.mDirectInfo = GetDirectNeighbors(rowIndex, columnIndex);
 
     // left top
     if ((columnIndex == 0) || (rowIndex == 0))
-        info.leftTop = MapCellType::Space;
+        info.mLeftTop = MapCellType::Space;
     else
-        info.leftTop = GetCell(rowIndex - 1, columnIndex - 1);
+        info.mLeftTop = GetCell(rowIndex - 1, columnIndex - 1);
 
     // right top
     if ((columnIndex >= (mColumnsCount - 1)) || (rowIndex == 0))
-        info.rightTop = MapCellType::Space;
+        info.mRightTop = MapCellType::Space;
     else
-        info.rightTop = GetCell(rowIndex - 1, columnIndex + 1);
+        info.mRightTop = GetCell(rowIndex - 1, columnIndex + 1);
 
     // left bottom
     if ((columnIndex == 0) || (rowIndex >= (mRowsCount - 1)))
-        info.leftBottom = MapCellType::Space;
+        info.mLeftBottom = MapCellType::Space;
     else
-        info.leftBottom = GetCell(rowIndex + 1, columnIndex - 1);
+        info.mLeftBottom = GetCell(rowIndex + 1, columnIndex - 1);
 
     // right bottom
     if ((columnIndex >= (mColumnsCount - 1)) || (rowIndex >= (mRowsCount - 1)))
-        info.rightBottom = MapCellType::Space;
+        info.mRightBottom = MapCellType::Space;
     else
-        info.rightBottom = GetCell(rowIndex + 1, columnIndex + 1);
+        info.mRightBottom = GetCell(rowIndex + 1, columnIndex + 1);
 
     return info;
 }
@@ -325,13 +318,13 @@ std::shared_ptr<Texture2D> Map::GenerateTexture(TextureRegion* textureRegion)
 			else if (cell == MapCellType::Wall)
 			{
 				MapNeighborsInfo neighbors = GetDirectNeighbors(i, j);
-				if ((neighbors.left == MapCellType::Empty) || (neighbors.left == MapCellType::Space))
+				if ((neighbors.mLeft.mCellType == MapCellType::Empty) || (neighbors.mLeft.mCellType == MapCellType::Space))
 					CutLeft(cellRegion, mCellSizeQuarter); // cut left side
-				if ((neighbors.right == MapCellType::Empty) || (neighbors.right == MapCellType::Space))
+				if ((neighbors.mRight.mCellType == MapCellType::Empty) || (neighbors.mRight.mCellType == MapCellType::Space))
 					CutRight(cellRegion, mCellSizeQuarter); // cut right side
-				if ((neighbors.top == MapCellType::Empty) || (neighbors.top == MapCellType::Space))
+				if ((neighbors.mTop.mCellType == MapCellType::Empty) || (neighbors.mTop.mCellType == MapCellType::Space))
 					CutTop(cellRegion, mCellSizeQuarter); // cut top side
-				if ((neighbors.bottom == MapCellType::Empty) || (neighbors.bottom == MapCellType::Space))
+				if ((neighbors.mBottom.mCellType == MapCellType::Empty) || (neighbors.mBottom.mCellType == MapCellType::Space))
 					CutBottom(cellRegion, mCellSizeQuarter); // cut bottom side
 			}
 
@@ -385,43 +378,43 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 			SpriteRegion cellRegion(j * mCellSize, i * mCellSize, mCellSize, mCellSize);
 			FullMapNeighborsInfo neighbors = GetFullNeighbors(i, j);
 
-			if (neighbors.leftTop == MapCellType::Empty &&
-				neighbors.directInfo.left == MapCellType::Wall &&
-				neighbors.directInfo.top == MapCellType::Wall)
+			if (neighbors.mLeftTop == MapCellType::Empty &&
+				neighbors.mDirectInfo.mLeft.mCellType == MapCellType::Wall &&
+				neighbors.mDirectInfo.mTop.mCellType == MapCellType::Wall)
 			{
 				SpriteRegion artifactRegion(cellRegion.GetPosition(), mCellSizeQuarter, mCellSizeQuarter);
-				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.leftTop));
+				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.mLeftTop));
 			}
 
-			if (neighbors.rightTop == MapCellType::Empty &&
-				neighbors.directInfo.right == MapCellType::Wall &&
-				neighbors.directInfo.top == MapCellType::Wall)
+			if (neighbors.mRightTop == MapCellType::Empty &&
+				neighbors.mDirectInfo.mRight.mCellType == MapCellType::Wall &&
+				neighbors.mDirectInfo.mTop.mCellType == MapCellType::Wall)
 			{
 				Position pos = cellRegion.GetRightTopPos();
 				pos.SetX(pos.GetX() - mCellSizeQuarter);
 				SpriteRegion artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);
-				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.rightTop));
+				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.mRightTop));
 			}
 
-			if (neighbors.leftBottom == MapCellType::Empty &&
-				neighbors.directInfo.left == MapCellType::Wall &&
-				neighbors.directInfo.bottom == MapCellType::Wall)
+			if (neighbors.mLeftBottom == MapCellType::Empty &&
+				neighbors.mDirectInfo.mLeft.mCellType == MapCellType::Wall &&
+				neighbors.mDirectInfo.mBottom.mCellType == MapCellType::Wall)
 			{
 				Position pos = cellRegion.GetLeftBottomPos();
 				pos.SetY(pos.GetY() - mCellSizeQuarter);
 				SpriteRegion artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);
-				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.leftBottom));
+				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.mLeftBottom));
 			}
 
-			if (neighbors.rightBottom == MapCellType::Empty &&
-				neighbors.directInfo.right == MapCellType::Wall &&
-				neighbors.directInfo.bottom == MapCellType::Wall)
+			if (neighbors.mRightBottom == MapCellType::Empty &&
+				neighbors.mDirectInfo.mRight.mCellType == MapCellType::Wall &&
+				neighbors.mDirectInfo.mBottom.mCellType == MapCellType::Wall)
 			{
 				Position pos = cellRegion.GetRightBottomPos();
 				pos.SetX(pos.GetX() - mCellSizeQuarter);
 				pos.SetY(pos.GetY() - mCellSizeQuarter);
 				SpriteRegion artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);
-				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.rightBottom));
+				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.mRightBottom));
 			}
 		}
 	}

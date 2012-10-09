@@ -50,7 +50,7 @@ public:
         return mActor;
     }
 
-private:
+protected:
 
     GhostState mState;
     std::shared_ptr<Actor>  mActor;

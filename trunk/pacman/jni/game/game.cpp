@@ -6,11 +6,16 @@
 #include "asset_manager.h"
 #include "scene_manager.h"
 #include "input_manager.h"
+#include "pacman_controller.h"
+#include "ai_controller.h"
+#include "shared_data_manager.h"
+#include "map.h"
+#include "dots_grid.h"
+#include "scheduler.h"
 #include "loader.h"
 #include "actor.h"
 #include "scene_node.h"
 #include "spritesheet.h"
-#include "boost/any.hpp"
 
 static std::shared_ptr<Pacman::Game> gGame = nullptr;
 
@@ -21,6 +26,11 @@ void PacmanSetEngineListener(Pacman::Engine& engine)
 }
 
 namespace Pacman {
+
+Game& GetGame()
+{
+    return *gGame;
+}
 
 static FORCEINLINE Size CalcCellSize(const AssetManager& assetManager)
 {
@@ -33,25 +43,12 @@ static FORCEINLINE Size CalcActorSize(const Size cellSize)
     return cellSize + (cellSize / 2);
 }
 
-static CellIndexArray GetPacmanCellsIndices(SchedulerContext& context, const std::shared_ptr<Map>& map,
-                                            const std::shared_ptr<Actor>& pacman)
-{
-    static const std::string kPacmanCellsIndicesName = "pacman_cells_indices";
-    const boost::any cellsIndicesValue = context.GetValue(kPacmanCellsIndicesName);
-    if (!cellsIndicesValue.empty())
-        return boost::any_cast<CellIndexArray>(cellsIndicesValue);
-
-    const CellIndexArray pacmanCellsIndices = map->FindCells(pacman->GetRegion());
-    context.SetValue(kPacmanCellsIndicesName, pacmanCellsIndices);
-    return pacmanCellsIndices;
-}
-
 void Game::OnStart(Engine& engine)
 {
-    GameLoader loader;
+    mLoader = std::unique_ptr<GameLoader>(new GameLoader());
     mScheduler = std::unique_ptr<Scheduler>(new Scheduler());
+    mSharedDataManager = std::unique_ptr<SharedDataManager>(new SharedDataManager());
 
-    LogI("LOAD!");
     AssetManager& assetManager = engine.GetAssetManager();
     SceneManager& sceneManager = engine.GetSceneManager();
     InputManager& inputManager = engine.GetInputManager();
@@ -60,36 +57,38 @@ void Game::OnStart(Engine& engine)
     const Size actorSize = CalcActorSize(cellSize);
     inputManager.SetListener(gGame);
 
-    std::shared_ptr<Map> map = loader.LoadMap("map.json", cellSize);
-    map->AttachToScene(sceneManager);
+    mMap = mLoader->LoadMap("map.json", cellSize);
+    mMap->AttachToScene(sceneManager);
 
     std::shared_ptr<SpriteSheet> spriteSheet = assetManager.LoadSpriteSheet("spritesheet1.json");
 
-    std::shared_ptr<DotsGrid> dots = loader.MakeDotsGrid(map, spriteSheet);
-    dots->AttachToScene(sceneManager);
+    mDotsGrid = mLoader->MakeDotsGrid(spriteSheet);
+    mDotsGrid->AttachToScene(sceneManager);
 
-    mPacmanController = std::make_shared<PacmanController>(loader, actorSize, map, spriteSheet);
-    mAIController = std::make_shared<AIController>(loader, actorSize, map, spriteSheet);
+    mPacmanController = std::unique_ptr<PacmanController>(new PacmanController(actorSize, spriteSheet));
+    mAIController = std::unique_ptr<AIController>(new AIController(actorSize, spriteSheet));
 
     mPacmanController->GetActor()->AttachToScene(sceneManager);
-    for (size_t i = 0; i < AIController::kGhostsCount; i++)
+    for (size_t i = 0; i < kGhostsCount; i++)
     {
         mAIController->GetActor(i)->AttachToScene(sceneManager);
     }
 
-    InitActionsAndTriggers(map, dots);
+    InitActionsAndTriggers();
 }
 
 void Game::OnStop(Engine& engine)
 {
-    LogI("UNLOAD!");
     engine.SetListener(nullptr);
     gGame = nullptr;
 }
 
 void Game::OnUpdate(Engine& engine, const uint64_t dt)
 {
+    mPacmanController->Update(dt);
+    mAIController->Update(dt);
     mScheduler->Update(dt);
+    mSharedDataManager->Reset();
 }
 
 void Game::OnGesture(const GestureType gestureType)
@@ -121,74 +120,58 @@ void Game::OnGesture(const GestureType gestureType)
     }
 }
 
-void Game::InitActionsAndTriggers(const std::shared_ptr<Map>& map, const std::shared_ptr<DotsGrid>& dots)
+void Game::InitActionsAndTriggers()
 {
-    const CellIndex leftTunnelExit = map->GetLeftTunnelExit();
-    const CellIndex rightTunnelExit = map->GetRightTunnelExit();
+    const CellIndex leftTunnelExit = mMap->GetLeftTunnelExit();
+    const CellIndex rightTunnelExit = mMap->GetRightTunnelExit();
  
     const std::shared_ptr<Actor> pacman = mPacmanController->GetActor();
 
-    // create controllers update action
-    auto ctrlsUpdateActionFunc = [mPacmanController, mAIController](SchedulerContext& context) -> ActionResult
-    {
-        const boost::any dtAny = context.GetValue("dt");
-        const uint64_t dt = boost::any_cast<uint64_t>(dtAny);
-        mPacmanController->Update(dt);
-        mAIController->Update(dt);
-        return ActionResult::None;
-    };
-
     // create dots eating action
-    auto eatAction = [pacman, map, dots](SchedulerContext& context) -> ActionResult
+    auto eatAction = []() -> ActionResult
     {
-        const CellIndexArray pacmanCellsIndices = GetPacmanCellsIndices(context, map, pacman);
-        if (pacmanCellsIndices.size() == 1) // eat if pacman stays on one cell only
-           dots->HideDot(pacmanCellsIndices[0]);
+        DotsGrid& dotsGrid = GetGame().GetDotsGrid();
+        const CellIndexArray pacmanCells = GetGame().GetSharedDataManager().GetPacmanCells();
+        if (pacmanCells.size() == 1) // eat if pacman stays on one cell only
+           dotsGrid.HideDot(pacmanCells[0]);
         return ActionResult::None;
     };
  
-    std::shared_ptr<Action> ctrlsUpdateAction = std::make_shared<Action>(ctrlsUpdateActionFunc);
-    std::shared_ptr<Action> pacmanEatAction = std::make_shared<Action>(eatAction);
- 
-    // middle tunnels link triggers
+    // middle tunnels link actions
     // left
-    auto leftCondition = [pacman, map, leftTunnelExit](SchedulerContext& context) -> bool
+    auto leftAction = [leftTunnelExit, rightTunnelExit]() -> ActionResult
     {
-        const CellIndexArray pacmanCellsIndices = GetPacmanCellsIndices(context, map, pacman);
-        if (pacmanCellsIndices.size() == 1) // move if pacman stays on the one cell only
-           return (pacmanCellsIndices[0] == leftTunnelExit) && (pacman->GetDirection() == MoveDirection::Left);
-        return false;
-    };
- 
-    auto leftAction = [rightTunnelExit, mPacmanController](SchedulerContext& context) -> ActionResult
-    {
-        mPacmanController->TranslateTo(rightTunnelExit);
+        const CellIndexArray pacmanCells = GetGame().GetSharedDataManager().GetPacmanCells();
+        if (pacmanCells.size() == 1) // move if pacman stays on the one cell only
+        {
+            const std::shared_ptr<Actor> pacman = GetGame().GetPacmanController().GetActor();
+            if ((pacmanCells[0] == leftTunnelExit) && (pacman->GetDirection() == MoveDirection::Left))
+                GetGame().GetPacmanController().TranslateTo(rightTunnelExit);
+        }
         return ActionResult::None;
     };
  
     // right
-    auto rightCondition = [pacman, map, rightTunnelExit](SchedulerContext& context) -> bool
+    auto rightAction = [leftTunnelExit, rightTunnelExit]() -> ActionResult
     {
-        const CellIndexArray pacmanCellsIndices = GetPacmanCellsIndices(context, map, pacman);
-        if (pacmanCellsIndices.size() == 1) // move if pacman stays on the one cell only
-           return (pacmanCellsIndices[0] == rightTunnelExit)  && (pacman->GetDirection() == MoveDirection::Right);
-        return false;
-    };
- 
-    auto rightAction = [leftTunnelExit, mPacmanController](SchedulerContext& context) -> ActionResult
-    {
-        mPacmanController->TranslateTo(leftTunnelExit);
+        const CellIndexArray pacmanCells = GetGame().GetSharedDataManager().GetPacmanCells();
+        if (pacmanCells.size() == 1) // move if pacman stays on the one cell only
+        {
+            const std::shared_ptr<Actor> pacman = GetGame().GetPacmanController().GetActor();
+            if ((pacmanCells[0] == rightTunnelExit)  && (pacman->GetDirection() == MoveDirection::Right))
+                GetGame().GetPacmanController().TranslateTo(leftTunnelExit);
+        }
         return ActionResult::None;
     };
  
-    std::shared_ptr<Trigger> leftTunnelTrigger = std::make_shared<Trigger>(leftCondition, leftAction);
-    std::shared_ptr<Trigger> rightTunnelTrigger = std::make_shared<Trigger>(rightCondition, rightAction);
+    std::shared_ptr<Action> pacmanEatAction = std::make_shared<Action>(eatAction);
+    std::shared_ptr<Action> leftTunnelAction = std::make_shared<Action>(leftAction);
+    std::shared_ptr<Action> rightTunnelAction = std::make_shared<Action>(rightAction);
  
     // register actions and triggers
-    mScheduler->RegisterAction(ctrlsUpdateAction, 0, true);
     mScheduler->RegisterAction(pacmanEatAction, 0, true);
-    mScheduler->RegisterTrigger(leftTunnelTrigger);
-    mScheduler->RegisterTrigger(rightTunnelTrigger);
+    mScheduler->RegisterAction(leftTunnelAction, 0, true);
+    mScheduler->RegisterAction(rightTunnelAction, 0, true);
 }
 
 } // Pacman namespace

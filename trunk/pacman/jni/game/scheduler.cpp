@@ -4,8 +4,6 @@ namespace Pacman {
 
 void Scheduler::Update(const uint64_t dt)
 {
-    mContext.SetValue("dt", dt);
-
     // update actions
     for (ActionData& actionData : mActions)
     {
@@ -13,18 +11,10 @@ void Scheduler::Update(const uint64_t dt)
         if (actionData.mElapsedInterval >= actionData.mDelay)
         {
             actionData.mElapsedInterval = 0;
-            const ActionResult result = (*(actionData.mAction))(mContext);
+            const ActionResult result = (*(actionData.mAction))();
             if ((!actionData.mRepeatable) || (result == ActionResult::Unregister))
                 UnregisterAction(actionData.mAction);
         }
-    }
-
-    // update triggers
-    for (std::shared_ptr<Trigger>& trigger : mTriggers)
-    {
-        const ActionResult result = trigger->Update(mContext);
-        if (result == ActionResult::Unregister)
-            UnregisterTrigger(trigger);
     }
 
     // cleanup context, actions and triggers
@@ -36,25 +26,13 @@ void Scheduler::RegisterAction(const std::shared_ptr<Action>& action, const uint
     mActions.push_back(ActionData { delay, 0, repeatable, action });
 }
 
-void Scheduler::RegisterTrigger(const std::shared_ptr<Trigger>& trigger)
-{
-    mTriggers.push_back(trigger);
-}
-
 void Scheduler::UnregisterAction(const std::shared_ptr<Action>& action)
 {
     mUnregisteredActions.push_back(action);
 }
 
-void Scheduler::UnregisterTrigger(const std::shared_ptr<Trigger>& trigger)
-{
-    mUnregisteredTriggers.push_back(trigger);
-}
-
 void Scheduler::Cleanup()
 {
-    mContext.Reset();
-
     for (const std::shared_ptr<Action>& action : mUnregisteredActions)
     {
         mActions.remove_if([&action](const ActionData& actionData)
@@ -63,13 +41,7 @@ void Scheduler::Cleanup()
         });    
     }
 
-    for (const std::shared_ptr<Trigger>& trigger : mUnregisteredTriggers)
-    {
-        mTriggers.remove(trigger);
-    }
-
     mUnregisteredActions.clear();
-    mUnregisteredTriggers.clear();
 }
 
 } // Pacman namespace
