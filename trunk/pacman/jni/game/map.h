@@ -57,15 +57,13 @@ public:
 
     MapCellType GetCell(const CellIndex& index) const;
 
-    // return cell index that contains position point,
-    // if position not in map region returns kCellIndexNPos
     CellIndex GetCellIndex(const Position& position) const;
 
     Position GetCellCenterPos(const CellIndex::value_t rowIndex, const CellIndex::value_t columnIndex) const;
 
     Position GetCellCenterPos(const CellIndex& cell) const;
 
-    // find cells where placed region
+    // find cells where region placed
     CellIndexArray FindCells(const SpriteRegion& region) const;
 
     MapNeighborsInfo GetDirectNeighbors(const CellIndex::value_t rowIndex, const CellIndex::value_t columnIndex) const;
@@ -75,6 +73,8 @@ public:
     FullMapNeighborsInfo GetFullNeighbors(const CellIndex::value_t rowIndex, const CellIndex::value_t columnIndex) const;
 
     FullMapNeighborsInfo GetFullNeighbors(const CellIndex& index) const;
+
+    Position GetPosition() const;
 
 	Size GetCellSize() const
 	{

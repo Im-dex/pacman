@@ -277,6 +277,11 @@ FullMapNeighborsInfo Map::GetFullNeighbors(const CellIndex& index) const
     return GetFullNeighbors(GetRow(index), GetColumn(index));
 }
 
+Position Map::GetPosition() const
+{
+    return mRect.GetPosition();
+}
+
 std::shared_ptr<Sprite> Map::GenerateSprite()
 {
 	// lets generate!

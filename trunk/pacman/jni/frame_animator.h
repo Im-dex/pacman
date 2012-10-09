@@ -11,7 +11,7 @@ namespace Pacman {
 
 class Sprite;
 
-// TODO: try to use texture matrix
+// TODO: try to move this functionality to a shader
 class FrameAnimator : public IDrawable
 {
 public:
