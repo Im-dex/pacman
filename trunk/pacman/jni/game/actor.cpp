@@ -3,6 +3,8 @@
 #include <algorithm>
 
 #include "error.h"
+#include "common.h"
+#include "game.h"
 #include "actor_controller.h"
 #include "scene_node.h"
 #include "scene_manager.h"
@@ -17,85 +19,45 @@ static FORCEINLINE Position CalcActorPivotOffset(const Size size)
     return Position(sizeHalf, sizeHalf);
 }
 
-// if cells count greater than 1 select nearest cell for the current direction
-// (for example: if direction is left, select one of the most left placed cells)
-static CellIndex SelectNearestCell(const CellIndexArray& currentCellsIndices, const MoveDirection direction)
-{
-    CellIndex result = currentCellsIndices[0];
-
-    for (size_t i = 1; i < currentCellsIndices.size(); i++)
-    {
-        const CellIndex& cellIndex = currentCellsIndices[i];
-        switch (direction)
-        {
-        case MoveDirection::Left:
-            if (GetColumn(cellIndex) < GetColumn(result))
-                result = cellIndex;
-            break;
-        case MoveDirection::Right:
-            if (GetColumn(cellIndex) > GetColumn(result))
-                result = cellIndex;
-            break;
-        case MoveDirection::Up:
-            if (GetRow(cellIndex) < GetRow(result))
-                result = cellIndex;
-            break;
-        case MoveDirection::Down:
-            if (GetRow(cellIndex) > GetRow(result))
-                result = cellIndex;
-            break;
-        }
-    }
-
-    return result;
-}
-
-static FORCEINLINE CellIndex FindCellWithOffset(const CellIndex& currentCellIndex, const MoveDirection direction,
-                                                const CellIndex::value_t indexOffset)
+static FORCEINLINE Position CalcTargetPosition(const MoveDirection direction, const Position& current,
+                                               const Position& target)
 {
     switch (direction)
     {
     case MoveDirection::Left:
-        return currentCellIndex - CellIndex(0, indexOffset);
     case MoveDirection::Right:
-        return currentCellIndex + CellIndex(0, indexOffset);
+        return Position(target.GetX(), current.GetY());
     case MoveDirection::Up:
-        return currentCellIndex - CellIndex(indexOffset, 0);
     case MoveDirection::Down:
-        return currentCellIndex + CellIndex(indexOffset, 0);
+        return Position(current.GetX(), target.GetY());
     default:
-        return currentCellIndex;
+        return current;
     }
 }
 
-const FORCEINLINE MoveDirection GetBackDirection(const MoveDirection direction)
-{
-    switch (direction)
-    {
-    case MoveDirection::Left:
-        return MoveDirection::Right;
-    case MoveDirection::Right:
-        return MoveDirection::Left;
-    case MoveDirection::Up:
-        return MoveDirection::Down;
-    case MoveDirection::Down:
-        return MoveDirection::Up;
-    default:
-        return MoveDirection::None;
-    }
-}
+//static FORCEINLINE CellIndex FindCellWithOffset(const CellIndex& currentCellIndex, const MoveDirection direction,
+//                                                const CellIndex::value_t indexOffset)
+//{
+//    switch (direction)
+//    {
+//    case MoveDirection::Left:
+//        return currentCellIndex - CellIndex(0, indexOffset);
+//    case MoveDirection::Right:
+//        return currentCellIndex + CellIndex(0, indexOffset);
+//    case MoveDirection::Up:
+//        return currentCellIndex - CellIndex(indexOffset, 0);
+//    case MoveDirection::Down:
+//        return currentCellIndex + CellIndex(indexOffset, 0);
+//    default:
+//        return currentCellIndex;
+//    }
+//}
 
-const CellIndex::value_t Actor::kMax = 0;
-
-Actor::Actor(const Size size, const Speed speed, const Size cellSize,
-             const Position& startPosition, const MoveDirection startDirection,
-             const std::shared_ptr<IDrawable>& startDrawable,
-             const std::shared_ptr<Map>& map)
+Actor::Actor(const Size size, const Speed speed, const Position& startPosition,
+             const MoveDirection startDirection, const std::shared_ptr<IDrawable>& startDrawable)
      : mSize(size),
        mSpeed(speed),
-       mCellSize(cellSize),
        mPivotOffset(CalcActorPivotOffset(size)),
-       mMap(map),
        mMoveTarget(Position::kZero),
        mDirection(startDirection),
        mNode(std::make_shared<SceneNode>(startDrawable, startPosition, Rotation::kZero)),
@@ -115,6 +77,8 @@ void Actor::DetachFromScene(SceneManager& sceneManager) const
 
 void Actor::Update(const uint64_t dt, IActorController* controller)
 {
+    const Size cellSize = GetGame().GetMap().GetCellSize();
+
     if (mDirectionChanged)
     {
         if (controller != nullptr)
@@ -122,7 +86,7 @@ void Actor::Update(const uint64_t dt, IActorController* controller)
         mDirectionChanged = false;
     }
 
-    const float accurateOffset = ((static_cast<float>(dt) * 0.001f) * static_cast<float>(mSpeed)) * static_cast<float>(mCellSize);
+    const float accurateOffset = ((static_cast<float>(dt) * 0.001f) * static_cast<float>(mSpeed)) * static_cast<float>(cellSize);
     const PosOffset offset = static_cast<PosOffset>(accurateOffset);
 
     const Position currentPosition = GetCenterPos();
@@ -158,121 +122,134 @@ void Actor::Rotate(const Rotation& rotation)
     mNode->SetRotation(rotation, mPivotOffset);
 }
 
-void Actor::TranslateTo(const CellIndex& cell)
+void Actor::TranslateToCell(const CellIndex& cell)
 {
-    PACMAN_CHECK_ERROR(mMap->GetCell(cell) == MapCellType::Empty, ErrorCode::BadArgument);
-    mNode->Translate(mMap->GetCellCenterPos(cell) - mPivotOffset);
+    Map& map = GetGame().GetMap();
+    PACMAN_CHECK_ERROR(map.GetCell(cell) == MapCellType::Empty, ErrorCode::BadArgument);
+    mNode->Translate(map.GetCellCenterPos(cell) - mPivotOffset);
 }
 
-void Actor::Move(const MoveDirection direction, const CellIndex::value_t cellsCount, const bool hasCornering)
+void Actor::TranslateToPosition(const Position& position)
 {
-    const CellIndexArray currentCells = mMap->FindCells(GetRegion());
-    const CellIndex currentCell = SelectNearestCell(currentCells, direction);
-    const CellIndex targetCell = (cellsCount == kMax) ? FindMaxAvailableCell(currentCell, direction)
-                                                      : FindCellWithOffset(currentCell, direction, cellsCount);
+    mNode->Translate(position);
+}
 
-    PACMAN_CHECK_ERROR(mMap->GetCell(targetCell) == MapCellType::Empty, ErrorCode::BadArgument);
-    if (std::find(currentCells.begin(), currentCells.end(), targetCell) != currentCells.end())
-        return; // no way
-
-    // ONLY FOR PACMAN ACTOR!!!
-    // when pacman change move direction on a crossroads, move him to the current cell center.
-    // works only if pacman change direction to the perpendicular of current.
-    // ("cornering", see Dosier guide)
-    if (hasCornering && (mDirection != direction) && (GetBackDirection(mDirection) != direction))
-        TranslateTo(currentCell);
-
-    // calc next movement
-    const Position targetCellCenterPos = mMap->GetCellCenterPos(targetCell);
-    const Position currentCenterPos = GetCenterPos();
-    switch (direction)
+void Actor::Move(const MoveDirection direction, const Size wayLength)
+{
+    if (mDirection != direction)
     {
-    case MoveDirection::Left:
-        {
-            const Size distance = currentCenterPos.GetX() - targetCellCenterPos.GetX();
-            mMoveTarget = currentCenterPos - Position(distance, 0);
-            break;
-        }
-    case MoveDirection::Right:
-        {
-            const Size distance = targetCellCenterPos.GetX() - currentCenterPos.GetX();
-            mMoveTarget = currentCenterPos + Position(distance, 0);
-            break;
-        }
-    case MoveDirection::Up:
-        {
-            const Size distance = currentCenterPos.GetY() - targetCellCenterPos.GetY();
-            mMoveTarget = currentCenterPos - Position(0, distance);
-            break;
-        }
-    case MoveDirection::Down:
-        {
-            const Size distance = targetCellCenterPos.GetY() - currentCenterPos.GetY();
-            mMoveTarget = currentCenterPos + Position(0, distance);
-            break;
-        }
-    default:
-        mMoveTarget = currentCenterPos;
+        mDirection = direction;
+        mDirectionChanged = true;
     }
 
-    mDirection = direction;
-    mDirectionChanged = true;
+    const Position targetPosition = GetFuturePosition(mNode->GetPosition(), direction, wayLength);
+    mMoveTarget = CalcTargetPosition(direction, mNode->GetPosition() + mPivotOffset, targetPosition);
 }
 
-void Actor::SetDrawable(const std::shared_ptr<IDrawable>& drawable)
+void Actor::MoveTo(const MoveDirection direction, const CellIndex& cell)
 {
-    mNode->SetDrawable(drawable);
+    Map& map = GetGame().GetMap();
+    PACMAN_CHECK_ERROR(map.GetCell(cell) == MapCellType::Empty, ErrorCode::BadArgument);
+
+    if (mDirection != direction)
+    {
+        mDirection = direction;
+        mDirectionChanged = true;
+    }
+
+    const Position targetPosition = map.GetCellCenterPos(cell);
+    mMoveTarget = CalcTargetPosition(direction, mNode->GetPosition() + mPivotOffset, targetPosition);
 }
 
-CellIndex Actor::FindMaxAvailableCell(const CellIndex& currentCellIndex, const MoveDirection direction) const
+CellIndex Actor::FindMaxAvailableCell(const MoveDirection direction) const
 {
-    CellIndex cellIndex = currentCellIndex;
+    const CellIndexArray cells = GetGame().GetMap().FindCells(GetRegion());
+    CellIndex cellIndex = SelectNearestCell(cells, direction);
     bool canMove = true;
 
     while (canMove)
     {
-        const MapNeighborsInfo neighbors = mMap->GetDirectNeighbors(cellIndex);
-
-        switch (direction)
+        const MapNeighborsInfo neighbors = GetGame().GetMap().GetDirectNeighbors(cellIndex);
+        for (const Neighbor& neighbor : neighbors.mNeighbors)
         {
-        case MoveDirection::Left:
+            if (neighbor.mDirection != direction)
+                continue;
+
+            if ((neighbor.mCellType == MapCellType::Empty) ||
+                ((neighbor.mCellType == MapCellType::Door) && (neighbor.mDirection == MoveDirection::Up))) // door is passable from bottom to top
             {
-                if (neighbors.left == MapCellType::Empty)
-                    SetColumn(cellIndex, GetColumn(cellIndex) - 1);
-                else
-                    canMove = false;
-                break;
+                cellIndex = GetNext(cellIndex, neighbor.mDirection);
             }
-        case MoveDirection::Right:
+            else
             {
-                if (neighbors.right == MapCellType::Empty)
-                    SetColumn(cellIndex, GetColumn(cellIndex) + 1);
-                else
-                    canMove = false;
-                break;
+                canMove = false;
             }
-        case MoveDirection::Up:
-            {
-                if (neighbors.top == MapCellType::Empty)
-                    SetRow(cellIndex, GetRow(cellIndex) - 1);
-                else
-                    canMove = false;
-                break;
-            }
-        case MoveDirection::Down:
-            {
-                if (neighbors.bottom == MapCellType::Empty)
-                    SetRow(cellIndex, GetRow(cellIndex) + 1);
-                else
-                    canMove = false;
-                break;
-            }
-        default: // none
-            canMove = false;
+            break;
         }
     }
 
     return cellIndex;
+}
+
+//void Actor::Move(const MoveDirection direction, const CellIndex::value_t cellsCount, const bool hasCornering)
+//{
+//    Map& map = GetGame().GetMap();
+//    const CellIndexArray currentCells = map.FindCells(GetRegion());
+//    const CellIndex currentCell = SelectNearestCell(currentCells, direction);
+//    const CellIndex targetCell = (cellsCount == kMax) ? FindMaxAvailableCell(currentCell, direction)
+//                                                      : FindCellWithOffset(currentCell, direction, cellsCount);
+//
+//    PACMAN_CHECK_ERROR(map.GetCell(targetCell) == MapCellType::Empty, ErrorCode::BadArgument);
+//    if (std::find(currentCells.begin(), currentCells.end(), targetCell) != currentCells.end())
+//        return; // no way
+//
+//    // ONLY FOR PACMAN ACTOR!!!
+//    // when pacman change move direction on a crossroads, move him to the current cell center.
+//    // works only if pacman change direction to the perpendicular of current.
+//    // ("cornering", see Dosier guide)
+//    if (hasCornering && (mDirection != direction) && (GetBackDirection(mDirection) != direction))
+//        TranslateTo(currentCell);
+//
+//    // calc next movement
+//    const Position targetCellCenterPos = map.GetCellCenterPos(targetCell);
+//    const Position currentCenterPos = GetCenterPos();
+//    switch (direction)
+//    {
+//    case MoveDirection::Left:
+//        {
+//            const Size distance = currentCenterPos.GetX() - targetCellCenterPos.GetX();
+//            mMoveTarget = currentCenterPos - Position(distance, 0);
+//            break;
+//        }
+//    case MoveDirection::Right:
+//        {
+//            const Size distance = targetCellCenterPos.GetX() - currentCenterPos.GetX();
+//            mMoveTarget = currentCenterPos + Position(distance, 0);
+//            break;
+//        }
+//    case MoveDirection::Up:
+//        {
+//            const Size distance = currentCenterPos.GetY() - targetCellCenterPos.GetY();
+//            mMoveTarget = currentCenterPos - Position(0, distance);
+//            break;
+//        }
+//    case MoveDirection::Down:
+//        {
+//            const Size distance = targetCellCenterPos.GetY() - currentCenterPos.GetY();
+//            mMoveTarget = currentCenterPos + Position(0, distance);
+//            break;
+//        }
+//    default:
+//        mMoveTarget = currentCenterPos;
+//    }
+//
+//    mDirection = direction;
+//    mDirectionChanged = true;
+//}
+
+void Actor::SetDrawable(const std::shared_ptr<IDrawable>& drawable)
+{
+    mNode->SetDrawable(drawable);
 }
 
 } // Pacman namespace

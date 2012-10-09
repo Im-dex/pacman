@@ -5,6 +5,8 @@
 #include <limits>
 
 #include "error.h"
+#include "game.h"
+#include "map.h"
 #include "instanced_sprite.h"
 #include "spritesheet.h"
 #include "shader_program.h"
@@ -17,43 +19,37 @@ namespace Pacman {
 
 static const std::string kDotSpriteName = "dot";
 
-static FORCEINLINE CellIndex GetDotIndex(const size_t dotOrderIndex, const std::shared_ptr<Map>& map)
+static FORCEINLINE CellIndex GetDotIndex(const size_t dotOrderIndex)
 {
-    return CellIndex(dotOrderIndex / map->GetColumnsCount(), dotOrderIndex % map->GetColumnsCount());
+    Map& map = GetGame().GetMap();
+    return CellIndex(dotOrderIndex / map.GetColumnsCount(), dotOrderIndex % map.GetColumnsCount());
 }
 
-static FORCEINLINE Position GetDotPosition(const CellIndex& cellIndex, const Size dotSizeHalf, const std::shared_ptr<Map>& map)
+static FORCEINLINE Position GetDotPosition(const CellIndex& cellIndex, const Size dotSizeHalf)
 {
-    return map->GetCellCenterPos(cellIndex) - Position(dotSizeHalf, dotSizeHalf);
+    return GetGame().GetMap().GetCellCenterPos(cellIndex) - Position(dotSizeHalf, dotSizeHalf);
 }
 
-static FORCEINLINE CellIndex::value_t GetMapColumnsCount(const std::weak_ptr<Map>& mapPtr)
-{
-    const std::shared_ptr<Map> map = mapPtr.lock();
-    PACMAN_CHECK_ERROR(map != nullptr, ErrorCode::BadArgument);
-    return map->GetColumnsCount();
-}
-
-DotsGrid::DotsGrid(const std::vector<DotType>& dotsInfo, const std::weak_ptr<Map>& mapPtr, const std::weak_ptr<SpriteSheet>& spritesheetPtr)
+DotsGrid::DotsGrid(const std::vector<DotType>& dotsInfo, const std::weak_ptr<SpriteSheet>& spritesheetPtr)
         : mDotsInfo(dotsInfo),
-          mMapColumnsCount(GetMapColumnsCount(mapPtr)),
+          mMapColumnsCount(GetGame().GetMap().GetColumnsCount()),
           mHiddenDotsCounts(0)
 {
-    const std::shared_ptr<Map> map = mapPtr.lock();
     const std::shared_ptr<SpriteSheet> spritesheet = spritesheetPtr.lock();
-    PACMAN_CHECK_ERROR((map != nullptr) && (spritesheet != nullptr), ErrorCode::BadArgument);
+    PACMAN_CHECK_ERROR(spritesheet != nullptr, ErrorCode::BadArgument);
 
+    Map& map = GetGame().GetMap();
     AssetManager& assetManager = GetEngine().GetAssetManager();
 
-    const Size smallDotSize = map->GetCellSize() / 2;
-    const Size bigDotSize = map->GetCellSize();
+    const Size smallDotSize = map.GetCellSize() / 2;
+    const Size bigDotSize = map.GetCellSize();
     SpriteRegion smallRegion(0, 0, smallDotSize, smallDotSize);
     SpriteRegion bigRegion(0, 0, bigDotSize, bigDotSize);
 
     SpriteInfo info = spritesheet->GetSpriteInfo(kDotSpriteName);
     std::shared_ptr<ShaderProgram> shaderProgram = assetManager.LoadShaderProgram(info.mVertexShaderName, info.mFragmentShaderName);
 
-    DotsInstancesTuple instancesTuple = MakeInstances(map, smallDotSize, bigDotSize);
+    DotsInstancesTuple instancesTuple = MakeInstances(smallDotSize, bigDotSize);
     std::vector<Position>& smallDotsInstances = std::get<0>(instancesTuple);
     std::vector<Position>& bigDotsInstances = std::get<1>(instancesTuple);
 
@@ -102,7 +98,7 @@ void DotsGrid::HideDot(const CellIndex& cellIndex)
     }
 }
 
-DotsGrid::DotsInstancesTuple DotsGrid::MakeInstances(const std::shared_ptr<Map>& map, const Size smallDotSize, const Size bigDotSize)
+DotsGrid::DotsInstancesTuple DotsGrid::MakeInstances(const Size smallDotSize, const Size bigDotSize)
 {
     const Size smallDotSizeHalf = smallDotSize / 2;
     const Size bigDotSizeHalf = bigDotSize / 2;
@@ -115,10 +111,10 @@ DotsGrid::DotsInstancesTuple DotsGrid::MakeInstances(const std::shared_ptr<Map>&
         switch (mDotsInfo[i])
         {
         case DotType::Small:
-            AddDotInstance(i, smallDotSizeHalf, map, smallDotsInstances);
+            AddDotInstance(i, smallDotSizeHalf, smallDotsInstances);
             break;
         case DotType::Big:
-            AddDotInstance(i, bigDotSizeHalf, map, bigDotsInstances);
+            AddDotInstance(i, bigDotSizeHalf, bigDotsInstances);
             break;
         }
     }
@@ -129,11 +125,10 @@ DotsGrid::DotsInstancesTuple DotsGrid::MakeInstances(const std::shared_ptr<Map>&
     return std::make_tuple(smallDotsInstances, bigDotsInstances);
 }
 
-void DotsGrid::AddDotInstance(const size_t dotOrderIndex, const Size dotHalfSize, const std::shared_ptr<Map>& map,
-                              std::vector<Position>& instances)
+void DotsGrid::AddDotInstance(const size_t dotOrderIndex, const Size dotHalfSize, std::vector<Position>& instances)
 {
-    const CellIndex index = GetDotIndex(dotOrderIndex, map);
-    instances.push_back(GetDotPosition(index, dotHalfSize, map));
+    const CellIndex index = GetDotIndex(dotOrderIndex);
+    instances.push_back(GetDotPosition(index, dotHalfSize));
     mDotsIndexMap.insert(std::make_pair(index, instances.size() - 1));
 }
 

@@ -11,15 +11,13 @@ namespace Pacman {
 class Actor;
 class GameLoader;
 class SpriteSheet;
-class Map;
 class FrameAnimator;
 
 class PacmanController : public IActorController
 {
 public:
 
-    PacmanController(const GameLoader& loader, const Size actorSize, const std::shared_ptr<Map>& map,
-                     const std::weak_ptr<SpriteSheet>& spriteSheetPtr);
+    PacmanController(const Size actorSize, const std::weak_ptr<SpriteSheet>& spriteSheetPtr);
     PacmanController(const PacmanController&) = delete;
     ~PacmanController() = default;
 
@@ -41,6 +39,8 @@ public:
     virtual void OnTargetAchieved();
 
 private:
+
+    bool CheckPassability(const MoveDirection direction) const;
 
     std::shared_ptr<Actor>         mActor;
     std::shared_ptr<FrameAnimator> mActorAnimator;

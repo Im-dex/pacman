@@ -2,8 +2,11 @@
 
 #include "error.h"
 #include "math/math.h"
+#include "common.h"
+#include "game.h"
 #include "actor.h"
 #include "loader.h"
+#include "map.h"
 #include "spritesheet.h"
 #include "frame_animator.h"
 
@@ -50,12 +53,12 @@ static std::shared_ptr<FrameAnimator> MakeAnimator(const std::weak_ptr<SpriteShe
     return std::make_shared<FrameAnimator>(frames, kAnimationFrameDuration);
 }
 
-PacmanController::PacmanController(const GameLoader& loader, const Size actorSize, const std::shared_ptr<Map>& map,
-                                   const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
+PacmanController::PacmanController(const Size actorSize, const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
 {
     mActorAnimator = MakeAnimator(spriteSheetPtr, actorSize);
-    mActor = loader.LoadActor(kActorFileName, actorSize, mActorAnimator, map);
-    mActor->Move(mActor->GetDirection(), Actor::kMax, true);
+    mActor = GetGame().GetLoader().LoadActor(kActorFileName, actorSize, mActorAnimator);
+    ChangeDirection(mActor->GetDirection());
+    OnDirectionChanged(mActor->GetDirection());
 }
 
 void PacmanController::Update(const uint64_t dt)
@@ -66,12 +69,21 @@ void PacmanController::Update(const uint64_t dt)
 
 void PacmanController::ChangeDirection(const MoveDirection newDirection)
 {
-    mActor->Move(newDirection, Actor::kMax, true);
+    if (!CheckPassability(newDirection))
+        return;
+
+    // cornering (see Dosier guide)
+    const CellIndexArray actorCells = GetGame().GetMap().FindCells(mActor->GetRegion());
+    const CellIndex currentCell = SelectNearestCell(actorCells, newDirection);
+    mActor->TranslateToCell(currentCell);
+
+    const CellIndex targetCell = mActor->FindMaxAvailableCell(newDirection);
+    mActor->MoveTo(newDirection, targetCell);
 }
 
 void PacmanController::TranslateTo(const CellIndex cell)
 {
-    mActor->TranslateTo(cell);
+    mActor->TranslateToCell(cell);
     ChangeDirection(mActor->GetDirection());
 }
 
@@ -84,6 +96,15 @@ void PacmanController::OnDirectionChanged(const MoveDirection newDirection)
 void PacmanController::OnTargetAchieved()
 {
     mActorAnimator->Pause();
+}
+
+bool PacmanController::CheckPassability(const MoveDirection direction) const
+{
+    Map& map = GetGame().GetMap();
+    const CellIndexArray actorCells = map.FindCells(mActor->GetRegion());
+    const CellIndex nearestCell = SelectNearestCell(actorCells, direction);
+    const CellIndex nextCell = GetNext(nearestCell, direction);
+    return (map.GetCell(nearestCell) == MapCellType::Empty) && (map.GetCell(nextCell) == MapCellType::Empty);
 }
 
 } // Pacman namespace
