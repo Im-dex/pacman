@@ -142,8 +142,8 @@ void Actor::Move(const MoveDirection direction, const Size wayLength)
         mDirectionChanged = true;
     }
 
-    const Position targetPosition = GetFuturePosition(mNode->GetPosition(), direction, wayLength);
-    mMoveTarget = CalcTargetPosition(direction, mNode->GetPosition() + mPivotOffset, targetPosition);
+    const Position targetPosition = GetFuturePosition(GetCenterPos(), direction, wayLength);
+    mMoveTarget = CalcTargetPosition(direction, GetCenterPos(), targetPosition);
 }
 
 void Actor::MoveTo(const MoveDirection direction, const CellIndex& cell)
@@ -158,7 +158,7 @@ void Actor::MoveTo(const MoveDirection direction, const CellIndex& cell)
     }
 
     const Position targetPosition = map.GetCellCenterPos(cell);
-    mMoveTarget = CalcTargetPosition(direction, mNode->GetPosition() + mPivotOffset, targetPosition);
+    mMoveTarget = CalcTargetPosition(direction, GetCenterPos(), targetPosition);
 }
 
 CellIndex Actor::FindMaxAvailableCell(const MoveDirection direction) const

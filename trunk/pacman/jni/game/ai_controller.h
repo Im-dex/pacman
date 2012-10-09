@@ -60,6 +60,8 @@ private:
 
     void FindWayOnWaitState();
 
+    void FindWayOnLeaveHouse();
+
     void FindWayOnChaseState();
 
     void FindWayOnScatterState();

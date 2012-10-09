@@ -85,6 +85,9 @@ void AIController::OnTargetAchieved()
     case GhostState::Wait:
         FindWayOnWaitState();
         break;
+    case GhostState::LeaveHouse:
+        FindWayOnLeaveHouse();
+        break;
     case GhostState::Chase:
         FindWayOnChaseState();
         break;
@@ -114,6 +117,29 @@ void AIController::FindWayOnWaitState()
         const MoveDirection backDirection = GetBackDirection(direction);
         const CellIndex newTargetCell = actor->FindMaxAvailableCell(backDirection);
         actor->MoveTo(backDirection, newTargetCell);
+    }
+}
+
+void AIController::FindWayOnLeaveHouse()
+{
+    Map& map = GetGame().GetMap();
+    const std::shared_ptr<Ghost> ghost = mGhosts[mCurrentGhost];
+    const std::shared_ptr<Actor> actor = ghost->GetActor();
+
+    const Size mapCenterX = map.GetPosition().GetX() + ((map.GetColumnsCount() * map.GetCellSize()) / 2);
+    const Position actorCenterPos = actor->GetCenterPos();
+    if (actorCenterPos.GetX() != mapCenterX)
+    {
+        if (actorCenterPos.GetX() > mapCenterX)
+            actor->Move(MoveDirection::Left, actorCenterPos.GetX() - mapCenterX);
+        else
+            actor->Move(MoveDirection::Right, mapCenterX - actorCenterPos.GetX());
+    }
+    else
+    {
+        const CellIndex targetCell = actor->FindMaxAvailableCell(MoveDirection::Up);
+        actor->MoveTo(MoveDirection::Up, targetCell);
+        ghost->SetState(GhostState::Chase);
     }
 }
 
@@ -219,7 +245,7 @@ void AIController::SetupScheduler()
     {
         if (GetGame().GetDotsGrid().GetEatenDotsCount() >= 30)
         {
-            inky->SetState(GhostState::Chase);
+            inky->SetState(GhostState::LeaveHouse);
             return ActionResult::Unregister;
         }
 
@@ -234,7 +260,7 @@ void AIController::SetupScheduler()
 
         if ((static_cast<float>(dotsEaten) / static_cast<float>(dotsCount)) >= 0.33f)
         {
-            clyde->SetState(GhostState::Chase);
+            clyde->SetState(GhostState::LeaveHouse);
             return ActionResult::Unregister;
         }
 
