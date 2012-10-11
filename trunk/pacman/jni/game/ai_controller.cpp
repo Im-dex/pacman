@@ -348,12 +348,39 @@ void AIController::SetupScheduler()
         return ActionResult::None;
     };
 
+    auto disableScatter = [mGhosts]() -> ActionResult
+    {
+        for (const std::shared_ptr<Ghost>& ghost : mGhosts)
+        {
+            if (ghost->GetState() == GhostState::Scatter)
+                ghost->SetState(GhostState::Chase);
+        }
+        return ActionResult::None;
+    };
+
+    const std::shared_ptr<Action> disableScatterAction = std::make_shared<Action>(disableScatter);
+    const uint64_t scatterDuration = mAIInfo.mScatterDuration;
+
+    auto enableScatter = [mGhosts, disableScatterAction, scatterDuration]() -> ActionResult
+    {
+        for (const std::shared_ptr<Ghost>& ghost : mGhosts)
+        {
+            if (ghost->GetState() == GhostState::Chase)
+                ghost->SetState(GhostState::Scatter);
+        }       
+
+        GetGame().GetScheduler().RegisterAction(disableScatterAction, scatterDuration, false);
+        return ActionResult::None;
+    };
+
     Scheduler& scheduler = GetGame().GetScheduler();
     const std::shared_ptr<Action> inkyStartAction = std::make_shared<Action>(inkyStart);
     const std::shared_ptr<Action> clydeStartAction = std::make_shared<Action>(clydeStart);
+    const std::shared_ptr<Action> enableScatterAction = std::make_shared<Action>(enableScatter);
 
     scheduler.RegisterAction(inkyStartAction, 0, true);
     scheduler.RegisterAction(clydeStartAction, 0, true);
+    scheduler.RegisterAction(enableScatterAction, mAIInfo.mScatterInterval, true);
 
     Map& map = GetGame().GetMap();
     const CellIndex leftTunnelExit = map.GetLeftTunnelExit();
