@@ -7,6 +7,7 @@
 #include "actor.h"
 #include "error.h"
 #include "loader.h"
+#include "map.h"
 #include "pacman_controller.h"
 #include "ai_controller.h"
 #include "shared_data_manager.h"
@@ -91,7 +92,7 @@ public:
         return FindWithOffset(pacmanCell, pacman->GetDirection(), kOffset);
     }
 };
-
+//#include "log.h"
 class Inky : public Ghost
 {
 public:
@@ -115,20 +116,38 @@ public:
         static const CellIndex::value_t kOffset = 2;
 
         Game& game = GetGame();
+        Map& map = game.GetMap();
         const std::shared_ptr<Actor> pacman = game.GetPacmanController().GetActor();
         const std::shared_ptr<Actor> blinky = game.GetAIController().GetActor(GhostId::Blinky);
         const CellIndex pacmanCell = SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman->GetDirection());
         const CellIndex blinkyCell = SelectNearestCell(game.GetSharedDataManager().GetGhostCells(GhostId::Blinky), blinky->GetDirection());
         const CellIndex pacmanOffsetCell = FindWithOffset(pacmanCell, pacman->GetDirection(), kOffset);
+        
+        const CellIndex::value_t blinkyRow = GetRow(blinkyCell);
+        const CellIndex::value_t blinkyColumn = GetColumn(blinkyCell);
+        const CellIndex::value_t pacmanOffsetRow = GetRow(pacmanOffsetCell);
+        const CellIndex::value_t pacmanOffsetColumn = GetColumn(pacmanOffsetCell);
 
-        typedef Math::Vector2<SizeOffset> VectorT;
-        VectorT vector = VectorT(static_cast<SizeOffset>(blinkyCell.GetX()), static_cast<SizeOffset>(blinkyCell.GetY())) - 
-                         VectorT(static_cast<SizeOffset>(pacmanCell.GetX()), static_cast<SizeOffset>(pacmanCell.GetY()));
-        vector *= 2;
+        const CellIndex::value_t rowDiff = (std::max(blinkyRow, pacmanOffsetRow) - std::min(blinkyRow, pacmanOffsetRow)) * 2;
+        const CellIndex::value_t columnDiff = (std::max(blinkyColumn, pacmanOffsetColumn) - std::min(blinkyColumn, pacmanOffsetColumn)) * 2;
 
-        const CellIndex::value_t row = (vector.GetX() > 0) ? vector.GetX() : 0;
-        const CellIndex::value_t column = (vector.GetY() > 0) ? vector.GetY() : 0;
-        return CellIndex(row, column);
+        const CellIndex::value_t resultRow = CalcIndexValue(blinkyRow, pacmanOffsetRow, rowDiff);
+        const CellIndex::value_t resultColumn = CalcIndexValue(blinkyColumn, pacmanOffsetColumn, columnDiff);
+
+        //LogI("row: %u, col: %u", resultRow, resultColumn);
+        return CellIndex(resultRow, resultColumn);
+    }
+
+private:
+
+    CellIndex::value_t CalcIndexValue(const CellIndex::value_t blinkyValue, const CellIndex::value_t pacmanOffsetValue,
+                                      const CellIndex::value_t diff) const
+    {
+        if (blinkyValue >= pacmanOffsetValue)
+            return blinkyValue + diff;
+
+        // else
+        return (blinkyValue >= diff) ? (blinkyValue - diff) : 0;
     }
 };
 

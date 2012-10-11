@@ -108,14 +108,13 @@ void Actor::TranslateToCell(const CellIndex& cell)
 {
     Map& map = GetGame().GetMap();
     PACMAN_CHECK_ERROR(map.GetCell(cell) == MapCellType::Empty, ErrorCode::BadArgument);
-    mMoveTarget = map.GetCellCenterPos(cell) - mPivotOffset;
-    mNode->Translate(mMoveTarget);
+    TranslateToPosition(map.GetCellCenterPos(cell));
 }
 
 void Actor::TranslateToPosition(const Position& position)
 {
     mMoveTarget = position;
-    mNode->Translate(mMoveTarget);
+    mNode->Translate(mMoveTarget - mPivotOffset);
 }
 
 void Actor::Move(const MoveDirection direction, const Size wayLength)

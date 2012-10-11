@@ -23,6 +23,21 @@ namespace Pacman {
 
 static const CellIndex::value_t kWayLength = 1;
 
+static FORCEINLINE std::shared_ptr<IDrawable> GetDirectionDrawable(const Ghost& ghost)
+{
+    switch (ghost.GetActor()->GetDirection())
+    {
+    case MoveDirection::Left:
+        return ghost.GetLeftDrawable();
+    case MoveDirection::Right:
+        return ghost.GetRightDrawable();
+    case MoveDirection::Up:
+        return ghost.GetTopDrawable();
+    case MoveDirection::Down:
+        return ghost.GetBottomDrawable();
+    }
+}
+
 AIController::AIController(const Size actorSize, const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
             : mAIInfo(GetGame().GetLoader().LoadAIInfo("ai.json")),
               mCurrentGhost(kGhostsCount)
@@ -72,23 +87,7 @@ void AIController::OnDirectionChanged(const MoveDirection newDirection)
     if (ghost->GetState() == GhostState::Frightened)
         return;
 
-    switch (newDirection)
-    {
-    case MoveDirection::Left:
-        ghost->GetActor()->SetDrawable(ghost->GetLeftDrawable());
-        break;
-    case MoveDirection::Right:
-        ghost->GetActor()->SetDrawable(ghost->GetRightDrawable());
-        break;
-    case MoveDirection::Up:
-        ghost->GetActor()->SetDrawable(ghost->GetTopDrawable());
-        break;
-    case MoveDirection::Down:
-        ghost->GetActor()->SetDrawable(ghost->GetBottomDrawable());
-        break;
-    default:
-        break;
-    }
+    ghost->GetActor()->SetDrawable(GetDirectionDrawable(*ghost));
 }
 
 void AIController::OnTargetAchieved()
@@ -151,7 +150,10 @@ void AIController::DisableFrightenedState()
     for (const std::shared_ptr<Ghost>& ghost : mGhosts)
     {
         if (ghost->GetState() == GhostState::Frightened)
+        {
             ghost->SetState(GhostState::Chase);
+            ghost->GetActor()->SetDrawable(GetDirectionDrawable(*ghost));
+        }
     }
 }
 
@@ -368,7 +370,9 @@ void AIController::SetupScheduler()
             {
                 const std::shared_ptr<Actor> actor = GetGame().GetAIController().GetActor(ghostId);
                 if ((ghostCells[0] == leftTunnelExit) && (actor->GetDirection() == MoveDirection::Left))
+                {
                     actor->TranslateToCell(rightTunnelExit);
+                }
             }
             return ActionResult::None;
         };
@@ -380,7 +384,9 @@ void AIController::SetupScheduler()
             {
                 const std::shared_ptr<Actor> actor = GetGame().GetAIController().GetActor(ghostId);
                 if ((ghostCells[0] == rightTunnelExit) && (actor->GetDirection() == MoveDirection::Right))
+                {
                     actor->TranslateToCell(leftTunnelExit);
+                }
             }
             return ActionResult::None;
         };
