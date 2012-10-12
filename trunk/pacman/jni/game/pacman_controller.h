@@ -29,14 +29,18 @@ public:
 
     void TranslateTo(const CellIndex cell);
 
-    std::shared_ptr<Actor> GetActor() const
-    {
-        return mActor;
-    }
+    bool OnPacmanFail();
+
+    void ResetState();
 
     virtual void OnDirectionChanged(const MoveDirection newDirection);
 
     virtual void OnTargetAchieved();
+
+    std::shared_ptr<Actor> GetActor() const
+    {
+        return mActor;
+    }
 
 private:
 
@@ -44,6 +48,7 @@ private:
 
     std::shared_ptr<Actor>         mActor;
     std::shared_ptr<FrameAnimator> mActorAnimator;
+    size_t                         mLivesCount;
 };
 
 } // Pacman namespace

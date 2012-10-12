@@ -2,46 +2,81 @@
 
 namespace Pacman {
 
-void Scheduler::Update(const uint64_t dt)
+void Scheduler::UpdateEvents(const uint64_t dt)
 {
-    // update actions
-    for (ActionData& actionData : mActions)
+    for (EventData& eventData : mEvents)
     {
-        actionData.mElapsedInterval += dt;
-        if (actionData.mElapsedInterval >= actionData.mDelay)
+        eventData.mElapsedInterval += dt;
+        if (eventData.mElapsedInterval >= eventData.mDelay)
         {
-            actionData.mElapsedInterval = 0;
-            const ActionResult result = (*(actionData.mAction))();
-            if ((!actionData.mRepeatable) || (result == ActionResult::Unregister))
-                UnregisterAction(actionData.mAction);
+            eventData.mElapsedInterval = 0;
+            const ActionResult result = eventData.mAction();
+            if ((!eventData.mRepeatable) || (result == ActionResult::Unregister))
+                UnregisterEvent(eventData.mActionId);
         }
     }
 
-    // cleanup context, actions and triggers
-    Cleanup();
+    CleanupEvents();
 }
 
-void Scheduler::RegisterAction(const std::shared_ptr<Action>& action, const uint64_t delay, const bool repeatable)
+void Scheduler::UpdateTriggers()
 {
-    mActions.push_back(ActionData { delay, 0, repeatable, action });
-}
-
-void Scheduler::UnregisterAction(const std::shared_ptr<Action>& action)
-{
-    mUnregisteredActions.push_back(action);
-}
-
-void Scheduler::Cleanup()
-{
-    for (const std::shared_ptr<Action>& action : mUnregisteredActions)
+    for (TriggerData& triggerData : mTriggers)
     {
-        mActions.remove_if([&action](const ActionData& actionData)
+        const ActionResult result = triggerData.mAction();
+        if (result == ActionResult::Unregister)
+            UnregisterTrigger(triggerData.mActionId);
+    }
+
+    CleanupTriggers();
+}
+
+void Scheduler::RegisterEvent(const Action& action, const uint64_t delay, const bool repeatable)
+{
+    static uint64_t actionIdCounter = 0;
+    mEvents.push_back(EventData { delay, 0, actionIdCounter++, repeatable, action });
+}
+
+void Scheduler::RegisterTrigger(const Action& action)
+{
+    static uint64_t actionIdCounter = 0;
+    mTriggers.push_back(TriggerData { actionIdCounter++, action });
+}
+
+void Scheduler::UnregisterEvent(const uint64_t actionId)
+{
+    mUnregisteredEvents.push_back(actionId);
+}
+
+void Scheduler::UnregisterTrigger(const uint64_t actionId)
+{
+    mUnregisteredTriggers.push_back(actionId);
+}
+
+void Scheduler::CleanupEvents()
+{
+    for (const uint64_t actionId : mUnregisteredEvents)
+    {
+        mEvents.remove_if([actionId](const EventData& eventData)
         {
-            return actionData.mAction == action;
+            return eventData.mActionId == actionId;
         });    
     }
 
-    mUnregisteredActions.clear();
+    mUnregisteredEvents.clear();
+}
+
+void Scheduler::CleanupTriggers()
+{
+    for (const uint64_t actionId : mUnregisteredTriggers)
+    {
+        mTriggers.remove_if([actionId](const TriggerData& triggerData)
+        {
+            return triggerData.mActionId == actionId;
+        });    
+    }
+
+    mUnregisteredTriggers.clear();
 }
 
 } // Pacman namespace

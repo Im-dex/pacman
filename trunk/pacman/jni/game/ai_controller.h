@@ -8,6 +8,7 @@
 #include "base.h"
 #include "game_typedefs.h"
 #include "actor_controller.h"
+#include "utils.h"
 
 namespace Pacman {
 
@@ -50,17 +51,22 @@ public:
 
     void Update(const uint64_t dt);
 
-    std::shared_ptr<Actor> GetActor(const GhostId ghostId) const;
-
     CellIndex GetScatterTarget(const GhostId ghostid) const;
 
     void EnableFrightenedState();
 
     void DisableFrightenedState();
 
+    void ResetState();
+
     virtual void OnDirectionChanged(const MoveDirection newDirection);
 
     virtual void OnTargetAchieved();
+
+    Ghost& GetGhost(const GhostId ghostId) const
+    {
+        return *mGhosts[EnumCast(ghostId)];
+    }
 
 private:
 
@@ -96,6 +102,8 @@ private:
     MoveDirection SelectRandomDirection(const CellIndex& currentCell, const MoveDirection backDirection) const;
 
     CellIndex FindMoveTarget(const CellIndex& currentCell, const MoveDirection direction);
+
+    void SetupInkyClydeStartActions();
 
     void SetupScheduler();
 

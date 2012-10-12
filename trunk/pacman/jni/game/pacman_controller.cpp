@@ -9,11 +9,13 @@
 #include "map.h"
 #include "spritesheet.h"
 #include "frame_animator.h"
+#include "utils.h"
 
 namespace Pacman {
 
 static const std::string& kActorFileName = "pacman.json";
 static const uint64_t kAnimationFrameDuration = 55;
+static const size_t kLivesCount = 3;
 
 static FORCEINLINE Rotation GetDirectionRotation(const MoveDirection direction)
 {
@@ -54,11 +56,11 @@ static std::shared_ptr<FrameAnimator> MakeAnimator(const std::weak_ptr<SpriteShe
 }
 
 PacmanController::PacmanController(const Size actorSize, const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
+                : mLivesCount(kLivesCount)
 {
     mActorAnimator = MakeAnimator(spriteSheetPtr, actorSize);
     mActor = GetGame().GetLoader().LoadActor(kActorFileName, actorSize, mActorAnimator);
-    ChangeDirection(mActor->GetDirection());
-    OnDirectionChanged(mActor->GetDirection());
+    ResetState();
 }
 
 void PacmanController::Update(const uint64_t dt)
@@ -85,6 +87,21 @@ void PacmanController::TranslateTo(const CellIndex cell)
 {
     mActor->TranslateToCell(cell);
     ChangeDirection(mActor->GetDirection());
+}
+
+bool PacmanController::OnPacmanFail()
+{
+    const bool canContinue = --mLivesCount != 0;
+    if (canContinue)
+        GetGame().ShowMessage(MakeString(mLivesCount, " lives left"));
+    return canContinue;
+}
+
+void PacmanController::ResetState()
+{
+    mActor->TranslateToPosition(mActor->GetStartPosition());
+    ChangeDirection(mActor->GetStartDirection());
+    OnDirectionChanged(mActor->GetDirection());
 }
 
 void PacmanController::OnDirectionChanged(const MoveDirection newDirection)

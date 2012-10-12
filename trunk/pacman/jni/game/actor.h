@@ -55,6 +55,16 @@ public:
         return mDirection;
     }
 
+    Position GetStartPosition() const
+    {
+        return mStartPosition;
+    }
+
+    MoveDirection GetStartDirection() const
+    {
+        return mStartDirection;
+    }
+
 private:
 
     void DoMove(IActorController& controller, const PosOffset offset,
@@ -63,6 +73,8 @@ private:
     const Size                            mSize;
     const Speed                           mSpeed;
     const Position                        mPivotOffset;
+    const Position                        mStartPosition;
+    const MoveDirection                   mStartDirection;
     Position                              mMoveTarget;
     MoveDirection                         mDirection;
     std::shared_ptr<SceneNode>            mNode;

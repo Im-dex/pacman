@@ -32,6 +32,18 @@ public:
 
     virtual void OnGesture(const GestureType gestureType);
 
+    void ShowMessage(const std::string& message) const;
+
+    void Pause()
+    {
+        mPause = true;
+    }
+
+    void Resume()
+    {
+        mPause = false;
+    }
+
     GameLoader& GetLoader() const
     {
         return *mLoader;
@@ -71,6 +83,7 @@ private:
 
     void InitActionsAndTriggers();
 
+    bool                               mPause;
     std::unique_ptr<GameLoader>        mLoader;
     std::unique_ptr<Map>               mMap;
     std::unique_ptr<DotsGrid>          mDotsGrid;

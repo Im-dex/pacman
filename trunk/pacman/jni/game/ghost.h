@@ -17,6 +17,7 @@ public:
 
     Ghost(const std::shared_ptr<Actor>& actor, const Size size,
           const std::weak_ptr<SpriteSheet>& spriteSheetPtr,
+          const GhostState startState,
           const std::string& leftDrawableName, const std::string& rightDrawableName,
           const std::string& topDrawableName, const std::string& bottomDrawableName);
 
@@ -40,6 +41,11 @@ public:
         return mState;
     }
 
+    GhostState GetStartState() const
+    {
+        return mStartState;
+    }
+
     void SetState(const GhostState state)
     {
         mState = state;
@@ -52,7 +58,8 @@ public:
 
 protected:
 
-    GhostState mState;
+    const GhostState        mStartState;
+    GhostState              mState;
     std::shared_ptr<Actor>  mActor;
     std::shared_ptr<Sprite> mLeftSprite;
     std::shared_ptr<Sprite> mRightSprite;

@@ -117,4 +117,16 @@ void Engine::OnTouch(const int event, const float x, const float y)
 	mInputManager->PushInfo(info);
 }
 
+void Engine::ShowMessage(const std::string& message) const
+{
+    JNI::CallStaticVoidMethod("com/imdex/pacman/NativeLib", "showGameMessage", "(Ljava/lang/String;)V",
+                              JNI::MakeUTF8String(message.c_str()));
+}
+
+void Engine::ShowInfo(const std::string& message, const std::string& title, const bool terminate)
+{
+    JNI::CallStaticVoidMethod("com/imdex/pacman/NativeLib", "showInfoDialog", "(Ljava/lang/String;Ljava/lang/String;Z)V",
+                              JNI::MakeUTF8String(message.c_str()), JNI::MakeUTF8String(title.c_str()), terminate);
+}
+
 } // Pacman namespace
