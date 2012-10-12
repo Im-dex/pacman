@@ -47,7 +47,7 @@ static void showGameOverInfo(const bool loose)
 {
     GetEngine().ShowInfo("If you interested, contact me, please:\r\n"
                          "m@il: tsukanov.anton@gmail.com\r\n"
-                         "skype: im_dex", loose ? "You loooooooooose" : "You win!!!", true);
+                         "skype: im_dex", loose ? "You loooooooooose" : "You won!!!", true);
 }
 
 static bool PacmanGhostCollision(const GhostId ghostId)
@@ -242,12 +242,27 @@ void Game::InitActionsAndTriggers()
         }
         return ActionResult::None;
     };
+
+    // check how much dots eaten
+    const auto eatenDotsCountAction = []() -> ActionResult
+    {
+        Game& game = GetGame();
+        DotsGrid& dotsGrid = game.GetDotsGrid();
+        if (dotsGrid.GetEatenDotsCount() == dotsGrid.GetDotsCount())
+        {
+            game.Pause();
+            showGameOverInfo(false);
+        }
+
+        return ActionResult::None;
+    };
  
     // register actions and triggers
     mScheduler->RegisterTrigger(pacmanEatAction);
     mScheduler->RegisterTrigger(leftTunnelAction);
     mScheduler->RegisterTrigger(rightTunnelAction);
     mScheduler->RegisterTrigger(pacmanGhostCollisionAction);
+    mScheduler->RegisterTrigger(eatenDotsCountAction);
 }
 
 } // Pacman namespace
