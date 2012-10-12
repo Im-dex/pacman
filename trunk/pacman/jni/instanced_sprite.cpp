@@ -145,7 +145,7 @@ InstancedSprite::InstancedSprite(const SpriteRegion& region, const std::shared_p
 
 void InstancedSprite::EraseInstance(const size_t index)
 {
-    PACMAN_CHECK_ERROR((index < mInstancesCount) && mInstanceEraseEnabled, ErrorCode::BadArgument);
+    PACMAN_CHECK_ERROR((index < mInstancesCount) && mInstanceEraseEnabled);
     std::vector<uint16_t>& indexData = mVertexBuffer->LockIndexData();
 
     // calc removed size before current index
@@ -190,7 +190,7 @@ bool InstancedSprite::HasAlphaBlend() const
 void InstancedSprite::InitByColor(const SpriteRegion& region, const Color leftTop, const Color rightTop, 
 					         	  const Color leftBottom, const Color rightBottom, const std::vector<Position>& instances)
 {
-    PACMAN_CHECK_ERROR(instances.size() > 0, ErrorCode::BadArgument);
+    PACMAN_CHECK_ERROR(instances.size() > 0);
 
     std::vector<ColorVertex> vertices;
     std::vector<uint16_t> indices;
@@ -199,8 +199,8 @@ void InstancedSprite::InitByColor(const SpriteRegion& region, const Color leftTo
     indices.reserve(kSpriteIndexCount * instances.size());
     FillVertexData(region, instances, vertices, indices);
 
-    PACMAN_CHECK_ERROR(vertices.size() / instances.size() == kSpriteVertexCount, ErrorCode::InvalidState);
-    PACMAN_CHECK_ERROR(indices.size() / instances.size() == kSpriteIndexCount, ErrorCode::InvalidState);
+    PACMAN_CHECK_ERROR(vertices.size() / instances.size() == kSpriteVertexCount);
+    PACMAN_CHECK_ERROR(indices.size() / instances.size() == kSpriteIndexCount);
 
     for (size_t i = 0; i < instances.size(); i++)
     {
@@ -216,7 +216,7 @@ void InstancedSprite::InitByColor(const SpriteRegion& region, const Color leftTo
 
 void InstancedSprite::InitByTexture(const SpriteRegion& region, const TextureRegion& textureRegion, const std::vector<Position>& instances)
 {
-    PACMAN_CHECK_ERROR(instances.size() > 0, ErrorCode::BadArgument);
+    PACMAN_CHECK_ERROR(instances.size() > 0);
 
     std::vector<TextureVertex> vertices;
     std::vector<uint16_t> indices;
@@ -225,8 +225,8 @@ void InstancedSprite::InitByTexture(const SpriteRegion& region, const TextureReg
     indices.reserve(kSpriteIndexCount * instances.size());
     FillVertexData(region, instances, vertices, indices);
 
-    PACMAN_CHECK_ERROR(vertices.size() / instances.size() == kSpriteVertexCount, ErrorCode::InvalidState);
-    PACMAN_CHECK_ERROR(indices.size() / instances.size() == kSpriteIndexCount, ErrorCode::InvalidState);
+    PACMAN_CHECK_ERROR(vertices.size() / instances.size() == kSpriteVertexCount);
+    PACMAN_CHECK_ERROR(indices.size() / instances.size() == kSpriteIndexCount);
 
 	for (size_t i = 0; i < instances.size(); i++)
     {

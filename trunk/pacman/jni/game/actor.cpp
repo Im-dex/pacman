@@ -119,7 +119,7 @@ void Actor::Rotate(const Rotation& rotation)
 void Actor::TranslateToCell(const CellIndex& cell)
 {
     Map& map = GetGame().GetMap();
-    PACMAN_CHECK_ERROR(map.GetCell(cell) == MapCellType::Empty, ErrorCode::BadArgument);
+    PACMAN_CHECK_ERROR(map.GetCell(cell) == MapCellType::Empty);
     TranslateToPosition(map.GetCellCenterPos(cell));
 }
 
@@ -144,7 +144,7 @@ void Actor::Move(const MoveDirection direction, const Size wayLength)
 void Actor::MoveTo(const MoveDirection direction, const CellIndex& cell)
 {
     Map& map = GetGame().GetMap();
-    PACMAN_CHECK_ERROR(map.GetCell(cell) == MapCellType::Empty, ErrorCode::BadArgument);
+    PACMAN_CHECK_ERROR(map.GetCell(cell) == MapCellType::Empty);
 
     if (mDirection != direction)
     {

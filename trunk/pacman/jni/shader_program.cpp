@@ -14,7 +14,7 @@ ShaderProgram::ShaderProgram(const std::string& vertexShaderSource, const std::s
 {
 	mProgramHandle = glCreateProgram();
 	PACMAN_CHECK_GL_ERROR();
-	PACMAN_CHECK_ERROR(mProgramHandle != 0, ErrorCode::CreateShaderProgram);
+	PACMAN_CHECK_ERROR(mProgramHandle != 0);
 }
 
 ShaderProgram::~ShaderProgram()
@@ -63,11 +63,11 @@ void ShaderProgram::Link()
 	    {
 	    	std::unique_ptr<char[]> buf(new char[infoLength]);
 	        glGetProgramInfoLog(mProgramHandle, infoLength, nullptr, buf.get());
-	        PACMAN_CHECK_ERROR2(false, ErrorCode::LinkShaderProgram, buf.get());
+	        PACMAN_CHECK_ERROR2(false, buf.get());
 	    }
 	    else
 	    {
-	    	PACMAN_CHECK_ERROR(false, ErrorCode::LinkShaderProgram);
+	    	PACMAN_CHECK_ERROR(false);
 	    }
 	}
 
@@ -187,9 +187,9 @@ GLint ShaderProgram::GetLocation(const std::string& name, const bool attribute) 
 		GLint handle = attribute ? glGetAttribLocation(mProgramHandle, name.c_str())
 								 : glGetUniformLocation(mProgramHandle, name.c_str());
 		PACMAN_CHECK_GL_ERROR();
-		PACMAN_CHECK_ERROR2(handle != -1, ErrorCode::ShaderLocationSearch, name.c_str());
+		PACMAN_CHECK_ERROR2(handle != -1, name.c_str());
 		auto result = mAttributeUniformHandles.insert(std::make_pair(name, handle));
-		PACMAN_CHECK_ERROR(result.second, ErrorCode::ContainerInsert);
+		PACMAN_CHECK_ERROR(result.second);
 		iter = result.first;
 	}
 

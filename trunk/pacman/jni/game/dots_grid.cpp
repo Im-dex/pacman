@@ -37,7 +37,7 @@ DotsGrid::DotsGrid(const std::vector<DotType>& dotsInfo, const std::weak_ptr<Spr
           mHiddenDotsCounts(0)
 {
     const std::shared_ptr<SpriteSheet> spritesheet = spritesheetPtr.lock();
-    PACMAN_CHECK_ERROR(spritesheet != nullptr, ErrorCode::BadArgument);
+    PACMAN_CHECK_ERROR(spritesheet != nullptr);
 
     Map& map = GetGame().GetMap();
     AssetManager& assetManager = GetEngine().GetAssetManager();

@@ -29,7 +29,7 @@ std::shared_ptr<Sprite> SpriteSheet::MakeSprite(const std::string& name, const S
 SpriteInfo SpriteSheet::GetSpriteInfo(const std::string& name) const
 {
     auto iter = mSpritesInfo.find(name);
-    PACMAN_CHECK_ERROR(iter != mSpritesInfo.end(), ErrorCode::BadArgument);
+    PACMAN_CHECK_ERROR(iter != mSpritesInfo.end());
     return iter->second;
 }
 

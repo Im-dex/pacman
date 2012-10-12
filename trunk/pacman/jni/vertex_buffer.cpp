@@ -19,7 +19,7 @@ static GLenum ConvertUsage(const BufferUsage usage)
 		return GL_STREAM_DRAW;
 	}
 
-	PACMAN_CHECK_ERROR(false, ErrorCode::BadArgument);
+	PACMAN_CHECK_ERROR(false);
 }
 
 //================================================================================================================================
@@ -83,7 +83,7 @@ VertexBuffer::~VertexBuffer()
 
 void VertexBuffer::Bind() const
 {
-    PACMAN_CHECK_ERROR((mAttributesCount > 0) && (mAttributesCount <= GL_MAX_VERTEX_ATTRIBS), ErrorCode::InvalidState);
+    PACMAN_CHECK_ERROR((mAttributesCount > 0) && (mAttributesCount <= GL_MAX_VERTEX_ATTRIBS));
 
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
 	PACMAN_CHECK_GL_ERROR();
@@ -118,21 +118,21 @@ void VertexBuffer::Draw() const
     if (mEmpty)
         return;
 
-    PACMAN_CHECK_ERROR2(!mVertexDataLocked && !mIndexDataLocked, ErrorCode::InvalidState, "one of the streams is locked now");
+    PACMAN_CHECK_ERROR2(!mVertexDataLocked && !mIndexDataLocked, "one of the streams is locked now");
 	glDrawElements(GL_TRIANGLES, mIndexCount, GL_UNSIGNED_SHORT, 0);
 	PACMAN_CHECK_GL_ERROR();
 }
 
 std::vector<byte_t>& VertexBuffer::LockVertexData()
 {
-    PACMAN_CHECK_ERROR2(mVertexCache.size() > 0, ErrorCode::InvalidState, "vertex data isn't dynamic");
+    PACMAN_CHECK_ERROR2(mVertexCache.size() > 0, "vertex data isn't dynamic");
     mVertexDataLocked = true;
     return mVertexCache;
 }
 
 void VertexBuffer::UnlockVertexData(const size_t newVertexCount)
 {
-    PACMAN_CHECK_ERROR2(mVertexDataLocked, ErrorCode::InvalidState, "vertex stream isn't locked");
+    PACMAN_CHECK_ERROR2(mVertexDataLocked, "vertex stream isn't locked");
 
     if (newVertexCount != 0)
     {
@@ -153,14 +153,14 @@ void VertexBuffer::UnlockVertexData(const size_t newVertexCount)
 
 std::vector<uint16_t>& VertexBuffer::LockIndexData()
 {
-    PACMAN_CHECK_ERROR2(mIndexCache.size() > 0, ErrorCode::InvalidState, "index data isn't dynamic");
+    PACMAN_CHECK_ERROR2(mIndexCache.size() > 0, "index data isn't dynamic");
     mIndexDataLocked = true;
     return mIndexCache;
 }
 
 void VertexBuffer::UnlockIndexData()
 {
-    PACMAN_CHECK_ERROR2(mIndexDataLocked, ErrorCode::InvalidState, "index stream isn't locked");
+    PACMAN_CHECK_ERROR2(mIndexDataLocked, "index stream isn't locked");
 
     if (mIndexCache.size() > 0)
     {
