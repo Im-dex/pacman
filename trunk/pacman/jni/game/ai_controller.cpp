@@ -159,6 +159,16 @@ void AIController::ResetState()
     SetupInkyClydeStartActions();
 }
 
+void AIController::OnGhostDead(const GhostId ghostId)
+{
+    Ghost& ghost = GetGhost(ghostId);
+    const std::shared_ptr<Actor> actor = ghost.GetActor();
+    ghost.SetState(GhostState::LeaveHouse);
+    actor->TranslateToPosition(mAIInfo.mRespawn);
+    const CellIndex startTargetCell = actor->FindMaxAvailableCell(MoveDirection::Up);
+    actor->MoveTo(MoveDirection::Up, startTargetCell);
+}
+
 // move up & down
 void AIController::FindWayOnWaitState()
 {
