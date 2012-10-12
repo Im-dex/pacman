@@ -63,7 +63,7 @@ PacmanController::PacmanController(const Size actorSize, const std::weak_ptr<Spr
 
 void PacmanController::Update(const uint64_t dt)
 {
-    mActor->Update(dt, this);
+    mActor->Update(dt, *this);
     mActorAnimator->Update(dt);
 }
 

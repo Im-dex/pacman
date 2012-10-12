@@ -7,9 +7,8 @@
 	},
 	"scatter_duration":5000,
 	"scatter_interval":40000,
-	"chase_direction_discard":[
-		[[11, 13], 2], // cell, direction
-		[[11, 14], 2],
+	"direction_discard":[
+		// cell, direction
 		[[11, 12], 3],
 		[[11, 15], 3],
 		[[23, 12], 3],

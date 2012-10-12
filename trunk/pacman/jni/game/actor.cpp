@@ -57,36 +57,46 @@ void Actor::DetachFromScene(SceneManager& sceneManager) const
     sceneManager.DetachNode(mNode);
 }
 
-void Actor::Update(const uint64_t dt, IActorController* controller)
+void Actor::Update(const uint64_t dt, IActorController& controller)
 {
     const Size cellSize = GetGame().GetMap().GetCellSize();
-
-    if (mDirectionChanged)
-    {
-        if (controller != nullptr)
-            controller->OnDirectionChanged(mDirection);
-        mDirectionChanged = false;
-    }
-
     const float accurateOffset = ((static_cast<float>(dt) * 0.001f) * static_cast<float>(mSpeed)) * static_cast<float>(cellSize);
     const PosOffset offset = static_cast<PosOffset>(accurateOffset);
+
+    DoMove(controller, offset, false);
+}
+
+void Actor::DoMove(IActorController& controller, const PosOffset offset,
+                   const bool recursive)
+{
+    if (mDirectionChanged)
+    {
+        controller.OnDirectionChanged(mDirection);
+        mDirectionChanged = false;
+    }
 
     const Position currentPosition = GetCenterPos();
     const PosOffset xDiff = static_cast<PosOffset>(mMoveTarget.GetX()) - currentPosition.GetX();
     const PosOffset yDiff = static_cast<PosOffset>(mMoveTarget.GetY()) - currentPosition.GetY();
+    const PosOffset absXDiff = std::abs(xDiff);
+    const PosOffset absYDiff = std::abs(yDiff);
 
-    const PosOffset xOffset = ((xDiff < 0) ? -1 : 1) * (std::min(offset, std::abs(xDiff)));
-    const PosOffset yOffset = ((yDiff < 0) ? -1 : 1) * (std::min(offset, std::abs(yDiff)));
+    const PosOffset xOffset = ((xDiff < 0) ? -1 : 1) * (std::min(offset, absXDiff));
+    const PosOffset yOffset = ((yDiff < 0) ? -1 : 1) * (std::min(offset, absYDiff));
 
-    if ((xOffset != 0) || (yOffset != 0))
+    // if not full move
+    if ((offset > absXDiff) && (offset > absYDiff))
     {
-        mNode->Move(xOffset, yOffset);
+        if (recursive)
+            return;
+
+        controller.OnTargetAchieved();
+        const PosOffset reduceValue = std::max(absXDiff, absYDiff);
+        DoMove(controller, offset - reduceValue, true);
+        return;
     }
-    else
-    {
-        if (controller != nullptr)
-            controller->OnTargetAchieved();
-    }
+
+    mNode->Move(xOffset, yOffset);
 }
 
 Position Actor::GetCenterPos() const
