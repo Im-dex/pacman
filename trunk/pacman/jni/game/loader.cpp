@@ -108,7 +108,7 @@ AIInfo GameLoader::LoadAIInfo(const std::string& fileName) const
     const std::string jsonData = assetManager.LoadTextFile(fileName);
     const JsonHelper::Value root(jsonData);
 
-    const JsonHelper::Value scatterTarget = root.GetValue<JsonHelper::Value>("scatter_target");
+    const JsonHelper::Value scatterTarget = root.GetValue<JsonHelper::Value>("scatterTarget");
     const JsonHelper::Array blinkyScatterTarget = scatterTarget.GetValue<JsonHelper::Array>("blinky");
     const JsonHelper::Array pinkyScatterTarget = scatterTarget.GetValue<JsonHelper::Array>("pinky");
     const JsonHelper::Array inkyScatterTarget = scatterTarget.GetValue<JsonHelper::Array>("inky");
@@ -119,7 +119,7 @@ AIInfo GameLoader::LoadAIInfo(const std::string& fileName) const
                         (clydeScatterTarget.GetSize() == 2));
 
     std::vector<DirectionDiscard> discardCells;
-    const JsonHelper::Array chaseDirectionDiscard = root.GetValue<JsonHelper::Array>("direction_discard");
+    const JsonHelper::Array chaseDirectionDiscard = root.GetValue<JsonHelper::Array>("directionDiscard");
     for (const JsonHelper::Value& value : chaseDirectionDiscard)
     {
         typedef EnumType<MoveDirection>::value MoveDirectionValueT;
@@ -134,6 +134,12 @@ AIInfo GameLoader::LoadAIInfo(const std::string& fileName) const
         });
     }
 
+    Map& map = GetGame().GetMap();
+    const JsonHelper::Array ghostRepawn = root.GetValue<JsonHelper::Array>("ghostRespawn");
+    PACMAN_CHECK_ERROR(ghostRepawn.GetSize() == 2);
+    const CellIndex respawnCell = CellIndex(ghostRepawn[0].GetAs<CellIndex::value_t>(),
+                                            ghostRepawn[1].GetAs<CellIndex::value_t>());
+
     return AIInfo
     {
         CellIndex(blinkyScatterTarget[0].GetAs<CellIndex::value_t>(),
@@ -144,10 +150,11 @@ AIInfo GameLoader::LoadAIInfo(const std::string& fileName) const
                   inkyScatterTarget[1].GetAs<CellIndex::value_t>()),
         CellIndex(clydeScatterTarget[0].GetAs<CellIndex::value_t>(),
                   clydeScatterTarget[1].GetAs<CellIndex::value_t>()),
-        root.GetValue<uint64_t>("scatter_duration"),
-        root.GetValue<uint64_t>("scatter_interval"),
+        root.GetValue<uint64_t>("scatterDuration"),
+        root.GetValue<uint64_t>("scatterInterval"),
         discardCells,
-        root.GetValue<uint64_t>("fright_duration")
+        root.GetValue<uint64_t>("frightDuration"),
+        map.GetCellCenterPos(respawnCell) - Position(map.GetCellSize() / 2, 0)
     };
 }
 

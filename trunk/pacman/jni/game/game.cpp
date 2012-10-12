@@ -65,6 +65,7 @@ static bool PacmanGhostCollision(const GhostId ghostId)
     if (ghost.GetState() == GhostState::Frightened)
     {
         game.Pause();
+        game.GetAIController().OnGhostDead(ghostId);
         game.GetScheduler().RegisterEvent(resumeEvent, kResumeInterval, false);
         return true;
     }

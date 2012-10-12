@@ -1,18 +1,19 @@
 {
-	"scatter_target":{
+	"scatterTarget":{
 		"blinky":[1, 1],
 		"pinky":[1, 26],
 		"inky":[29, 1],
 		"clyde":[29, 26]
 	},
-	"scatter_duration":3000,
-	"scatter_interval":50000,
-	"direction_discard":[
+	"scatterDuration":3000,
+	"scatterInterval":50000,
+	"directionDiscard":[
 		// cell, direction
 		[[11, 12], 3],
 		[[11, 15], 3],
 		[[23, 12], 3],
 		[[23, 15], 3]
 	],
-	"fright_duration":7000
+	"frightDuration":7000,
+	"ghostRespawn":[14, 14]
 }

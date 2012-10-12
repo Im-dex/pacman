@@ -37,6 +37,7 @@ struct AIInfo
     uint64_t                            mScatterInterval;
     std::vector<DirectionDiscard>       mDiscardCells;
     uint64_t                            mFrightDuration;
+    Position                            mRespawn;
 };
 
 class AIController : public IActorController
@@ -58,6 +59,8 @@ public:
     void DisableFrightenedState();
 
     void ResetState();
+
+    void OnGhostDead(const GhostId ghostId);
 
     virtual void OnDirectionChanged(const MoveDirection newDirection);
 
