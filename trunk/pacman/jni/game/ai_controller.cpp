@@ -254,11 +254,21 @@ MoveDirection AIController::SelectBestDirection(const CellIndex& currentCell, co
         return (targetPos - startPos).Length();
     };
 
+    const auto iter = std::find_if(mAIInfo.mDiscardCells.begin(), mAIInfo.mDiscardCells.end(), 
+                                   [&currentCell](const DirectionDiscard& directionDiscard) -> bool
+    {
+        return directionDiscard.mCell == currentCell;
+    });
+
+    const MoveDirection discardedDirection = (iter == mAIInfo.mDiscardCells.end()) ? MoveDirection::None
+                                                                                   : iter->mDirection;
+
     for (const Neighbor& neighbor : neighbors.mNeighbors)
     {
         if (((neighbor.mCellType == MapCellType::Empty) || 
             ((neighbor.mCellType == MapCellType::Door) && (neighbor.mDirection == MoveDirection::Up))) && 
-            (backDirection != neighbor.mDirection))
+            (backDirection != neighbor.mDirection) &&
+            ((discardedDirection == MoveDirection::None) || (discardedDirection != neighbor.mDirection)))
         {
             const CellIndex next = GetNext(currentCell, neighbor.mDirection);
             const float distance = findDistance(next);
@@ -270,6 +280,7 @@ MoveDirection AIController::SelectBestDirection(const CellIndex& currentCell, co
         }
     }
 
+    PACMAN_CHECK_ERROR(result != MoveDirection::None, ErrorCode::InvalidState);
     return result;
 }
 
