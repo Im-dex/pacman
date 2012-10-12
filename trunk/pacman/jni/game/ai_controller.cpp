@@ -67,7 +67,7 @@ void AIController::Update(const uint64_t dt)
     for (size_t i = 0; i < kGhostsCount; i++)
     {
         mCurrentGhost = i;
-        mGhosts[i]->GetActor()->Update(dt, this);
+        mGhosts[i]->GetActor()->Update(dt, *this);
     }
 }
 

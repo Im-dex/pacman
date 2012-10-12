@@ -23,7 +23,7 @@ class PacmanController;
 
 static const size_t kGhostsCount = 4;
 
-struct ChaseDirectionDiscard
+struct DirectionDiscard
 {
     CellIndex mCell;
     MoveDirection mDirection;
@@ -34,7 +34,7 @@ struct AIInfo
     std::array<CellIndex, kGhostsCount> mScatterTargets;
     uint64_t                            mScatterDuration;
     uint64_t                            mScatterInterval;
-    std::vector<ChaseDirectionDiscard>  mDiscardCells;
+    std::vector<DirectionDiscard>       mDiscardCells;
     uint64_t                            mFrightDuration;
 };
 

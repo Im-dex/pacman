@@ -25,7 +25,7 @@ Math::Matrix4f SceneNode::GetModelMatrix()
 
         mModelMatrix = Math::Matrix4f::MakeTranslation(posX + pivotOffsetX, posY + pivotOffsetY, 0.0f) * 
                                                        Math::Matrix4f::MakeRotationZ(mRotation.GetZ()) *
-                                                       Math::Matrix4f::MakeTranslation(-pivotOffsetX, -pivotOffsetY, 0.0f);           
+                                                       Math::Matrix4f::MakeTranslation(-pivotOffsetX, -pivotOffsetY, 0.0f); 
 
         mChanged = false;
     }

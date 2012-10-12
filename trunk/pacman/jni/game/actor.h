@@ -30,7 +30,7 @@ public:
 
     void DetachFromScene(SceneManager& sceneManager) const;
 
-    void Update(const uint64_t dt, IActorController* controller);
+    void Update(const uint64_t dt, IActorController& controller);
 
     Position GetCenterPos() const;
 
@@ -56,6 +56,9 @@ public:
     }
 
 private:
+
+    void DoMove(IActorController& controller, const PosOffset offset,
+                const bool recursive);
 
     const Size                            mSize;
     const Speed                           mSpeed;

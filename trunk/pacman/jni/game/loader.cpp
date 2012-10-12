@@ -118,8 +118,8 @@ AIInfo GameLoader::LoadAIInfo(const std::string& fileName) const
                         (inkyScatterTarget.GetSize() == 2) &&
                         (clydeScatterTarget.GetSize() == 2), ErrorCode::BadFormat);
 
-    std::vector<ChaseDirectionDiscard> discardCells;
-    const JsonHelper::Array chaseDirectionDiscard = root.GetValue<JsonHelper::Array>("chase_direction_discard");
+    std::vector<DirectionDiscard> discardCells;
+    const JsonHelper::Array chaseDirectionDiscard = root.GetValue<JsonHelper::Array>("direction_discard");
     for (const JsonHelper::Value& value : chaseDirectionDiscard)
     {
         typedef EnumType<MoveDirection>::value MoveDirectionValueT;
@@ -127,7 +127,7 @@ AIInfo GameLoader::LoadAIInfo(const std::string& fileName) const
         const JsonHelper::Array cell = tuple[0].GetAs<JsonHelper::Array>();
         const MoveDirectionValueT direction = tuple[1].GetAs<MoveDirectionValueT>();
 
-        discardCells.push_back(ChaseDirectionDiscard{
+        discardCells.push_back(DirectionDiscard{
             CellIndex(cell[0].GetAs<CellIndex::value_t>(),
                       cell[1].GetAs<CellIndex::value_t>()),
             MakeEnum<MoveDirection>(direction)
