@@ -2,14 +2,10 @@
 
 #include <memory>
 
+#include "game_forwdecl.h"
 #include "game_typedefs.h"
 
 namespace Pacman {
-
-class IDrawable;
-class Sprite;
-class SpriteSheet;
-class Actor;
 
 class Ghost
 {

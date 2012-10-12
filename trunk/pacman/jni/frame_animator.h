@@ -5,11 +5,10 @@
 #include <cstdint>
 
 #include "base.h"
+#include "engine_forwdecl.h"
 #include "drawable.h"
 
 namespace Pacman {
-
-class Sprite;
 
 // TODO: try to move this functionality to a shader
 class FrameAnimator : public IDrawable

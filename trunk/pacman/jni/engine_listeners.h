@@ -3,10 +3,9 @@
 #include <cstdint>
 
 #include "base.h"
+#include "engine_forwdecl.h"
 
 namespace Pacman {
-
-class Engine;
 
 class IEngineListener
 {

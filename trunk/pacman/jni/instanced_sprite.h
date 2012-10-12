@@ -5,16 +5,12 @@
 #include <vector>
 
 #include "base.h"
+#include "engine_forwdecl.h"
+#include "engine_typedefs.h"
 #include "drawable.h"
 #include "color.h"
-#include "engine_typedefs.h"
 
 namespace Pacman {
-
-class Texture2D;
-class ShaderProgram;
-class VertexBuffer;
-struct Vertex;
 
 class InstancedSprite : public IDrawable
 {

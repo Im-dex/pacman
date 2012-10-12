@@ -5,14 +5,11 @@
 #include <string>
 #include <array>
 
-#include "sprite.h"
+#include "game_forwdecl.h"
 #include "game_typedefs.h"
+#include "sprite.h"
 
 namespace Pacman {
-
-class SceneNode;
-class Texture2D;
-class SceneManager;
 
 struct MapNeighborsInfo
 {

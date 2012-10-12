@@ -4,14 +4,10 @@
 #include <memory>
 
 #include "base.h"
+#include "game_forwdecl.h"
 #include "game_typedefs.h"
 
 namespace Pacman {
-
-class Ghost;
-class GameLoader;
-class Map;
-class SpriteSheet;
 
 class GhostsFactory
 {

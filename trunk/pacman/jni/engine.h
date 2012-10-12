@@ -4,16 +4,10 @@
 #include <cstdint>
 
 #include "base.h"
+#include "engine_forwdecl.h"
 #include "engine_listeners.h"
 
 namespace Pacman {
-
-class AssetManager;
-class FontManager;
-class SceneManager;
-class Renderer;
-class InputManager;
-class Timer;
 
 class Engine
 {

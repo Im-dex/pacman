@@ -1,11 +1,6 @@
 #pragma once
 
 #include "base.h"
-
-namespace Pacman {
-
-class Engine;
-
-} // Pacman namespace
+#include "engine_forwdecl.h"
 
 void PacmanSetEngineListener(Pacman::Engine& engine);

@@ -2,17 +2,10 @@
 
 #include <memory>
 
+#include "game_forwdecl.h"
 #include "engine_listeners.h"
 
 namespace Pacman {
-
-class GameLoader;
-class Map;
-class DotsGrid;
-class Scheduler;
-class PacmanController;
-class AIController;
-class SharedDataManager;
 
 class Game : public IEngineListener, public IGestureListener
 {

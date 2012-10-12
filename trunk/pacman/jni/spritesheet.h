@@ -7,11 +7,10 @@
 #include <unordered_map>
 
 #include "base.h"
+#include "engine_forwdecl.h"
 #include "sprite.h"
 
 namespace Pacman {
-
-class Texture2D;
 
 struct SpriteInfo
 {

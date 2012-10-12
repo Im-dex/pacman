@@ -4,10 +4,9 @@
 #include <memory>
 
 #include "base.h"
+#include "engine_forwdecl.h"
 
 namespace Pacman{
-
-class SceneNode;
 
 class SceneManager
 {

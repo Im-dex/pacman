@@ -2,16 +2,11 @@
 
 #include <memory>
 
+#include "game_forwdecl.h"
 #include "engine_typedefs.h"
 #include "game_typedefs.h"
 
 namespace Pacman {
-
-class IActorController;
-class SceneNode;
-class IDrawable;
-class SceneManager;
-class Map;
 
 class Actor
 {
