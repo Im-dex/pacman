@@ -6,14 +6,9 @@
 #include <unordered_map>
 
 #include "base.h"
+#include "engine_forwdecl.h"
 
 namespace Pacman {
-
-class Texture2D;
-class ShaderProgram;
-class SpriteSheet;
-enum class TextureFiltering : uint8_t;
-enum class TextureRepeat;
 
 // TODO: add context lost support
 class AssetManager

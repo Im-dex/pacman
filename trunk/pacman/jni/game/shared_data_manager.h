@@ -2,12 +2,10 @@
 
 #include <memory>
 
+#include "game_forwdecl.h"
 #include "game_typedefs.h"
 
 namespace Pacman {
-
-class Actor;
-class SharedDataContext;
 
 class SharedDataManager
 {

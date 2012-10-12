@@ -5,15 +5,10 @@
 #include <unordered_map>
 #include <tuple>
 
+#include "game_forwdecl.h"
 #include "map.h"
 
 namespace Pacman {
-
-enum class DotType : uint8_t;
-class InstancedSprite;
-class SpriteSheet;
-class SceneManager;
-class SceneNode;
 
 template <typename T>
 struct CustomHash;

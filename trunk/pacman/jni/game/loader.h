@@ -4,17 +4,10 @@
 #include <string>
 #include <vector>
 
+#include "game_forwdecl.h"
 #include "game_typedefs.h"
 
 namespace Pacman {
-
-class Map;
-class SpriteSheet;
-class IDrawable;
-class DotsGrid;
-class Actor;
-class IActorListener;
-struct AIInfo;
 
 class GameLoader
 {

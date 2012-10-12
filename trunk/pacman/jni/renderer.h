@@ -3,14 +3,11 @@
 #include <memory>
 
 #include "base.h"
+#include "engine_forwdecl.h"
 #include "color.h"
 #include "math/matrix4.h"
 
 namespace Pacman {
-
-class IDrawable;
-class Texture2D;
-class ShaderProgram;
 
 class Renderer
 {

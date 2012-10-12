@@ -4,14 +4,10 @@
 #include <cstdint>
 
 #include "base.h"
+#include "game_forwdecl.h"
 #include "actor_controller.h"
 
 namespace Pacman {
-
-class Actor;
-class GameLoader;
-class SpriteSheet;
-class FrameAnimator;
 
 class PacmanController : public IActorController
 {
