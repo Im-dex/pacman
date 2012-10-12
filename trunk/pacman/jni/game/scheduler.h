@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <functional>
 #include <list>
-#include <memory>
 
 namespace Pacman {
 
@@ -25,29 +24,47 @@ public:
 
     Scheduler& operator= (const Scheduler&) = delete;
 
-    void Update(const uint64_t dt);
+    void UpdateEvents(const uint64_t dt);
 
-    void RegisterAction(const std::shared_ptr<Action>& action, const uint64_t delay, const bool repeatable);
+    void UpdateTriggers();
+
+    void RegisterEvent(const Action& action, const uint64_t delay, const bool repeatable);
+
+    void RegisterTrigger(const Action& action);
 
 private:
 
-    struct ActionData
+    struct EventData
     {
-        uint64_t                mDelay;
-        uint64_t                mElapsedInterval;
-        bool                    mRepeatable;
-        std::shared_ptr<Action> mAction;
+        uint64_t mDelay;
+        uint64_t mElapsedInterval;
+        uint64_t mActionId;
+        bool     mRepeatable;
+        Action   mAction;
     };
 
-    typedef std::list<ActionData> ActionDataList;
-    typedef std::list<std::shared_ptr<Action>>  ActionList;
+    struct TriggerData
+    {
+        uint64_t mActionId;
+        Action   mAction;
+    };
 
-    void UnregisterAction(const std::shared_ptr<Action>& action);
+    typedef std::list<EventData>   EventDataList;
+    typedef std::list<TriggerData> TriggerDataList;
+    typedef std::list<uint64_t>    UnregisteredActionList;
 
-    void Cleanup();
+    void UnregisterEvent(const uint64_t actionId);
 
-    ActionDataList mActions;
-    ActionList  mUnregisteredActions;
+    void UnregisterTrigger(const uint64_t actionId);
+
+    void CleanupEvents();
+
+    void CleanupTriggers();
+
+    EventDataList           mEvents;
+    TriggerDataList         mTriggers;
+    UnregisteredActionList  mUnregisteredEvents;
+    UnregisteredActionList  mUnregisteredTriggers;
 };
 
 } // Pacman namespace

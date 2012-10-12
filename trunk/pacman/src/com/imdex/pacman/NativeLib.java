@@ -83,7 +83,15 @@ public class NativeLib {
 	private static void hideLoadingDialog() {
 		mReporter.hideLoadingDialog();
 	}
+	
+	private static void showGameMessage(String mesage) {
+		mReporter.showToast(mesage);
+	}
 
+	private static void showInfoDialog(String message, String title, boolean terminate) {
+		mReporter.showInfoDialog(message, title, terminate);
+	}
+	
 	private static void terminateApplication() {
 		mReporter.terminateApplication("Internal error");
 	}

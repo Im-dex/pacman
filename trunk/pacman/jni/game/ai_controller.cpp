@@ -48,13 +48,7 @@ AIController::AIController(const Size actorSize, const std::weak_ptr<SpriteSheet
     mGhosts[EnumCast(GhostId::Inky)] = factory.CreateGhost(actorSize, spriteSheetPtr, GhostId::Inky);
     mGhosts[EnumCast(GhostId::Clyde)] = factory.CreateGhost(actorSize, spriteSheetPtr, GhostId::Clyde);
 
-    for (const std::shared_ptr<Ghost>& ghost : mGhosts)
-    {
-        const std::shared_ptr<Actor> actor = ghost->GetActor();
-        const CellIndex startTargetCell = actor->FindMaxAvailableCell(actor->GetDirection());
-        actor->MoveTo(actor->GetDirection(), startTargetCell);
-    }
-
+    ResetState();
     SetupScheduler();
 
     const std::shared_ptr<SpriteSheet> spriteSheet = spriteSheetPtr.lock();
@@ -69,11 +63,6 @@ void AIController::Update(const uint64_t dt)
         mCurrentGhost = i;
         mGhosts[i]->GetActor()->Update(dt, *this);
     }
-}
-
-std::shared_ptr<Actor> AIController::GetActor(const GhostId ghostId) const
-{
-    return mGhosts[EnumCast(ghostId)]->GetActor();
 }
 
 CellIndex AIController::GetScatterTarget(const GhostId ghostid) const
@@ -135,14 +124,13 @@ void AIController::EnableFrightenedState()
         actor->MoveTo(backDirection, newTarget);
     }
 
-    const auto restore = []() -> ActionResult
+    const auto restoreAction = []() -> ActionResult
     {
         GetGame().GetAIController().DisableFrightenedState();
         return ActionResult::Unregister;
     };
 
-    const std::shared_ptr<Action> restoreAction = std::make_shared<Action>(restore);
-    GetGame().GetScheduler().RegisterAction(restoreAction, mAIInfo.mFrightDuration, false);
+    GetGame().GetScheduler().RegisterEvent(restoreAction, mAIInfo.mFrightDuration, false);
 }
 
 void AIController::DisableFrightenedState()
@@ -155,6 +143,20 @@ void AIController::DisableFrightenedState()
             ghost->GetActor()->SetDrawable(GetDirectionDrawable(*ghost));
         }
     }
+}
+
+void AIController::ResetState()
+{
+    for (const std::shared_ptr<Ghost>& ghost : mGhosts)
+    {
+        const std::shared_ptr<Actor> actor = ghost->GetActor();
+        ghost->SetState(ghost->GetStartState());
+        actor->TranslateToPosition(actor->GetStartPosition());
+        const CellIndex startTargetCell = actor->FindMaxAvailableCell(actor->GetStartDirection());
+        actor->MoveTo(actor->GetStartDirection(), startTargetCell);
+    }
+
+    SetupInkyClydeStartActions();
 }
 
 // move up & down
@@ -317,12 +319,12 @@ CellIndex AIController::FindMoveTarget(const CellIndex& currentCell, const MoveD
     return cellIndex;
 }
 
-void AIController::SetupScheduler()
+void AIController::SetupInkyClydeStartActions()
 {
     const std::shared_ptr<Ghost> inky = mGhosts[EnumCast(GhostId::Inky)];
     const std::shared_ptr<Ghost> clyde = mGhosts[EnumCast(GhostId::Clyde)];
 
-    auto inkyStart = [inky]() -> ActionResult
+    const auto inkyStartAction = [inky]() -> ActionResult
     {
         if (GetGame().GetDotsGrid().GetEatenDotsCount() >= 30)
         {
@@ -333,7 +335,7 @@ void AIController::SetupScheduler()
         return ActionResult::None;
     };
 
-    auto clydeStart = [clyde]() -> ActionResult
+    const auto clydeStartAction = [clyde]() -> ActionResult
     {
         DotsGrid& dotsGrid = GetGame().GetDotsGrid();
         const size_t dotsEaten = dotsGrid.GetEatenDotsCount();
@@ -348,7 +350,14 @@ void AIController::SetupScheduler()
         return ActionResult::None;
     };
 
-    auto disableScatter = [mGhosts]() -> ActionResult
+    Scheduler& scheduler = GetGame().GetScheduler();
+    scheduler.RegisterTrigger(inkyStartAction);
+    scheduler.RegisterTrigger(clydeStartAction);
+}
+
+void AIController::SetupScheduler()
+{
+    const auto disableScatterAction = [mGhosts]() -> ActionResult
     {
         for (const std::shared_ptr<Ghost>& ghost : mGhosts)
         {
@@ -358,10 +367,8 @@ void AIController::SetupScheduler()
         return ActionResult::None;
     };
 
-    const std::shared_ptr<Action> disableScatterAction = std::make_shared<Action>(disableScatter);
     const uint64_t scatterDuration = mAIInfo.mScatterDuration;
-
-    auto enableScatter = [mGhosts, disableScatterAction, scatterDuration]() -> ActionResult
+    const auto enableScatterAction = [mGhosts, disableScatterAction, scatterDuration]() -> ActionResult
     {
         for (const std::shared_ptr<Ghost>& ghost : mGhosts)
         {
@@ -369,18 +376,12 @@ void AIController::SetupScheduler()
                 ghost->SetState(GhostState::Scatter);
         }       
 
-        GetGame().GetScheduler().RegisterAction(disableScatterAction, scatterDuration, false);
+        GetGame().GetScheduler().RegisterEvent(disableScatterAction, scatterDuration, false);
         return ActionResult::None;
     };
 
     Scheduler& scheduler = GetGame().GetScheduler();
-    const std::shared_ptr<Action> inkyStartAction = std::make_shared<Action>(inkyStart);
-    const std::shared_ptr<Action> clydeStartAction = std::make_shared<Action>(clydeStart);
-    const std::shared_ptr<Action> enableScatterAction = std::make_shared<Action>(enableScatter);
-
-    scheduler.RegisterAction(inkyStartAction, 0, true);
-    scheduler.RegisterAction(clydeStartAction, 0, true);
-    scheduler.RegisterAction(enableScatterAction, mAIInfo.mScatterInterval, true);
+    scheduler.RegisterEvent(enableScatterAction, mAIInfo.mScatterInterval, true);
 
     Map& map = GetGame().GetMap();
     const CellIndex leftTunnelExit = map.GetLeftTunnelExit();
@@ -390,12 +391,12 @@ void AIController::SetupScheduler()
     {
         const GhostId ghostId = MakeEnum<GhostId>(i);
 
-        auto leftTunnel = [ghostId, leftTunnelExit, rightTunnelExit]() -> ActionResult
+        const auto leftTunnelAction = [ghostId, leftTunnelExit, rightTunnelExit]() -> ActionResult
         {
             const CellIndexArray ghostCells = GetGame().GetSharedDataManager().GetGhostCells(ghostId);
             if (ghostCells.size() == 1)
             {
-                const std::shared_ptr<Actor> actor = GetGame().GetAIController().GetActor(ghostId);
+                const std::shared_ptr<Actor> actor = GetGame().GetAIController().GetGhost(ghostId).GetActor();
                 if ((ghostCells[0] == leftTunnelExit) && (actor->GetDirection() == MoveDirection::Left))
                 {
                     actor->TranslateToCell(rightTunnelExit);
@@ -404,12 +405,12 @@ void AIController::SetupScheduler()
             return ActionResult::None;
         };
 
-        auto rightTunnel = [ghostId, leftTunnelExit, rightTunnelExit]() -> ActionResult
+        const auto rightTunnelAction = [ghostId, leftTunnelExit, rightTunnelExit]() -> ActionResult
         {
             const CellIndexArray ghostCells = GetGame().GetSharedDataManager().GetGhostCells(ghostId);
             if (ghostCells.size() == 1)
             {
-                const std::shared_ptr<Actor> actor = GetGame().GetAIController().GetActor(ghostId);
+                const std::shared_ptr<Actor> actor = GetGame().GetAIController().GetGhost(ghostId).GetActor();
                 if ((ghostCells[0] == rightTunnelExit) && (actor->GetDirection() == MoveDirection::Right))
                 {
                     actor->TranslateToCell(leftTunnelExit);
@@ -418,11 +419,8 @@ void AIController::SetupScheduler()
             return ActionResult::None;
         };
 
-        Scheduler& scheduler = GetGame().GetScheduler();
-        const std::shared_ptr<Action> leftTunnelAction = std::make_shared<Action>(leftTunnel);
-        const std::shared_ptr<Action> rightTunnelAction = std::make_shared<Action>(rightTunnel);
-        scheduler.RegisterAction(leftTunnelAction, 0, true);
-        scheduler.RegisterAction(rightTunnelAction, 0, true);
+        scheduler.RegisterTrigger(leftTunnelAction);
+        scheduler.RegisterTrigger(rightTunnelAction);
     }
 }
 

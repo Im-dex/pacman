@@ -44,10 +44,9 @@ public:
 
     Blinky(const std::shared_ptr<Actor>& actor, const Size size,
            const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
-        : Ghost(actor, size, spriteSheetPtr,
+        : Ghost(actor, size, spriteSheetPtr, GhostState::Chase,
                 "blinky_left", "blinky_right", "blinky_top", "blinky_bottom")
     {
-        mState = GhostState::Chase;
     }
 
     Blinky(const Blinky&) = delete;
@@ -70,10 +69,9 @@ public:
 
     Pinky(const std::shared_ptr<Actor>& actor, const Size size,
           const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
-      : Ghost(actor, size, spriteSheetPtr,
+      : Ghost(actor, size, spriteSheetPtr, GhostState::Chase,
         "pinky_left", "pinky_right", "pinky_top", "pinky_bottom")
     {
-        mState = GhostState::Chase;
     }
 
     Pinky(const Pinky&) = delete;
@@ -99,10 +97,10 @@ public:
 
     Inky(const std::shared_ptr<Actor>& actor, const Size size,
          const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
-      : Ghost(actor, size, spriteSheetPtr,
+      : Ghost(actor, size, spriteSheetPtr, GhostState::Wait,
         "inky_left", "inky_right", "inky_top", "inky_bottom")
     {
-        mState = GhostState::Wait; // while 30 dots not eaten
+        // wait while 30 dots not eaten
     }
 
     Inky(const Inky&) = delete;
@@ -118,7 +116,7 @@ public:
         Game& game = GetGame();
         Map& map = game.GetMap();
         const std::shared_ptr<Actor> pacman = game.GetPacmanController().GetActor();
-        const std::shared_ptr<Actor> blinky = game.GetAIController().GetActor(GhostId::Blinky);
+        const std::shared_ptr<Actor> blinky = game.GetAIController().GetGhost(GhostId::Blinky).GetActor();
         const CellIndex pacmanCell = SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman->GetDirection());
         const CellIndex blinkyCell = SelectNearestCell(game.GetSharedDataManager().GetGhostCells(GhostId::Blinky), blinky->GetDirection());
         const CellIndex pacmanOffsetCell = FindWithOffset(pacmanCell, pacman->GetDirection(), kOffset);
@@ -157,10 +155,10 @@ public:
 
     Clyde(const std::shared_ptr<Actor>& actor, const Size size,
           const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
-      : Ghost(actor, size, spriteSheetPtr,
+      : Ghost(actor, size, spriteSheetPtr, GhostState::Wait,
         "clyde_left", "clyde_right", "clyde_top", "clyde_bottom")
     {
-        mState = GhostState::Wait; // while 1/3 of dots not eaten
+        // wait while 1/3 of dots not eaten
     }
 
     Clyde(const Clyde&) = delete;
@@ -175,7 +173,7 @@ public:
 
         Game& game = GetGame();
         const std::shared_ptr<Actor> pacman = game.GetPacmanController().GetActor();
-        const std::shared_ptr<Actor> clyde = game.GetAIController().GetActor(GhostId::Clyde);
+        const std::shared_ptr<Actor> clyde = game.GetAIController().GetGhost(GhostId::Clyde).GetActor();
         const CellIndex pacmanCell = SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman->GetDirection());
         const CellIndex currentCell = SelectNearestCell(game.GetSharedDataManager().GetGhostCells(GhostId::Clyde), clyde->GetDirection());
 

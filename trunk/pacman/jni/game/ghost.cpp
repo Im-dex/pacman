@@ -10,9 +10,11 @@ namespace Pacman {
 
 Ghost::Ghost(const std::shared_ptr<Actor>& actor, const Size size,
              const std::weak_ptr<SpriteSheet>& spriteSheetPtr,
+             const GhostState startState,
              const std::string& leftDrawableName, const std::string& rightDrawableName,
              const std::string& topDrawableName, const std::string& bottomDrawableName)
-     : mState(GhostState::Chase),
+     : mStartState(startState),
+       mState(startState),
        mActor(actor)
 {
     const std::shared_ptr<SpriteSheet> spriteSheet = spriteSheetPtr.lock();

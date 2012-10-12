@@ -1,8 +1,8 @@
 #include "game.h"
 
 #include "main.h"
-#include "log.h"
 #include "engine.h"
+#include "common.h"
 #include "asset_manager.h"
 #include "scene_manager.h"
 #include "input_manager.h"
@@ -14,7 +14,7 @@
 #include "scheduler.h"
 #include "loader.h"
 #include "actor.h"
-#include "scene_node.h"
+#include "ghost.h"
 #include "spritesheet.h"
 
 static std::shared_ptr<Pacman::Game> gGame = nullptr;
@@ -43,8 +43,56 @@ static FORCEINLINE Size CalcActorSize(const Size cellSize)
     return cellSize + (cellSize / 2);
 }
 
+static void showGameOverInfo(const bool loose)
+{
+    GetEngine().ShowInfo("If you interested, contact me, please:\r\n"
+                         "m@il: tsukanov.anton@gmail.com\r\n"
+                         "skype: im_dex", loose ? "You loooooooooose" : "You win!!!", true);
+}
+
+static bool PacmanGhostCollision(const GhostId ghostId)
+{
+    Game& game = GetGame();
+    Ghost& ghost = game.GetAIController().GetGhost(ghostId);
+
+    static const uint64_t kResumeInterval = 1000;
+    static const auto resumeEvent = []() -> ActionResult
+    {
+        GetGame().Resume();
+        return ActionResult::Unregister;
+    };
+
+    if (ghost.GetState() == GhostState::Frightened)
+    {
+        game.Pause();
+        game.GetScheduler().RegisterEvent(resumeEvent, kResumeInterval, false);
+        return true;
+    }
+    else
+    {
+        PacmanController& pacmanController = game.GetPacmanController();
+        AIController& aiController = game.GetAIController();
+
+        game.Pause();
+        const bool canContinue = pacmanController.OnPacmanFail();
+        if (!canContinue)
+        {
+            showGameOverInfo(true);
+        }
+        else
+        {
+            pacmanController.ResetState();
+            aiController.ResetState();
+            game.GetScheduler().RegisterEvent(resumeEvent, kResumeInterval, false);
+        }
+
+        return false;
+    }
+}
+
 void Game::OnStart(Engine& engine)
 {
+    mPause = false;
     mLoader = std::unique_ptr<GameLoader>(new GameLoader());
     mScheduler = std::unique_ptr<Scheduler>(new Scheduler());
     mSharedDataManager = std::unique_ptr<SharedDataManager>(new SharedDataManager());
@@ -72,7 +120,7 @@ void Game::OnStart(Engine& engine)
     for (size_t i = 0; i < kGhostsCount; i++)
     {
         const GhostId ghostId = MakeEnum<GhostId>(static_cast<EnumType<GhostId>::value>(i));
-        mAIController->GetActor(ghostId)->AttachToScene(sceneManager);
+        mAIController->GetGhost(ghostId).GetActor()->AttachToScene(sceneManager);
     }
 
     InitActionsAndTriggers();
@@ -86,9 +134,13 @@ void Game::OnStop(Engine& engine)
 
 void Game::OnUpdate(Engine& engine, const uint64_t dt)
 {
-    mPacmanController->Update(dt);
-    mAIController->Update(dt);
-    mScheduler->Update(dt);
+    if (!mPause)
+    {
+        mPacmanController->Update(dt);
+        mAIController->Update(dt);
+        mScheduler->UpdateTriggers();
+    }
+    mScheduler->UpdateEvents(dt);
     mSharedDataManager->Reset();
 }
 
@@ -121,6 +173,11 @@ void Game::OnGesture(const GestureType gestureType)
     }
 }
 
+void Game::ShowMessage(const std::string& message) const
+{
+    GetEngine().ShowMessage(message);
+}
+
 void Game::InitActionsAndTriggers()
 {
     const CellIndex leftTunnelExit = mMap->GetLeftTunnelExit();
@@ -129,7 +186,7 @@ void Game::InitActionsAndTriggers()
     const std::shared_ptr<Actor> pacman = mPacmanController->GetActor();
 
     // create dots eating action
-    auto eatAction = []() -> ActionResult
+    const auto pacmanEatAction = []() -> ActionResult
     {
         DotsGrid& dotsGrid = GetGame().GetDotsGrid();
         const CellIndexArray pacmanCells = GetGame().GetSharedDataManager().GetPacmanCells();
@@ -140,7 +197,7 @@ void Game::InitActionsAndTriggers()
  
     // middle tunnels link actions
     // left
-    auto leftAction = [leftTunnelExit, rightTunnelExit]() -> ActionResult
+    const auto leftTunnelAction = [leftTunnelExit, rightTunnelExit]() -> ActionResult
     {
         const CellIndexArray pacmanCells = GetGame().GetSharedDataManager().GetPacmanCells();
         if (pacmanCells.size() == 1) // move if pacman stays on the one cell only
@@ -153,7 +210,7 @@ void Game::InitActionsAndTriggers()
     };
  
     // right
-    auto rightAction = [leftTunnelExit, rightTunnelExit]() -> ActionResult
+    const auto rightTunnelAction = [leftTunnelExit, rightTunnelExit]() -> ActionResult
     {
         const CellIndexArray pacmanCells = GetGame().GetSharedDataManager().GetPacmanCells();
         if (pacmanCells.size() == 1) // move if pacman stays on the one cell only
@@ -164,15 +221,33 @@ void Game::InitActionsAndTriggers()
         }
         return ActionResult::None;
     };
- 
-    std::shared_ptr<Action> pacmanEatAction = std::make_shared<Action>(eatAction);
-    std::shared_ptr<Action> leftTunnelAction = std::make_shared<Action>(leftAction);
-    std::shared_ptr<Action> rightTunnelAction = std::make_shared<Action>(rightAction);
+
+    // collision pacman with ghost
+    const auto pacmanGhostCollisionAction = []() -> ActionResult
+    {
+        SharedDataManager& sharedDataManager = GetGame().GetSharedDataManager();
+        const CellIndexArray pacmanCells = sharedDataManager.GetPacmanCells();
+
+        for (EnumType<GhostId>::value i = 0; i < kGhostsCount; i++)
+        {
+            const GhostId ghostId = MakeEnum<GhostId>(i);
+            const CellIndexArray ghostCells = sharedDataManager.GetGhostCells(ghostId);
+            if ((ghostCells.size() == pacmanCells.size()) && 
+                (!IsDifferent(ghostCells, pacmanCells)))
+            {
+                const bool continueCheck = PacmanGhostCollision(ghostId);
+                if (!continueCheck)
+                    return ActionResult::None;
+            }
+        }
+        return ActionResult::None;
+    };
  
     // register actions and triggers
-    mScheduler->RegisterAction(pacmanEatAction, 0, true);
-    mScheduler->RegisterAction(leftTunnelAction, 0, true);
-    mScheduler->RegisterAction(rightTunnelAction, 0, true);
+    mScheduler->RegisterTrigger(pacmanEatAction);
+    mScheduler->RegisterTrigger(leftTunnelAction);
+    mScheduler->RegisterTrigger(rightTunnelAction);
+    mScheduler->RegisterTrigger(pacmanGhostCollisionAction);
 }
 
 } // Pacman namespace

@@ -31,6 +31,10 @@ public:
 
 	void OnTouch(const int event, const float x, const float y);
 
+    void ShowMessage(const std::string& message) const;
+
+    void ShowInfo(const std::string& message, const std::string& title, const bool terminate);
+
 	void SetListener(std::shared_ptr<IEngineListener> listener)
 	{
 		mListener = listener;

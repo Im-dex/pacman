@@ -5,8 +5,8 @@
 		"inky":[29, 1],
 		"clyde":[29, 26]
 	},
-	"scatter_duration":5000,
-	"scatter_interval":40000,
+	"scatter_duration":3000,
+	"scatter_interval":50000,
 	"direction_discard":[
 		// cell, direction
 		[[11, 12], 3],

@@ -7,6 +7,7 @@
 #include "pacman_controller.h"
 #include "ai_controller.h"
 #include "ghosts_factory.h"
+#include "ghost.h"
 
 namespace Pacman {
 
@@ -47,7 +48,7 @@ CellIndexArray SharedDataManager::GetPacmanCells()
 
 CellIndexArray SharedDataManager::GetGhostCells(const GhostId ghostId)
 {
-    return GetActorCells(GetGame().GetAIController().GetActor(ghostId), GetGhostKeyName(ghostId));
+    return GetActorCells(GetGame().GetAIController().GetGhost(ghostId).GetActor(), GetGhostKeyName(ghostId));
 }
 
 CellIndexArray SharedDataManager::GetActorCells(const std::shared_ptr<Actor>& actor, const std::string& keyName)

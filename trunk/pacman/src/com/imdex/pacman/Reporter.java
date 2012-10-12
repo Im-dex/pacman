@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Handler;
 import android.os.Looper;
+import android.widget.Toast;
 
 public class Reporter {
 
@@ -37,10 +38,26 @@ public class Reporter {
 		});
 	}
 	
+	public void showInfoDialog(final String message, final String title, final boolean terminateOnOk) {
+		runOnUIThread(new Runnable() {
+			public void run() {
+				showInfoDialogImpl(message, title, terminateOnOk);
+			}
+		});
+	}
+	
 	public void hideLoadingDialog() {
 		runOnUIThread(new Runnable() {
 			public void run() {
 				hideLoadingDialogImpl();
+			}
+		});
+	}
+	
+	public void showToast(final String text) {
+		runOnUIThread(new Runnable() {
+			public void run() {
+				Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
 			}
 		});
 	}
@@ -77,6 +94,22 @@ public class Reporter {
 			   .setPositiveButton("Ok", new OnClickListener() {
 				   public void onClick(DialogInterface dialog, int which) {
 					   Process.killProcess(Process.myPid());
+				   }
+			   	});
+		
+		AlertDialog dialog = builder.create();
+		dialog.show();
+	}
+	
+	private void showInfoDialogImpl(String message, String title, final boolean terminateOnOk) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+		builder.setMessage(message)
+			   .setIcon(android.R.drawable.ic_dialog_info)
+			   .setTitle(title)
+			   .setPositiveButton("Ok", new OnClickListener() {
+				   public void onClick(DialogInterface dialog, int which) {
+					   if (terminateOnOk)
+						   Process.killProcess(Process.myPid());
 				   }
 			   	});
 		

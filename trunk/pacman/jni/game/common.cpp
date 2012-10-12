@@ -33,4 +33,15 @@ CellIndex SelectNearestCell(const CellIndexArray& currentCellsIndices, const Mov
     return result;
 }
 
+bool IsDifferent(const CellIndexArray& first, const CellIndexArray& second)
+{
+    for (const CellIndex& cellIndex : first)
+    {
+        if (std::find(second.begin(), second.end(), cellIndex) == second.end())
+            return true;
+    }
+
+    return false;
+}
+
 } // Pacman namespace
