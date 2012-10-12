@@ -13,7 +13,7 @@ Shader::Shader(const ShaderType type, const std::string& shaderSource)
 	GLenum glType = (type == ShaderType::VERTEX) ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER;
 	mShaderHandle = glCreateShader(glType);
 	PACMAN_CHECK_GL_ERROR();
-	PACMAN_CHECK_ERROR(mShaderHandle != 0, ErrorCode::CreateShader);
+	PACMAN_CHECK_ERROR(mShaderHandle != 0);
 }
 
 Shader::~Shader()
@@ -38,11 +38,11 @@ void Shader::Compile()
 		{
 			std::unique_ptr<char[]> buf(new char[infoLength]);
 			glGetShaderInfoLog(mShaderHandle, infoLength, nullptr, buf.get());
-			PACMAN_CHECK_ERROR2(false, ErrorCode::CompileShader, buf.get());
+			PACMAN_CHECK_ERROR2(false, buf.get());
 		}
 		else
 		{
-			PACMAN_CHECK_ERROR2(false, ErrorCode::CompileShader, source);
+			PACMAN_CHECK_ERROR2(false, source);
 		}
 	}
 

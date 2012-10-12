@@ -36,10 +36,10 @@ std::unique_ptr<Map> GameLoader::LoadMap(const std::string& fileName, const Size
     const JsonHelper::Array rightTunnelExit = root.GetValue<JsonHelper::Array>("rightTunnelExit");
     const JsonHelper::Array cells = root.GetValue<JsonHelper::Array>("cells");
     PACMAN_CHECK_ERROR((leftTunnelExit.GetSize() == 2) && (rightTunnelExit.GetSize() == 2) &&
-                       (cells.GetSize() > 0), ErrorCode::BadFormat);
+                       (cells.GetSize() > 0));
 
     const size_t rowsCount = root.GetValue<size_t>("rowsCount");
-    PACMAN_CHECK_ERROR((cells.GetSize() % rowsCount) == 0, ErrorCode::BadFormat);
+    PACMAN_CHECK_ERROR((cells.GetSize() % rowsCount) == 0);
 
     const CellIndex leftTunnelExitValue(leftTunnelExit[0].GetAs<CellIndex::value_t>(),
                                         leftTunnelExit[1].GetAs<CellIndex::value_t>());
@@ -87,7 +87,7 @@ std::shared_ptr<Actor> GameLoader::LoadActor(const std::string& fileName, const 
     const JsonHelper::Value root(jsonData);
 
     const JsonHelper::Array startCellIndexArray = root.GetValue<JsonHelper::Array>("startCellIndex");
-    PACMAN_CHECK_ERROR(startCellIndexArray.GetSize() == 2, ErrorCode::BadFormat);
+    PACMAN_CHECK_ERROR(startCellIndexArray.GetSize() == 2);
 
     const CellIndex startCellIndex(startCellIndexArray[0].GetAs<CellIndex::value_t>(),
                                    startCellIndexArray[1].GetAs<CellIndex::value_t>());
@@ -116,7 +116,7 @@ AIInfo GameLoader::LoadAIInfo(const std::string& fileName) const
     PACMAN_CHECK_ERROR((blinkyScatterTarget.GetSize() == 2) &&
                         (pinkyScatterTarget.GetSize() == 2) &&
                         (inkyScatterTarget.GetSize() == 2) &&
-                        (clydeScatterTarget.GetSize() == 2), ErrorCode::BadFormat);
+                        (clydeScatterTarget.GetSize() == 2));
 
     std::vector<DirectionDiscard> discardCells;
     const JsonHelper::Array chaseDirectionDiscard = root.GetValue<JsonHelper::Array>("direction_discard");

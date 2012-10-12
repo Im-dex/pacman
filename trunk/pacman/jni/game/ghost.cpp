@@ -18,7 +18,7 @@ Ghost::Ghost(const std::shared_ptr<Actor>& actor, const Size size,
        mActor(actor)
 {
     const std::shared_ptr<SpriteSheet> spriteSheet = spriteSheetPtr.lock();
-    PACMAN_CHECK_ERROR(spriteSheet != nullptr, ErrorCode::BadArgument);
+    PACMAN_CHECK_ERROR(spriteSheet != nullptr);
 
     const SpriteRegion region(0, 0, size, size);
     mLeftSprite = spriteSheet->MakeSprite(leftDrawableName, region);

@@ -52,7 +52,7 @@ AIController::AIController(const Size actorSize, const std::weak_ptr<SpriteSheet
     SetupScheduler();
 
     const std::shared_ptr<SpriteSheet> spriteSheet = spriteSheetPtr.lock();
-    PACMAN_CHECK_ERROR(spriteSheet != nullptr, ErrorCode::BadArgument);
+    PACMAN_CHECK_ERROR(spriteSheet != nullptr);
     mFrightenedDrawable = spriteSheet->MakeSprite("enemy_frightened", SpriteRegion(0, 0, actorSize, actorSize));
 }
 
@@ -99,7 +99,7 @@ void AIController::OnTargetAchieved()
         FindWayOnFrightenedState();
         break;
     default:
-        PACMAN_CHECK_ERROR(false, ErrorCode::InvalidState);
+        PACMAN_CHECK_ERROR(false);
     }
 }
 
@@ -280,7 +280,7 @@ MoveDirection AIController::SelectBestDirection(const CellIndex& currentCell, co
         }
     }
 
-    PACMAN_CHECK_ERROR(result != MoveDirection::None, ErrorCode::InvalidState);
+    PACMAN_CHECK_ERROR(result != MoveDirection::None);
     return result;
 }
 

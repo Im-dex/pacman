@@ -215,7 +215,7 @@ std::shared_ptr<Ghost> GhostsFactory::CreateGhost(const Size actorSize, const st
             return std::make_shared<Clyde>(actor, actorSize, spriteSheetPtr);
         }
     default:
-        PACMAN_CHECK_ERROR2(false, ErrorCode::BadArgument, "Wrong ghost id");
+        PACMAN_CHECK_ERROR2(false, "Wrong ghost id");
     }
 }
 

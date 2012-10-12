@@ -73,7 +73,7 @@ Texture2D::Texture2D(const size_t width, const size_t height, const byte_t* data
 		type = GL_UNSIGNED_BYTE;
 		break;
 	case PixelFormat::None:
-		PACMAN_CHECK_ERROR(false, ErrorCode::BadPixelFormat);
+		PACMAN_CHECK_ERROR(false);
 		break;
 	}
 

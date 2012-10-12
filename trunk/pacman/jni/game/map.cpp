@@ -121,7 +121,7 @@ void Map::AttachToScene(SceneManager& sceneManager)
 
 MapCellType Map::GetCell(const CellIndex::value_t rowIndex, const CellIndex::value_t columnIndex) const
 {
-    PACMAN_CHECK_ERROR2((rowIndex <= mRowsCount) && (columnIndex <= mColumnsCount), ErrorCode::BadArgument,
+    PACMAN_CHECK_ERROR2((rowIndex <= mRowsCount) && (columnIndex <= mColumnsCount),
                         MakeString("rowIndex: ", rowIndex, ", columnIndex: ", columnIndex).c_str());
     return mCells[(rowIndex * mColumnsCount) + columnIndex];
 }
@@ -163,7 +163,7 @@ CellIndexArray Map::FindCells(const SpriteRegion& region) const
     };
 
     // find cells that contain the region vertices
-    PACMAN_CHECK_ERROR(mRect.IsIntersect(region), ErrorCode::InvalidState);
+    PACMAN_CHECK_ERROR(mRect.IsIntersect(region));
     SpriteRegion intersection = mRect.Intersection(region);
     const CellIndex leftTopPosCell = GetCellIndex(intersection.GetPosition());
     const CellIndex rightTopPosCell = GetCellIndex(intersection.GetRightTopPos());
@@ -204,7 +204,7 @@ CellIndexArray Map::FindCells(const SpriteRegion& region) const
         addCell(rightBottomPosCell);
     }
 
-    PACMAN_CHECK_ERROR2((result.size() <= kMaxCellsCount) && result.size() > 0, ErrorCode::InvalidState,
+    PACMAN_CHECK_ERROR2((result.size() <= kMaxCellsCount) && result.size() > 0,
                         MakeString("Count: ", result.size()).c_str());
     return result;
 }

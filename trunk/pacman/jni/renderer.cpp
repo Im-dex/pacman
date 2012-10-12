@@ -59,14 +59,14 @@ void Renderer::DrawFrame()
 
 void Renderer::RenderDrawable(const std::shared_ptr<IDrawable>& drawable, const Math::Matrix4f modelMatrix)
 {
-    PACMAN_CHECK_ERROR(drawable != nullptr, ErrorCode::InvalidState);
+    PACMAN_CHECK_ERROR(drawable != nullptr);
 
 	std::shared_ptr<VertexBuffer> vertexBuffer = drawable->GetVertexBuffer();
 	std::shared_ptr<ShaderProgram> shaderProgram = drawable->GetShaderProgram();
 	std::weak_ptr<Texture2D> texture = drawable->GetTexture();
 	bool hasAlphaBlend = drawable->HasAlphaBlend();
     
-    PACMAN_CHECK_ERROR((vertexBuffer != nullptr) && (shaderProgram != nullptr), ErrorCode::InvalidState);
+    PACMAN_CHECK_ERROR((vertexBuffer != nullptr) && (shaderProgram != nullptr));
 
 	if (hasAlphaBlend && !mLastAlphaBlendState)
 	{

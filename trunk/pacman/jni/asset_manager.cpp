@@ -51,7 +51,7 @@ public:
 	{
 		AndroidBitmapInfo info;
 		int res = AndroidBitmap_getInfo(mEnv, mBitmap, &info);
-		PACMAN_CHECK_ERROR(res == ANDROID_BITMAP_RESUT_SUCCESS, ErrorCode::AndroidAPICallFailed);
+		PACMAN_CHECK_ERROR(res == ANDROID_BITMAP_RESUT_SUCCESS);
 		return info;
 	}
 
@@ -59,7 +59,7 @@ public:
 	{
 		void* pixels = nullptr;
 		int res = AndroidBitmap_lockPixels(mEnv, mBitmap, &pixels);
-		PACMAN_CHECK_ERROR(res == ANDROID_BITMAP_RESUT_SUCCESS, ErrorCode::AndroidAPICallFailed);
+		PACMAN_CHECK_ERROR(res == ANDROID_BITMAP_RESUT_SUCCESS);
 		mIsLocked = true;
 		return static_cast<const byte_t*>(pixels);
 	}
@@ -84,7 +84,7 @@ std::string ApplyMultiplier(const std::string& name, const size_t multiplier)
 {
 	std::ostringstream result;
 	const size_t dotPos = name.find_last_of('.');
-	PACMAN_CHECK_ERROR((dotPos != std::string::npos) && (dotPos < name.size()), ErrorCode::BadArgument);
+	PACMAN_CHECK_ERROR((dotPos != std::string::npos) && (dotPos < name.size()));
 
     return MakeString(name.substr(0, dotPos),                      // add name
                       "@", multiplier,                             // add multiplier
@@ -118,7 +118,7 @@ std::shared_ptr<Texture2D> AssetManager::LoadTexture(const std::string& name, co
 	jobject bitmap = LoadBitmapFromAssets(finalName); // try to load bitmap with multiplier
 	if ((bitmap == nullptr) && (mMultiplier > 0))
 		bitmap = LoadBitmapFromAssets(name); // after try base
-	PACMAN_CHECK_ERROR(bitmap != nullptr, ErrorCode::BadArgument);
+	PACMAN_CHECK_ERROR(bitmap != nullptr);
 
 	AndroidBitmapHolder bitmapHolder(env, bitmap);
 	const AndroidBitmapInfo info = bitmapHolder.GetInfo();
@@ -161,7 +161,7 @@ std::shared_ptr<ShaderProgram> AssetManager::LoadShaderProgram(const std::string
 
 	const std::string vertexShader = LoadTextFile(vertexShaderName);
 	const std::string fragmentShader = LoadTextFile(fragmentShaderName);
-	PACMAN_CHECK_ERROR((vertexShader.size() > 0) && (fragmentShader.size() > 0), ErrorCode::BadArgument);
+	PACMAN_CHECK_ERROR((vertexShader.size() > 0) && (fragmentShader.size() > 0));
 
 	const std::shared_ptr<ShaderProgram> shader = std::make_shared<ShaderProgram>(vertexShader, fragmentShader);
 	shader->Link();
@@ -172,7 +172,7 @@ std::shared_ptr<ShaderProgram> AssetManager::LoadShaderProgram(const std::string
 std::shared_ptr<SpriteSheet> AssetManager::LoadSpriteSheet(const std::string& name)
 {
     const std::string jsonData = LoadTextFile(name);
-    PACMAN_CHECK_ERROR(jsonData.size() > 0, ErrorCode::BadArgument);
+    PACMAN_CHECK_ERROR(jsonData.size() > 0);
 
     const JsonHelper::Value root(jsonData);
 
@@ -180,7 +180,7 @@ std::shared_ptr<SpriteSheet> AssetManager::LoadSpriteSheet(const std::string& na
     const std::string image = root.GetValue<std::string>("image");
     const TextureFilteringValueT filtering = root.GetValue<TextureFilteringValueT>("filtering");
     const JsonHelper::Array list  = root.GetValue<JsonHelper::Array>("list");
-    PACMAN_CHECK_ERROR((image.size() > 0) && (list.GetSize() > 0), ErrorCode::BadFormat);
+    PACMAN_CHECK_ERROR((image.size() > 0) && (list.GetSize() > 0));
 
     std::shared_ptr<Texture2D> texture = LoadTexture(image, MakeEnum<TextureFiltering>(filtering), TextureRepeat::None);
 
@@ -193,7 +193,7 @@ std::shared_ptr<SpriteSheet> AssetManager::LoadSpriteSheet(const std::string& na
         const std::string vs   = sprite.GetValue<std::string>("vs");
         const std::string fs   = sprite.GetValue<std::string>("fs");
         const bool alphaBlend  = sprite.GetValue<bool>("alpha_blend");
-        PACMAN_CHECK_ERROR((name.size() > 0) && (vs.size() > 0) && (fs.size() > 0), ErrorCode::BadFormat);
+        PACMAN_CHECK_ERROR((name.size() > 0) && (vs.size() > 0) && (fs.size() > 0));
 
         const float x = sprite.GetValue<float>("x");
         const float y = sprite.GetValue<float>("y");
@@ -219,10 +219,10 @@ std::string AssetManager::LoadTextFile(const std::string& name)
 	JNIEnv* env = JNI::GetEnv();
 
 	jobject byteArray = LoadFileFromAssets(name);
-	PACMAN_CHECK_ERROR(byteArray != nullptr, ErrorCode::BadArgument);
+	PACMAN_CHECK_ERROR(byteArray != nullptr);
 
 	const char* buf = static_cast<const char*>(env->GetDirectBufferAddress(byteArray));
-	PACMAN_CHECK_ERROR(buf != nullptr, ErrorCode::InvalidResult);
+	PACMAN_CHECK_ERROR(buf != nullptr);
 
 	const jlong capacity = env->GetDirectBufferCapacity(byteArray);
 	return std::string(buf, capacity);

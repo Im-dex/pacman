@@ -28,8 +28,7 @@ public:
     T GetValue(const std::string& name) const
     {
         auto iter = mValues.find(name);
-        PACMAN_CHECK_ERROR2(iter != mValues.end(), ErrorCode::BadArgument, 
-                            MakeString("Unknown argument: ", name).c_str());
+        PACMAN_CHECK_ERROR2(iter != mValues.end(), MakeString("Unknown argument: ", name).c_str());
         return boost::any_cast<T>(iter->second);
     }
 

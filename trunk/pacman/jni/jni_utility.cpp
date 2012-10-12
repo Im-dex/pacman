@@ -26,10 +26,10 @@ MethodInfo::MethodInfo(const jclass cls, const jmethodID mid)
 MethodInfo FindStaticMethod(JNIEnv* env, const char* className, const char* methodName, const char* methodSignature)
 {
 	jclass cls = env->FindClass(className);
-	PACMAN_CHECK_ERROR2(cls != nullptr, ErrorCode::JClassNotFound, className);
+	PACMAN_CHECK_ERROR2(cls != nullptr, className);
 
 	jmethodID mid = env->GetStaticMethodID(cls, methodName, methodSignature);
-	PACMAN_CHECK_ERROR2(mid != nullptr, ErrorCode::JFuncNotFound, methodName);
+	PACMAN_CHECK_ERROR2(mid != nullptr, methodName);
 
 	return MethodInfo(cls, mid);
 }
@@ -38,7 +38,7 @@ JNIEnv* GetEnv()
 {
 	void* env = nullptr;
 	jint res = gJavaVM->GetEnv(&env, JNI_VERSION_1_6);
-	PACMAN_CHECK_ERROR(res >= 0, ErrorCode::JNICallFailed);
+	PACMAN_CHECK_ERROR(res >= 0);
 	return static_cast<JNIEnv*>(env);
 }
 

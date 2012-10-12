@@ -10,30 +10,6 @@
 
 namespace Pacman {
 
-const char* kErrorDescriptions[] =
-{
-	"Shader compilation failed",
-	"Shader creation failed",
-	"Shader source assign failed",
-	"Shader program creation failed",
-	"Shader program linking failed",
-	"Shader attribute or uniform location search failed",
-	"Bad pixel format",
-
-	"Invalid result",
-    "Invalid state",
-	"Bad argument",
-    "Bad cast",
-	"Insertion into the container failed",
-	"Java class not found",
-	"Java function not found",
-	"JNI call failed",
-	"Android API call failed",
-	"Failed access timer",
-	"Mutex access failed",
-	"Bad format"
-};
-
 class BaseException : public std::exception
 {
 protected:
@@ -63,10 +39,10 @@ class Exception : public BaseException
 {
 public:
 	Exception() throw() = delete;
-	Exception(const ErrorCode errorCode, const char* file, const size_t line, const char* message) throw()
+	Exception(const char* file, const size_t line, const char* message) throw()
 			: BaseException(file, line)
 	{
-		mResult = MakeString(kErrorDescriptions[EnumCast(errorCode)], " ", GetErrorFileLine(), message);
+		mResult = MakeString(GetErrorFileLine(), message);
 	}
 
 	Exception(const Exception&) = default;
@@ -162,11 +138,11 @@ void ErrorHandler::CleanGLErrors()
 	while (glGetError() != GL_NO_ERROR);
 }
 
-void ErrorHandler::CheckError(const bool err, const ErrorCode errorCode, const char* file, const size_t line, const char* message)
+void ErrorHandler::CheckError(const bool err, const char* file, const size_t line, const char* message)
 {
     if (!err)
     {
-	    throw Exception(errorCode, file, line, FixEmptyString(message));
+	    throw Exception(file, line, FixEmptyString(message));
     }
 }
 

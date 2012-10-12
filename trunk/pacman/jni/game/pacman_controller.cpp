@@ -39,7 +39,7 @@ static std::shared_ptr<FrameAnimator> MakeAnimator(const std::weak_ptr<SpriteShe
     static const size_t kFramesCount = 4;
     const SpriteRegion region(0, 0, actorSize, actorSize);
     const std::shared_ptr<SpriteSheet> spriteSheet = spriteSheetPtr.lock();
-    PACMAN_CHECK_ERROR(spriteSheet != nullptr, ErrorCode::BadArgument);
+    PACMAN_CHECK_ERROR(spriteSheet != nullptr);
 
     const std::shared_ptr<Sprite> sprite_pacman_0 = spriteSheet->MakeSprite("pacman_anim_0", region);
     const std::shared_ptr<Sprite> sprite_pacman_1 = spriteSheet->MakeSprite("pacman_anim_1", region);

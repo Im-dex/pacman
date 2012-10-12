@@ -78,7 +78,7 @@ void Engine::Start(const size_t screenWidth, const size_t screenHeight)
     mInputManager = std::unique_ptr<InputManager>(new InputManager());
     mTimer = std::unique_ptr<Timer>(new Timer());
     PacmanSetEngineListener(*this);
-    PACMAN_CHECK_ERROR(mListener != nullptr, ErrorCode::InvalidState);
+    PACMAN_CHECK_ERROR(mListener != nullptr);
 
 	const size_t resolutionMultiplier = std::min(screenWidth / mBaseWidth, screenHeight / mBaseHeight);
 	mAssetManager->SetMultiplier(resolutionMultiplier);
