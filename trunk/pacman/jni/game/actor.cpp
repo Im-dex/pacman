@@ -86,6 +86,8 @@ void Actor::DoMove(IActorController& controller, const PosOffset offset,
     const PosOffset xOffset = ((xDiff < 0) ? -1 : 1) * (std::min(offset, absXDiff));
     const PosOffset yOffset = ((yDiff < 0) ? -1 : 1) * (std::min(offset, absYDiff));
 
+    mNode->Move(xOffset, yOffset);
+
     // if not full move
     if ((offset > absXDiff) && (offset > absYDiff))
     {
@@ -97,8 +99,6 @@ void Actor::DoMove(IActorController& controller, const PosOffset offset,
         DoMove(controller, offset - reduceValue, true);
         return;
     }
-
-    mNode->Move(xOffset, yOffset);
 }
 
 Position Actor::GetCenterPos() const
