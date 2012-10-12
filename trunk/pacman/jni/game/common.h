@@ -60,6 +60,6 @@ static FORCEINLINE Position GetFuturePosition(const Position& current, const Mov
     }
 }
 
-bool IsDifferent(const CellIndexArray& first, const CellIndexArray& second);
+bool ContainsElements(const CellIndexArray& array, const CellIndexArray& elements);
 
 } // Pacman namespace

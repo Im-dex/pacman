@@ -50,7 +50,7 @@ static void showGameOverInfo(const bool loose)
                          "skype: im_dex", loose ? "You loooooooooose" : "You won!!!", true);
 }
 
-static bool PacmanGhostCollision(const GhostId ghostId)
+static void PacmanGhostCollision(const GhostId ghostId)
 {
     Game& game = GetGame();
     Ghost& ghost = game.GetAIController().GetGhost(ghostId);
@@ -67,7 +67,6 @@ static bool PacmanGhostCollision(const GhostId ghostId)
         game.Pause();
         game.GetAIController().OnGhostDead(ghostId);
         game.GetScheduler().RegisterEvent(resumeEvent, kResumeInterval, false);
-        return true;
     }
     else
     {
@@ -86,8 +85,6 @@ static bool PacmanGhostCollision(const GhostId ghostId)
             aiController.ResetState();
             game.GetScheduler().RegisterEvent(resumeEvent, kResumeInterval, false);
         }
-
-        return false;
     }
 }
 
@@ -233,12 +230,12 @@ void Game::InitActionsAndTriggers()
         {
             const GhostId ghostId = MakeEnum<GhostId>(i);
             const CellIndexArray ghostCells = sharedDataManager.GetGhostCells(ghostId);
-            if ((ghostCells.size() == pacmanCells.size()) && 
-                (!IsDifferent(ghostCells, pacmanCells)))
+            const bool hasCollision = (ghostCells.size() >= pacmanCells.size()) ? ContainsElements(pacmanCells, ghostCells)
+                                                                                : ContainsElements(ghostCells, pacmanCells);
+            if (hasCollision)
             {
-                const bool continueCheck = PacmanGhostCollision(ghostId);
-                if (!continueCheck)
-                    return ActionResult::None;
+                PacmanGhostCollision(ghostId);
+                return ActionResult::None;
             }
         }
         return ActionResult::None;
