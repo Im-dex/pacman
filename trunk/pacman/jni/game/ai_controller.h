@@ -44,13 +44,17 @@ class AIController : public IActorController
 {
 public:
 
-    AIController(const Size actorSize, const std::weak_ptr<SpriteSheet>& spriteSheetPtr);
+    AIController(const Size actorSize, SpriteSheet& spriteSheet);
     AIController(const AIController&) = delete;
     ~AIController() = default;
 
     AIController& operator= (const AIController&) = delete;
 
     void Update(const uint64_t dt);
+
+    Ghost& GetGhost(const GhostId ghostId) const;
+
+    Actor& GetGhostActor(const GhostId ghostId) const;
 
     CellIndex GetScatterTarget(const GhostId ghostid) const;
 
@@ -66,11 +70,6 @@ public:
 
     virtual void OnTargetAchieved();
 
-    Ghost& GetGhost(const GhostId ghostId) const
-    {
-        return *mGhosts[EnumCast(ghostId)];
-    }
-
 private:
 
     enum class SelectDirectionMethod
@@ -85,7 +84,11 @@ private:
         Scatter
     };
 
-    typedef std::array<std::shared_ptr<Ghost>, kGhostsCount> GhostsArray; 
+    typedef std::array<std::unique_ptr<Ghost>, kGhostsCount> GhostsArray; 
+
+    GhostId GetCurrentGhostId() const;
+
+    Ghost& GetCurrentGhost() const;
 
     void FindWayOnWaitState();
 

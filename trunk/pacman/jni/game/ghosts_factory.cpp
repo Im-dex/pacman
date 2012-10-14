@@ -1,5 +1,7 @@
 #include "ghosts_factory.h"
 
+#include <utility>
+
 #include "math.h"
 #include "game.h"
 #include "common.h"
@@ -42,9 +44,9 @@ class Blinky : public Ghost
 {
 public:
 
-    Blinky(const std::shared_ptr<Actor>& actor, const Size size,
-           const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
-        : Ghost(actor, size, spriteSheetPtr, GhostState::Chase,
+    Blinky(std::unique_ptr<Actor> actor, const Size size,
+           SpriteSheet& spriteSheet)
+        : Ghost(std::move(actor), size, spriteSheet, GhostState::Chase,
                 "blinky_left", "blinky_right", "blinky_top", "blinky_bottom")
     {
     }
@@ -58,8 +60,8 @@ public:
     virtual CellIndex SelectTargetCell() const
     {
         Game& game = GetGame();
-        const std::shared_ptr<Actor> pacman = game.GetPacmanController().GetActor();
-        return SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman->GetDirection());
+        Actor& pacman = game.GetPacmanController().GetActor();
+        return SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman.GetDirection());
     }
 };
 
@@ -67,9 +69,9 @@ class Pinky : public Ghost
 {
 public:
 
-    Pinky(const std::shared_ptr<Actor>& actor, const Size size,
-          const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
-      : Ghost(actor, size, spriteSheetPtr, GhostState::Chase,
+    Pinky(std::unique_ptr<Actor> actor, const Size size,
+          SpriteSheet& spriteSheet)
+      : Ghost(std::move(actor), size, spriteSheet, GhostState::Chase,
         "pinky_left", "pinky_right", "pinky_top", "pinky_bottom")
     {
     }
@@ -85,19 +87,19 @@ public:
         static const CellIndex::value_t kOffset = 4;
 
         Game& game = GetGame();
-        const std::shared_ptr<Actor> pacman = game.GetPacmanController().GetActor();
-        const CellIndex pacmanCell = SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman->GetDirection());
-        return FindWithOffset(pacmanCell, pacman->GetDirection(), kOffset);
+        Actor& pacman = game.GetPacmanController().GetActor();
+        const CellIndex pacmanCell = SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman.GetDirection());
+        return FindWithOffset(pacmanCell, pacman.GetDirection(), kOffset);
     }
 };
-//#include "log.h"
+
 class Inky : public Ghost
 {
 public:
 
-    Inky(const std::shared_ptr<Actor>& actor, const Size size,
-         const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
-      : Ghost(actor, size, spriteSheetPtr, GhostState::Wait,
+    Inky(std::unique_ptr<Actor> actor, const Size size,
+         SpriteSheet& spriteSheet)
+      : Ghost(std::move(actor), size, spriteSheet, GhostState::Wait,
         "inky_left", "inky_right", "inky_top", "inky_bottom")
     {
         // wait while 30 dots not eaten
@@ -115,11 +117,11 @@ public:
 
         Game& game = GetGame();
         Map& map = game.GetMap();
-        const std::shared_ptr<Actor> pacman = game.GetPacmanController().GetActor();
-        const std::shared_ptr<Actor> blinky = game.GetAIController().GetGhost(GhostId::Blinky).GetActor();
-        const CellIndex pacmanCell = SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman->GetDirection());
-        const CellIndex blinkyCell = SelectNearestCell(game.GetSharedDataManager().GetGhostCells(GhostId::Blinky), blinky->GetDirection());
-        const CellIndex pacmanOffsetCell = FindWithOffset(pacmanCell, pacman->GetDirection(), kOffset);
+        Actor& pacman = game.GetPacmanController().GetActor();
+        Actor& blinky = game.GetAIController().GetGhostActor(GhostId::Blinky);
+        const CellIndex pacmanCell = SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman.GetDirection());
+        const CellIndex blinkyCell = SelectNearestCell(game.GetSharedDataManager().GetGhostCells(GhostId::Blinky), blinky.GetDirection());
+        const CellIndex pacmanOffsetCell = FindWithOffset(pacmanCell, pacman.GetDirection(), kOffset);
         
         const CellIndex::value_t blinkyRow = GetRow(blinkyCell);
         const CellIndex::value_t blinkyColumn = GetColumn(blinkyCell);
@@ -131,8 +133,6 @@ public:
 
         const CellIndex::value_t resultRow = CalcIndexValue(blinkyRow, pacmanOffsetRow, rowDiff);
         const CellIndex::value_t resultColumn = CalcIndexValue(blinkyColumn, pacmanOffsetColumn, columnDiff);
-
-        //LogI("row: %u, col: %u", resultRow, resultColumn);
         return CellIndex(resultRow, resultColumn);
     }
 
@@ -153,9 +153,9 @@ class Clyde : public Ghost
 {
 public:
 
-    Clyde(const std::shared_ptr<Actor>& actor, const Size size,
-          const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
-      : Ghost(actor, size, spriteSheetPtr, GhostState::Wait,
+    Clyde(std::unique_ptr<Actor> actor, const Size size,
+          SpriteSheet& spriteSheet)
+      : Ghost(std::move(actor), size, spriteSheet, GhostState::Wait,
         "clyde_left", "clyde_right", "clyde_top", "clyde_bottom")
     {
         // wait while 1/3 of dots not eaten
@@ -172,10 +172,10 @@ public:
         static const float kMaxDistance = 8.0f;
 
         Game& game = GetGame();
-        const std::shared_ptr<Actor> pacman = game.GetPacmanController().GetActor();
-        const std::shared_ptr<Actor> clyde = game.GetAIController().GetGhost(GhostId::Clyde).GetActor();
-        const CellIndex pacmanCell = SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman->GetDirection());
-        const CellIndex currentCell = SelectNearestCell(game.GetSharedDataManager().GetGhostCells(GhostId::Clyde), clyde->GetDirection());
+        Actor& pacman = game.GetPacmanController().GetActor();
+        Actor& clyde = game.GetAIController().GetGhostActor(GhostId::Clyde);
+        const CellIndex pacmanCell = SelectNearestCell(game.GetSharedDataManager().GetPacmanCells(), pacman.GetDirection());
+        const CellIndex currentCell = SelectNearestCell(game.GetSharedDataManager().GetGhostCells(GhostId::Clyde), clyde.GetDirection());
 
         const Math::Vector2f currentPoint(static_cast<float>(GetRow(currentCell)), static_cast<float>(GetColumn(currentCell)));
         const Math::Vector2f pacmanPoint(static_cast<float>(GetRow(pacmanCell)), static_cast<float>(GetColumn(pacmanCell)));
@@ -187,7 +187,7 @@ public:
     }
 };
 
-std::shared_ptr<Ghost> GhostsFactory::CreateGhost(const Size actorSize, const std::weak_ptr<SpriteSheet>& spriteSheetPtr,
+std::unique_ptr<Ghost> GhostsFactory::CreateGhost(const Size actorSize, SpriteSheet& spriteSheet,
                                                  const GhostId ghostId) const
 {
     GameLoader& loader = GetGame().GetLoader();
@@ -196,23 +196,23 @@ std::shared_ptr<Ghost> GhostsFactory::CreateGhost(const Size actorSize, const st
     {
     case GhostId::Blinky:
         {
-            const std::shared_ptr<Actor> actor = loader.LoadActor("blinky.json", actorSize, nullptr);
-            return std::make_shared<Blinky>(actor, actorSize, spriteSheetPtr);
+            std::unique_ptr<Actor> actor = loader.LoadActor("blinky.json", actorSize, nullptr);
+            return MakeUnique<Blinky>(std::move(actor), actorSize, spriteSheet);
         }
     case GhostId::Pinky:
         {
-            const std::shared_ptr<Actor> actor = loader.LoadActor("pinky.json", actorSize, nullptr);
-            return std::make_shared<Pinky>(actor, actorSize, spriteSheetPtr);
+            std::unique_ptr<Actor> actor = loader.LoadActor("pinky.json", actorSize, nullptr);
+            return MakeUnique<Pinky>(std::move(actor), actorSize, spriteSheet);
         }
     case GhostId::Inky:
         {
-            const std::shared_ptr<Actor> actor = loader.LoadActor("inky.json", actorSize, nullptr);
-            return std::make_shared<Inky>(actor, actorSize, spriteSheetPtr);
+            std::unique_ptr<Actor> actor = loader.LoadActor("inky.json", actorSize, nullptr);
+            return MakeUnique<Inky>(std::move(actor), actorSize, spriteSheet);
         }
     case GhostId::Clyde:
         {
-            const std::shared_ptr<Actor> actor = loader.LoadActor("clyde.json", actorSize, nullptr);
-            return std::make_shared<Clyde>(actor, actorSize, spriteSheetPtr);
+            std::unique_ptr<Actor> actor = loader.LoadActor("clyde.json", actorSize, nullptr);
+            return MakeUnique<Clyde>(std::move(actor), actorSize, spriteSheet);
         }
     default:
         PACMAN_CHECK_ERROR2(false, "Wrong ghost id");

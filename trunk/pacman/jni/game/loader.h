@@ -23,7 +23,7 @@ public:
 
     std::unique_ptr<DotsGrid> MakeDotsGrid(const std::weak_ptr<SpriteSheet>& spritesheetPtr);
 
-    std::shared_ptr<Actor> LoadActor(const std::string& fileName, const Size actorSize,
+    std::unique_ptr<Actor> LoadActor(const std::string& fileName, const Size actorSize,
                                      const std::shared_ptr<IDrawable>& drawable) const;
 
     AIInfo LoadAIInfo(const std::string& fileName) const;

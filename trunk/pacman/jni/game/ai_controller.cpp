@@ -25,7 +25,7 @@ static const CellIndex::value_t kWayLength = 1;
 
 static FORCEINLINE std::shared_ptr<IDrawable> GetDirectionDrawable(const Ghost& ghost)
 {
-    switch (ghost.GetActor()->GetDirection())
+    switch (ghost.GetActor().GetDirection())
     {
     case MoveDirection::Left:
         return ghost.GetLeftDrawable();
@@ -38,22 +38,20 @@ static FORCEINLINE std::shared_ptr<IDrawable> GetDirectionDrawable(const Ghost& 
     }
 }
 
-AIController::AIController(const Size actorSize, const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
+AIController::AIController(const Size actorSize, SpriteSheet& spriteSheet)
             : mAIInfo(GetGame().GetLoader().LoadAIInfo("ai.json")),
               mCurrentGhost(kGhostsCount)
 {
     GhostsFactory factory;
-    mGhosts[EnumCast(GhostId::Blinky)] = factory.CreateGhost(actorSize, spriteSheetPtr, GhostId::Blinky);
-    mGhosts[EnumCast(GhostId::Pinky)] = factory.CreateGhost(actorSize, spriteSheetPtr, GhostId::Pinky);
-    mGhosts[EnumCast(GhostId::Inky)] = factory.CreateGhost(actorSize, spriteSheetPtr, GhostId::Inky);
-    mGhosts[EnumCast(GhostId::Clyde)] = factory.CreateGhost(actorSize, spriteSheetPtr, GhostId::Clyde);
+    mGhosts[EnumCast(GhostId::Blinky)] = factory.CreateGhost(actorSize, spriteSheet, GhostId::Blinky);
+    mGhosts[EnumCast(GhostId::Pinky)] = factory.CreateGhost(actorSize, spriteSheet, GhostId::Pinky);
+    mGhosts[EnumCast(GhostId::Inky)] = factory.CreateGhost(actorSize, spriteSheet, GhostId::Inky);
+    mGhosts[EnumCast(GhostId::Clyde)] = factory.CreateGhost(actorSize, spriteSheet, GhostId::Clyde);
 
     ResetState();
     SetupScheduler();
 
-    const std::shared_ptr<SpriteSheet> spriteSheet = spriteSheetPtr.lock();
-    PACMAN_CHECK_ERROR(spriteSheet != nullptr);
-    mFrightenedDrawable = spriteSheet->MakeSprite("enemy_frightened", SpriteRegion(0, 0, actorSize, actorSize));
+    mFrightenedDrawable = spriteSheet.MakeSprite("enemy_frightened", SpriteRegion(0, 0, actorSize, actorSize));
 }
 
 void AIController::Update(const uint64_t dt)
@@ -61,8 +59,18 @@ void AIController::Update(const uint64_t dt)
     for (size_t i = 0; i < kGhostsCount; i++)
     {
         mCurrentGhost = i;
-        mGhosts[i]->GetActor()->Update(dt, *this);
+        GetCurrentGhost().GetActor().Update(dt, *this);
     }
+}
+
+Ghost& AIController::GetGhost(const GhostId ghostId) const
+{
+    return *(mGhosts[EnumCast(ghostId)]);
+}
+
+Actor& AIController::GetGhostActor(const GhostId ghostId) const
+{
+    return GetGhost(ghostId).GetActor();
 }
 
 CellIndex AIController::GetScatterTarget(const GhostId ghostid) const
@@ -72,16 +80,16 @@ CellIndex AIController::GetScatterTarget(const GhostId ghostid) const
 
 void AIController::OnDirectionChanged(const MoveDirection newDirection)
 {
-    const std::shared_ptr<Ghost> ghost = mGhosts[mCurrentGhost];
-    if (ghost->GetState() == GhostState::Frightened)
+    Ghost& ghost = GetCurrentGhost();
+    if (ghost.GetState() == GhostState::Frightened)
         return;
 
-    ghost->GetActor()->SetDrawable(GetDirectionDrawable(*ghost));
+    ghost.GetActor().SetDrawable(GetDirectionDrawable(ghost));
 }
 
 void AIController::OnTargetAchieved()
 {
-    switch (mGhosts[mCurrentGhost]->GetState())
+    switch (GetCurrentGhost().GetState())
     {
     case GhostState::Wait:
         FindWayOnWaitState();
@@ -105,9 +113,9 @@ void AIController::OnTargetAchieved()
 
 void AIController::EnableFrightenedState()
 {
-    for (const std::shared_ptr<Ghost>& ghost : mGhosts)
+    for (const std::unique_ptr<Ghost>& ghost : mGhosts)
     {
-        const std::shared_ptr<Actor> actor = ghost->GetActor();
+        Actor& actor = ghost->GetActor();
 
         if ((ghost->GetState() == GhostState::Wait) ||
             (ghost->GetState() == GhostState::LeaveHouse))
@@ -116,12 +124,12 @@ void AIController::EnableFrightenedState()
         }
 
         ghost->SetState(GhostState::Frightened);
-        actor->SetDrawable(mFrightenedDrawable);
+        actor.SetDrawable(mFrightenedDrawable);
 
-        const MoveDirection backDirection = GetBackDirection(actor->GetDirection());
-        const CellIndex currentCell = SelectNearestCell(GetGame().GetMap().FindCells(actor->GetRegion()), backDirection);
+        const MoveDirection backDirection = GetBackDirection(actor.GetDirection());
+        const CellIndex currentCell = SelectNearestCell(GetGame().GetMap().FindCells(actor.GetRegion()), backDirection);
         const CellIndex newTarget = FindMoveTarget(currentCell, backDirection);
-        actor->MoveTo(backDirection, newTarget);
+        actor.MoveTo(backDirection, newTarget);
     }
 
     const auto restoreAction = []() -> ActionResult
@@ -135,25 +143,25 @@ void AIController::EnableFrightenedState()
 
 void AIController::DisableFrightenedState()
 {
-    for (const std::shared_ptr<Ghost>& ghost : mGhosts)
+    for (const std::unique_ptr<Ghost>& ghost : mGhosts)
     {
         if (ghost->GetState() == GhostState::Frightened)
         {
             ghost->SetState(GhostState::Chase);
-            ghost->GetActor()->SetDrawable(GetDirectionDrawable(*ghost));
+            ghost->GetActor().SetDrawable(GetDirectionDrawable(*ghost));
         }
     }
 }
 
 void AIController::ResetState()
 {
-    for (const std::shared_ptr<Ghost>& ghost : mGhosts)
+    for (const std::unique_ptr<Ghost>& ghost : mGhosts)
     {
-        const std::shared_ptr<Actor> actor = ghost->GetActor();
+        Actor& actor = ghost->GetActor();
         ghost->SetState(ghost->GetStartState());
-        actor->TranslateToPosition(actor->GetStartPosition());
-        const CellIndex startTargetCell = actor->FindMaxAvailableCell(actor->GetStartDirection());
-        actor->MoveTo(actor->GetStartDirection(), startTargetCell);
+        actor.TranslateToPosition(actor.GetStartPosition());
+        const CellIndex startTargetCell = actor.FindMaxAvailableCell(actor.GetStartDirection());
+        actor.MoveTo(actor.GetStartDirection(), startTargetCell);
     }
 
     SetupInkyClydeStartActions();
@@ -162,51 +170,60 @@ void AIController::ResetState()
 void AIController::OnGhostDead(const GhostId ghostId)
 {
     Ghost& ghost = GetGhost(ghostId);
-    const std::shared_ptr<Actor> actor = ghost.GetActor();
+    Actor& actor = ghost.GetActor();
     ghost.SetState(GhostState::LeaveHouse);
-    actor->TranslateToPosition(mAIInfo.mRespawn);
-    const CellIndex startTargetCell = actor->FindMaxAvailableCell(MoveDirection::Up);
-    actor->MoveTo(MoveDirection::Up, startTargetCell);
+    actor.TranslateToPosition(mAIInfo.mRespawn);
+    const CellIndex startTargetCell = actor.FindMaxAvailableCell(MoveDirection::Up);
+    actor.MoveTo(MoveDirection::Up, startTargetCell);
+}
+
+GhostId AIController::GetCurrentGhostId() const
+{
+    return MakeEnum<GhostId>(static_cast<EnumType<GhostId>::value>(mCurrentGhost));
+}
+
+Ghost& AIController::GetCurrentGhost() const
+{
+    return GetGhost(GetCurrentGhostId());
 }
 
 // move up & down
 void AIController::FindWayOnWaitState()
 {
     Map& map = GetGame().GetMap();
-    const std::shared_ptr<Ghost> ghost = mGhosts[mCurrentGhost];
-    const std::shared_ptr<Actor> actor = ghost->GetActor();
-    const MoveDirection direction = actor->GetDirection();
+    Actor& actor = GetCurrentGhost().GetActor();
+    const MoveDirection direction = actor.GetDirection();
 
-    const CellIndex currentCell = SelectNearestCell(map.FindCells(actor->GetRegion()), direction);
+    const CellIndex currentCell = SelectNearestCell(map.FindCells(actor.GetRegion()), direction);
     const CellIndex next = GetNext(currentCell, direction);
     if (map.GetCell(next) != MapCellType::Empty)
     {
         const MoveDirection backDirection = GetBackDirection(direction);
-        const CellIndex newTargetCell = actor->FindMaxAvailableCell(backDirection);
-        actor->MoveTo(backDirection, newTargetCell);
+        const CellIndex newTargetCell = actor.FindMaxAvailableCell(backDirection);
+        actor.MoveTo(backDirection, newTargetCell);
     }
 }
 
 void AIController::FindWayOnLeaveHouse()
 {
     Map& map = GetGame().GetMap();
-    const std::shared_ptr<Ghost> ghost = mGhosts[mCurrentGhost];
-    const std::shared_ptr<Actor> actor = ghost->GetActor();
+    Ghost& ghost = GetCurrentGhost();
+    Actor& actor = ghost.GetActor();
 
     const Size mapCenterX = map.GetPosition().GetX() + ((map.GetColumnsCount() * map.GetCellSize()) / 2);
-    const Position actorCenterPos = actor->GetCenterPos();
+    const Position actorCenterPos = actor.GetCenterPos();
     if (actorCenterPos.GetX() != mapCenterX)
     {
         if (actorCenterPos.GetX() > mapCenterX)
-            actor->Move(MoveDirection::Left, actorCenterPos.GetX() - mapCenterX);
+            actor.Move(MoveDirection::Left, actorCenterPos.GetX() - mapCenterX);
         else
-            actor->Move(MoveDirection::Right, mapCenterX - actorCenterPos.GetX());
+            actor.Move(MoveDirection::Right, mapCenterX - actorCenterPos.GetX());
     }
     else
     {
-        const CellIndex targetCell = actor->FindMaxAvailableCell(MoveDirection::Up);
-        actor->MoveTo(MoveDirection::Up, targetCell);
-        ghost->SetState(GhostState::Chase);
+        const CellIndex targetCell = actor.FindMaxAvailableCell(MoveDirection::Up);
+        actor.MoveTo(MoveDirection::Up, targetCell);
+        ghost.SetState(GhostState::Chase);
     }
 }
 
@@ -228,19 +245,19 @@ void AIController::FindWayOnFrightenedState()
 
 void AIController::FindWay(const SelectDirectionMethod directionMethod, const SelectTargetMethod targetMethod)
 {
-    const std::shared_ptr<Ghost> ghost = mGhosts[mCurrentGhost];
-    const std::shared_ptr<Actor> actor = ghost->GetActor();
+    Ghost& ghost = GetCurrentGhost();
+    Actor& actor = ghost.GetActor();
 
-    const CellIndex currentCell = SelectNearestCell(GetGame().GetMap().FindCells(actor->GetRegion()), actor->GetDirection());
-    const CellIndex targetCell = (targetMethod == SelectTargetMethod::OwnBehavior) ? ghost->SelectTargetCell()
-                                                                                   : GetScatterTarget(MakeEnum<GhostId>(static_cast<EnumType<GhostId>::value>(mCurrentGhost)));
-    const MoveDirection backDirection = GetBackDirection(actor->GetDirection());
+    const CellIndex currentCell = SelectNearestCell(GetGame().GetMap().FindCells(actor.GetRegion()), actor.GetDirection());
+    const CellIndex targetCell = (targetMethod == SelectTargetMethod::OwnBehavior) ? ghost.SelectTargetCell()
+                                                                                   : GetScatterTarget(GetCurrentGhostId());
+    const MoveDirection backDirection = GetBackDirection(actor.GetDirection());
 
     // select turn
     const MoveDirection nextDirection = (directionMethod == SelectDirectionMethod::Best) ? SelectBestDirection(currentCell, targetCell, backDirection)
                                                                                          : SelectRandomDirection(currentCell, backDirection);
     const CellIndex moveTarget = FindMoveTarget(currentCell, nextDirection);
-    actor->MoveTo(nextDirection, moveTarget);
+    actor.MoveTo(nextDirection, moveTarget);
 }
 
 MoveDirection AIController::SelectBestDirection(const CellIndex& currentCell, const CellIndex& targetCell,
@@ -342,29 +359,28 @@ CellIndex AIController::FindMoveTarget(const CellIndex& currentCell, const MoveD
 
 void AIController::SetupInkyClydeStartActions()
 {
-    const std::shared_ptr<Ghost> inky = mGhosts[EnumCast(GhostId::Inky)];
-    const std::shared_ptr<Ghost> clyde = mGhosts[EnumCast(GhostId::Clyde)];
-
-    const auto inkyStartAction = [inky]() -> ActionResult
+    const auto inkyStartAction = []() -> ActionResult
     {
-        if (GetGame().GetDotsGrid().GetEatenDotsCount() >= 30)
+        Game& game = GetGame();
+        if (game.GetDotsGrid().GetEatenDotsCount() >= 30)
         {
-            inky->SetState(GhostState::LeaveHouse);
+            game.GetAIController().GetGhost(GhostId::Inky).SetState(GhostState::LeaveHouse);
             return ActionResult::Unregister;
         }
 
         return ActionResult::None;
     };
 
-    const auto clydeStartAction = [clyde]() -> ActionResult
+    const auto clydeStartAction = []() -> ActionResult
     {
-        DotsGrid& dotsGrid = GetGame().GetDotsGrid();
+        Game& game = GetGame();
+        DotsGrid& dotsGrid = game.GetDotsGrid();
         const size_t dotsEaten = dotsGrid.GetEatenDotsCount();
         const size_t dotsCount = dotsGrid.GetDotsCount();
 
         if ((static_cast<float>(dotsEaten) / static_cast<float>(dotsCount)) >= 0.33f)
         {
-            clyde->SetState(GhostState::LeaveHouse);
+            game.GetAIController().GetGhost(GhostId::Clyde).SetState(GhostState::LeaveHouse);
             return ActionResult::Unregister;
         }
 
@@ -378,24 +394,30 @@ void AIController::SetupInkyClydeStartActions()
 
 void AIController::SetupScheduler()
 {
-    const auto disableScatterAction = [mGhosts]() -> ActionResult
+    typedef EnumType<GhostId>::value GhostIdValueT;
+
+    const auto disableScatterAction = []() -> ActionResult
     {
-        for (const std::shared_ptr<Ghost>& ghost : mGhosts)
+        AIController& aiController = GetGame().GetAIController();
+        for (GhostIdValueT i = 0; i < kGhostsCount; i++)
         {
-            if (ghost->GetState() == GhostState::Scatter)
-                ghost->SetState(GhostState::Chase);
+            Ghost& ghost = aiController.GetGhost(MakeEnum<GhostId>(i));
+            if (ghost.GetState() == GhostState::Scatter)
+                ghost.SetState(GhostState::Chase);
         }
         return ActionResult::None;
     };
 
     const uint64_t scatterDuration = mAIInfo.mScatterDuration;
-    const auto enableScatterAction = [mGhosts, disableScatterAction, scatterDuration]() -> ActionResult
+    const auto enableScatterAction = [disableScatterAction, scatterDuration]() -> ActionResult
     {
-        for (const std::shared_ptr<Ghost>& ghost : mGhosts)
+        AIController& aiController = GetGame().GetAIController();
+        for (GhostIdValueT i = 0; i < kGhostsCount; i++)
         {
-            if (ghost->GetState() == GhostState::Chase)
-                ghost->SetState(GhostState::Scatter);
-        }       
+            Ghost& ghost = aiController.GetGhost(MakeEnum<GhostId>(i));
+            if (ghost.GetState() == GhostState::Chase)
+                ghost.SetState(GhostState::Scatter);
+        }
 
         GetGame().GetScheduler().RegisterEvent(disableScatterAction, scatterDuration, false);
         return ActionResult::None;
@@ -408,7 +430,7 @@ void AIController::SetupScheduler()
     const CellIndex leftTunnelExit = map.GetLeftTunnelExit();
     const CellIndex rightTunnelExit = map.GetRightTunnelExit();
 
-    for (EnumType<GhostId>::value i = 0; i < kGhostsCount; i++)
+    for (GhostIdValueT i = 0; i < kGhostsCount; i++)
     {
         const GhostId ghostId = MakeEnum<GhostId>(i);
 
@@ -417,10 +439,10 @@ void AIController::SetupScheduler()
             const CellIndexArray ghostCells = GetGame().GetSharedDataManager().GetGhostCells(ghostId);
             if (ghostCells.size() == 1)
             {
-                const std::shared_ptr<Actor> actor = GetGame().GetAIController().GetGhost(ghostId).GetActor();
-                if ((ghostCells[0] == leftTunnelExit) && (actor->GetDirection() == MoveDirection::Left))
+                Actor& actor = GetGame().GetAIController().GetGhostActor(ghostId);
+                if ((ghostCells[0] == leftTunnelExit) && (actor.GetDirection() == MoveDirection::Left))
                 {
-                    actor->TranslateToCell(rightTunnelExit);
+                    actor.TranslateToCell(rightTunnelExit);
                 }
             }
             return ActionResult::None;
@@ -431,10 +453,10 @@ void AIController::SetupScheduler()
             const CellIndexArray ghostCells = GetGame().GetSharedDataManager().GetGhostCells(ghostId);
             if (ghostCells.size() == 1)
             {
-                const std::shared_ptr<Actor> actor = GetGame().GetAIController().GetGhost(ghostId).GetActor();
-                if ((ghostCells[0] == rightTunnelExit) && (actor->GetDirection() == MoveDirection::Right))
+                Actor& actor = GetGame().GetAIController().GetGhostActor(ghostId);
+                if ((ghostCells[0] == rightTunnelExit) && (actor.GetDirection() == MoveDirection::Right))
                 {
-                    actor->TranslateToCell(leftTunnelExit);
+                    actor.TranslateToCell(leftTunnelExit);
                 }
             }
             return ActionResult::None;

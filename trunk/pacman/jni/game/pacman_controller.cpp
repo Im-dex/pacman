@@ -13,7 +13,7 @@
 
 namespace Pacman {
 
-static const std::string& kActorFileName = "pacman.json";
+static const std::string kActorFileName = "pacman.json";
 static const uint64_t kAnimationFrameDuration = 55;
 static const size_t kLivesCount = 3;
 
@@ -34,31 +34,29 @@ static FORCEINLINE Rotation GetDirectionRotation(const MoveDirection direction)
     }
 }
 
-static std::shared_ptr<FrameAnimator> MakeAnimator(const std::weak_ptr<SpriteSheet>& spriteSheetPtr, const Size actorSize)
+static std::shared_ptr<FrameAnimator> MakeAnimator(SpriteSheet& spriteSheet, const Size actorSize)
 {
     static const size_t kFramesCount = 4;
     const SpriteRegion region(0, 0, actorSize, actorSize);
-    const std::shared_ptr<SpriteSheet> spriteSheet = spriteSheetPtr.lock();
-    PACMAN_CHECK_ERROR(spriteSheet != nullptr);
 
-    const std::shared_ptr<Sprite> sprite_pacman_0 = spriteSheet->MakeSprite("pacman_anim_0", region);
-    const std::shared_ptr<Sprite> sprite_pacman_1 = spriteSheet->MakeSprite("pacman_anim_1", region);
-    const std::shared_ptr<Sprite> sprite_pacman_2 = spriteSheet->MakeSprite("pacman_anim_2", region);
+    const std::shared_ptr<Sprite> sprite_pacman_0 = spriteSheet.MakeSprite("pacman_anim_0", region);
+    const std::shared_ptr<Sprite> sprite_pacman_1 = spriteSheet.MakeSprite("pacman_anim_1", region);
+    const std::shared_ptr<Sprite> sprite_pacman_2 = spriteSheet.MakeSprite("pacman_anim_2", region);
 
     std::vector<std::shared_ptr<Sprite>> frames;
     frames.reserve(kFramesCount);
-    frames.push_back(sprite_pacman_0);
-    frames.push_back(sprite_pacman_1);
-    frames.push_back(sprite_pacman_2);
-    frames.push_back(sprite_pacman_1);
+    frames.emplace_back(std::move(sprite_pacman_0));
+    frames.emplace_back(std::move(sprite_pacman_1));
+    frames.emplace_back(std::move(sprite_pacman_2));
+    frames.emplace_back(std::move(sprite_pacman_1));
 
     return std::make_shared<FrameAnimator>(frames, kAnimationFrameDuration);
 }
 
-PacmanController::PacmanController(const Size actorSize, const std::weak_ptr<SpriteSheet>& spriteSheetPtr)
+PacmanController::PacmanController(const Size actorSize, SpriteSheet& spriteSheet)
                 : mLivesCount(kLivesCount)
 {
-    mActorAnimator = MakeAnimator(spriteSheetPtr, actorSize);
+    mActorAnimator = MakeAnimator(spriteSheet, actorSize);
     mActor = GetGame().GetLoader().LoadActor(kActorFileName, actorSize, mActorAnimator);
     ResetState();
 }

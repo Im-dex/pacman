@@ -25,7 +25,7 @@ public:
 
 private:
 
-    CellIndexArray GetActorCells(const std::shared_ptr<Actor>& actor, const std::string& keyName);
+    CellIndexArray GetActorCells(const Actor& actor, const std::string& keyName);
 
     std::unique_ptr<SharedDataContext> mContext;
 };

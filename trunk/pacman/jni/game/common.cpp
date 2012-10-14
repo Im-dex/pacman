@@ -33,15 +33,4 @@ CellIndex SelectNearestCell(const CellIndexArray& currentCellsIndices, const Mov
     return result;
 }
 
-bool ContainsElements(const CellIndexArray& array, const CellIndexArray& elements)
-{
-    for (const CellIndex& cellIndex : elements)
-    {
-        if (std::find(array.begin(), array.end(), cellIndex) == array.end())
-            return false;
-    }
-
-    return true;
-}
-
 } // Pacman namespace

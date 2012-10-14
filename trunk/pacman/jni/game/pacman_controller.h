@@ -13,7 +13,7 @@ class PacmanController : public IActorController
 {
 public:
 
-    PacmanController(const Size actorSize, const std::weak_ptr<SpriteSheet>& spriteSheetPtr);
+    PacmanController(const Size actorSize, SpriteSheet& spriteSheet);
     PacmanController(const PacmanController&) = delete;
     ~PacmanController() = default;
 
@@ -33,16 +33,16 @@ public:
 
     virtual void OnTargetAchieved();
 
-    std::shared_ptr<Actor> GetActor() const
+    Actor& GetActor() const
     {
-        return mActor;
+        return *mActor;
     }
 
 private:
 
     bool CheckPassability(const MoveDirection direction) const;
 
-    std::shared_ptr<Actor>         mActor;
+    std::unique_ptr<Actor>         mActor;
     std::shared_ptr<FrameAnimator> mActorAnimator;
     size_t                         mLivesCount;
 };

@@ -50,40 +50,46 @@ static void showGameOverInfo(const bool loose)
                          "skype: im_dex", loose ? "You loooooooooose" : "You won!!!", true);
 }
 
+static FORCEINLINE bool HasIntersection(const CellIndexArray& first, const CellIndexArray& second)
+{
+    return std::find_first_of(first.begin(), first.end(), second.begin(), second.end()) != first.end();
+}
+
 static void PacmanGhostCollision(const GhostId ghostId)
 {
     Game& game = GetGame();
     Ghost& ghost = game.GetAIController().GetGhost(ghostId);
-
     static const uint64_t kResumeInterval = 1000;
-    static const auto resumeEvent = []() -> ActionResult
-    {
-        GetGame().Resume();
-        return ActionResult::Unregister;
-    };
 
     if (ghost.GetState() == GhostState::Frightened)
     {
         game.Pause();
-        game.GetAIController().OnGhostDead(ghostId);
-        game.GetScheduler().RegisterEvent(resumeEvent, kResumeInterval, false);
+        game.GetScheduler().RegisterEvent([ghostId]()
+        {
+            Game& game = GetGame();
+            game.GetAIController().OnGhostDead(ghostId);
+            game.Resume();
+            return ActionResult::Unregister;
+        }, kResumeInterval, false);
     }
     else
     {
-        PacmanController& pacmanController = game.GetPacmanController();
-        AIController& aiController = game.GetAIController();
-
         game.Pause();
-        const bool canContinue = pacmanController.OnPacmanFail();
+        const bool canContinue = game.GetPacmanController().OnPacmanFail();
         if (!canContinue)
         {
             showGameOverInfo(true);
         }
         else
         {
-            pacmanController.ResetState();
-            aiController.ResetState();
-            game.GetScheduler().RegisterEvent(resumeEvent, kResumeInterval, false);
+            game.GetScheduler().RegisterEvent([]()
+            {
+                Game& game = GetGame();
+                game.GetPacmanController().ResetState();
+                game.GetAIController().ResetState();       
+                game.Resume();
+                return ActionResult::Unregister;
+            }, kResumeInterval, false);
         }
     }
 }
@@ -111,14 +117,15 @@ void Game::OnStart(Engine& engine)
     mDotsGrid = mLoader->MakeDotsGrid(spriteSheet);
     mDotsGrid->AttachToScene(sceneManager);
 
-    mPacmanController = std::unique_ptr<PacmanController>(new PacmanController(actorSize, spriteSheet));
-    mAIController = std::unique_ptr<AIController>(new AIController(actorSize, spriteSheet));
+    mPacmanController = std::unique_ptr<PacmanController>(new PacmanController(actorSize, *spriteSheet));
+    mAIController = std::unique_ptr<AIController>(new AIController(actorSize, *spriteSheet));
 
-    mPacmanController->GetActor()->AttachToScene(sceneManager);
+    typedef EnumType<GhostId>::value GhostIdValueT;
+    mPacmanController->GetActor().AttachToScene(sceneManager);
     for (size_t i = 0; i < kGhostsCount; i++)
     {
-        const GhostId ghostId = MakeEnum<GhostId>(static_cast<EnumType<GhostId>::value>(i));
-        mAIController->GetGhost(ghostId).GetActor()->AttachToScene(sceneManager);
+        const GhostId ghostId = MakeEnum<GhostId>(static_cast<GhostIdValueT>(i));
+        mAIController->GetGhost(ghostId).GetActor().AttachToScene(sceneManager);
     }
 
     InitActionsAndTriggers();
@@ -165,7 +172,7 @@ void Game::OnGesture(const GestureType gestureType)
     }
 
     if ((newDirection != MoveDirection::None) && 
-        (mPacmanController->GetActor()->GetDirection() != newDirection))
+        (mPacmanController->GetActor().GetDirection() != newDirection))
     {
         mPacmanController->ChangeDirection(newDirection);
     }
@@ -180,8 +187,6 @@ void Game::InitActionsAndTriggers()
 {
     const CellIndex leftTunnelExit = mMap->GetLeftTunnelExit();
     const CellIndex rightTunnelExit = mMap->GetRightTunnelExit();
- 
-    const std::shared_ptr<Actor> pacman = mPacmanController->GetActor();
 
     // create dots eating action
     const auto pacmanEatAction = []() -> ActionResult
@@ -200,8 +205,8 @@ void Game::InitActionsAndTriggers()
         const CellIndexArray pacmanCells = GetGame().GetSharedDataManager().GetPacmanCells();
         if (pacmanCells.size() == 1) // move if pacman stays on the one cell only
         {
-            const std::shared_ptr<Actor> pacman = GetGame().GetPacmanController().GetActor();
-            if ((pacmanCells[0] == leftTunnelExit) && (pacman->GetDirection() == MoveDirection::Left))
+            Actor& pacman = GetGame().GetPacmanController().GetActor();
+            if ((pacmanCells[0] == leftTunnelExit) && (pacman.GetDirection() == MoveDirection::Left))
                 GetGame().GetPacmanController().TranslateTo(rightTunnelExit);
         }
         return ActionResult::None;
@@ -213,8 +218,8 @@ void Game::InitActionsAndTriggers()
         const CellIndexArray pacmanCells = GetGame().GetSharedDataManager().GetPacmanCells();
         if (pacmanCells.size() == 1) // move if pacman stays on the one cell only
         {
-            const std::shared_ptr<Actor> pacman = GetGame().GetPacmanController().GetActor();
-            if ((pacmanCells[0] == rightTunnelExit)  && (pacman->GetDirection() == MoveDirection::Right))
+            Actor& pacman = GetGame().GetPacmanController().GetActor();
+            if ((pacmanCells[0] == rightTunnelExit)  && (pacman.GetDirection() == MoveDirection::Right))
                 GetGame().GetPacmanController().TranslateTo(leftTunnelExit);
         }
         return ActionResult::None;
@@ -230,9 +235,7 @@ void Game::InitActionsAndTriggers()
         {
             const GhostId ghostId = MakeEnum<GhostId>(i);
             const CellIndexArray ghostCells = sharedDataManager.GetGhostCells(ghostId);
-            const bool hasCollision = (ghostCells.size() >= pacmanCells.size()) ? ContainsElements(pacmanCells, ghostCells)
-                                                                                : ContainsElements(ghostCells, pacmanCells);
-            if (hasCollision)
+            if (HasIntersection(pacmanCells, ghostCells))
             {
                 PacmanGhostCollision(ghostId);
                 return ActionResult::None;

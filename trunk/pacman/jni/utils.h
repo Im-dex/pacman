@@ -2,6 +2,7 @@
 
 #include <type_traits>
 #include <sstream>
+#include <memory>
 
 #include "base.h"
 
@@ -40,29 +41,16 @@ static void WriteValue(const std::ostringstream& stream)
 {}
 
 template <typename First, typename... Args>
-static void WriteValue(std::ostringstream& stream, const First& first, const Args... args)
+static void WriteValue(std::ostringstream& stream, First&& first, const Args... args)
 {
-    stream << first;
-    WriteValue(stream, args...);
-}
-
-template <typename First, typename... Args>
-static void WriteValue(std::ostringstream& stream, const First&& first, const Args... args)
-{
-    stream << std::forward<const First>(first);
+    stream << std::forward<First>(first);
     WriteValue(stream, args...);
 }
 
 template <typename T>
-static void WriteValue(std::ostringstream& stream, const T& var)
+static void WriteValue(std::ostringstream& stream, T&& var)
 {
-    stream << var;
-}
-
-template <typename T>
-static void WriteValue(std::ostringstream& stream, const T&& var)
-{
-    stream << std::forward<const T>(var);
+    stream << std::forward<T>(var);
 }
 
 template <typename... Args>
@@ -107,6 +95,14 @@ EnumT MakeEnum(const T value)
     static_assert(std::is_enum<EnumT>::value, "Only enum types is accepted");
     static_assert(std::is_same<T, typename EnumType<EnumT>::value>::value, "Enum underlying type is different with passed");
     return static_cast<EnumT>(value);
+}
+
+//===============================================================================
+
+template <typename T, typename... Args>
+std::unique_ptr<T> MakeUnique(Args&&... args)
+{
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
 } // Pacman namespace
