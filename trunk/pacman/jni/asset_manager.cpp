@@ -169,7 +169,7 @@ std::shared_ptr<ShaderProgram> AssetManager::LoadShaderProgram(const std::string
 	return shader;
 }
 
-std::shared_ptr<SpriteSheet> AssetManager::LoadSpriteSheet(const std::string& name)
+std::unique_ptr<SpriteSheet> AssetManager::LoadSpriteSheet(const std::string& name)
 {
     const std::string jsonData = LoadTextFile(name);
     PACMAN_CHECK_ERROR(jsonData.size() > 0);
@@ -182,7 +182,7 @@ std::shared_ptr<SpriteSheet> AssetManager::LoadSpriteSheet(const std::string& na
     const JsonHelper::Array list  = root.GetValue<JsonHelper::Array>("list");
     PACMAN_CHECK_ERROR((image.size() > 0) && (list.GetSize() > 0));
 
-    std::shared_ptr<Texture2D> texture = LoadTexture(image, MakeEnum<TextureFiltering>(filtering), TextureRepeat::None);
+    const std::shared_ptr<Texture2D> texture = LoadTexture(image, MakeEnum<TextureFiltering>(filtering), TextureRepeat::None);
 
     NamedSpriteInfoArray namedSpritesInfo;
     namedSpritesInfo.reserve(list.GetSize());
@@ -211,7 +211,7 @@ std::shared_ptr<SpriteSheet> AssetManager::LoadSpriteSheet(const std::string& na
         namedSpritesInfo.push_back(std::make_pair(name, spriteInfo));
     }
 
-    return std::make_shared<SpriteSheet>(texture, namedSpritesInfo);
+    return MakeUnique<SpriteSheet>(std::move(texture), namedSpritesInfo);
 }
 
 std::string AssetManager::LoadTextFile(const std::string& name)

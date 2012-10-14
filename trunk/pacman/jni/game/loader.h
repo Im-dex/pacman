@@ -21,7 +21,7 @@ public:
 
     std::unique_ptr<Map> LoadMap(const std::string& fileName, const Size cellSize);
 
-    std::unique_ptr<DotsGrid> MakeDotsGrid(const std::weak_ptr<SpriteSheet>& spritesheetPtr);
+    std::unique_ptr<DotsGrid> MakeDotsGrid(const SpriteSheet& spritesheet);
 
     std::unique_ptr<Actor> LoadActor(const std::string& fileName, const Size actorSize,
                                      const std::shared_ptr<IDrawable>& drawable) const;

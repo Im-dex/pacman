@@ -38,7 +38,7 @@ static FORCEINLINE std::shared_ptr<IDrawable> GetDirectionDrawable(const Ghost& 
     }
 }
 
-AIController::AIController(const Size actorSize, SpriteSheet& spriteSheet)
+AIController::AIController(const Size actorSize, const SpriteSheet& spriteSheet)
             : mAIInfo(GetGame().GetLoader().LoadAIInfo("ai.json")),
               mCurrentGhost(kGhostsCount)
 {

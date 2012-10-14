@@ -44,7 +44,7 @@ class AIController : public IActorController
 {
 public:
 
-    AIController(const Size actorSize, SpriteSheet& spriteSheet);
+    AIController(const Size actorSize, const SpriteSheet& spriteSheet);
     AIController(const AIController&) = delete;
     ~AIController() = default;
 

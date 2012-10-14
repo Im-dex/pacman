@@ -8,8 +8,8 @@
 
 namespace Pacman {
 
-SpriteSheet::SpriteSheet(const std::shared_ptr<Texture2D>& texture, const NamedSpriteInfoArray& namedSpritesInfo)
-           : mTexture(texture)
+SpriteSheet::SpriteSheet(const std::shared_ptr<Texture2D> texture, const NamedSpriteInfoArray& namedSpritesInfo)
+           : mTexture(std::move(texture))
 {
 	for (const NamedSpriteInfo& namedInfo : namedSpritesInfo)
     {

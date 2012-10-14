@@ -34,7 +34,7 @@ static FORCEINLINE Rotation GetDirectionRotation(const MoveDirection direction)
     }
 }
 
-static std::shared_ptr<FrameAnimator> MakeAnimator(SpriteSheet& spriteSheet, const Size actorSize)
+static std::shared_ptr<FrameAnimator> MakeAnimator(const SpriteSheet& spriteSheet, const Size actorSize)
 {
     static const size_t kFramesCount = 4;
     const SpriteRegion region(0, 0, actorSize, actorSize);
@@ -53,7 +53,7 @@ static std::shared_ptr<FrameAnimator> MakeAnimator(SpriteSheet& spriteSheet, con
     return std::make_shared<FrameAnimator>(frames, kAnimationFrameDuration);
 }
 
-PacmanController::PacmanController(const Size actorSize, SpriteSheet& spriteSheet)
+PacmanController::PacmanController(const Size actorSize, const SpriteSheet& spriteSheet)
                 : mLivesCount(kLivesCount)
 {
     mActorAnimator = MakeAnimator(spriteSheet, actorSize);

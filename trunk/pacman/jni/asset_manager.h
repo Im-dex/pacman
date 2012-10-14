@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -39,7 +38,7 @@ public:
 
 	std::shared_ptr<ShaderProgram> LoadShaderProgram(const std::string& vertexShaderName, const std::string& fragmentShaderName);
 
-    std::shared_ptr<SpriteSheet> LoadSpriteSheet(const std::string& name);
+    std::unique_ptr<SpriteSheet> LoadSpriteSheet(const std::string& name);
 
 	std::string LoadTextFile(const std::string& name);
 

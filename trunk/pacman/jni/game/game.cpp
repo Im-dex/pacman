@@ -112,9 +112,9 @@ void Game::OnStart(Engine& engine)
     mMap = mLoader->LoadMap("map.json", cellSize);
     mMap->AttachToScene(sceneManager);
 
-    std::shared_ptr<SpriteSheet> spriteSheet = assetManager.LoadSpriteSheet("spritesheet1.json");
+    const std::unique_ptr<SpriteSheet> spriteSheet = assetManager.LoadSpriteSheet("spritesheet1.json");
 
-    mDotsGrid = mLoader->MakeDotsGrid(spriteSheet);
+    mDotsGrid = mLoader->MakeDotsGrid(*spriteSheet);
     mDotsGrid->AttachToScene(sceneManager);
 
     mPacmanController = std::unique_ptr<PacmanController>(new PacmanController(actorSize, *spriteSheet));
