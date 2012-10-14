@@ -8,25 +8,25 @@
 
 namespace Pacman {
 
-Ghost::Ghost(const std::shared_ptr<Actor>& actor, const Size size,
-             const std::weak_ptr<SpriteSheet>& spriteSheetPtr,
-             const GhostState startState,
+Ghost::Ghost(std::unique_ptr<Actor> actor, const Size size,
+             SpriteSheet& spriteSheet, const GhostState startState,
              const std::string& leftDrawableName, const std::string& rightDrawableName,
              const std::string& topDrawableName, const std::string& bottomDrawableName)
      : mStartState(startState),
        mState(startState),
-       mActor(actor)
+       mActor(std::move(actor))
 {
-    const std::shared_ptr<SpriteSheet> spriteSheet = spriteSheetPtr.lock();
-    PACMAN_CHECK_ERROR(spriteSheet != nullptr);
-
     const SpriteRegion region(0, 0, size, size);
-    mLeftSprite = spriteSheet->MakeSprite(leftDrawableName, region);
-    mRightSprite = spriteSheet->MakeSprite(rightDrawableName, region);
-    mTopSprite = spriteSheet->MakeSprite(topDrawableName, region);
-    mBottomSprite = spriteSheet->MakeSprite(bottomDrawableName, region);
+    mLeftSprite = spriteSheet.MakeSprite(leftDrawableName, region);
+    mRightSprite = spriteSheet.MakeSprite(rightDrawableName, region);
+    mTopSprite = spriteSheet.MakeSprite(topDrawableName, region);
+    mBottomSprite = spriteSheet.MakeSprite(bottomDrawableName, region);
 
     mActor->SetDrawable(mLeftSprite);
+}
+
+Ghost::~Ghost()
+{
 }
 
 std::shared_ptr<IDrawable> Ghost::GetLeftDrawable() const

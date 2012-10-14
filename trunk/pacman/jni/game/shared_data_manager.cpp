@@ -48,10 +48,10 @@ CellIndexArray SharedDataManager::GetPacmanCells()
 
 CellIndexArray SharedDataManager::GetGhostCells(const GhostId ghostId)
 {
-    return GetActorCells(GetGame().GetAIController().GetGhost(ghostId).GetActor(), GetGhostKeyName(ghostId));
+    return GetActorCells(GetGame().GetAIController().GetGhostActor(ghostId), GetGhostKeyName(ghostId));
 }
 
-CellIndexArray SharedDataManager::GetActorCells(const std::shared_ptr<Actor>& actor, const std::string& keyName)
+CellIndexArray SharedDataManager::GetActorCells(const Actor& actor, const std::string& keyName)
 {
     if (mContext->HasValue(keyName))
     {
@@ -61,7 +61,7 @@ CellIndexArray SharedDataManager::GetActorCells(const std::shared_ptr<Actor>& ac
     {
         Game& game = GetGame();
         Map& map = game.GetMap();
-        const CellIndexArray cells = map.FindCells(actor->GetRegion());
+        const CellIndexArray cells = map.FindCells(actor.GetRegion());
         mContext->SetValue(keyName, cells);
         return cells;
     }

@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include "log.h"
 #include "utils.h"
 #include "common.h"
 #include "error.h"
@@ -46,7 +45,7 @@ static void FillRegion(byte_t* colorBuffer, const Size rowWidth, const SpriteReg
 	const size_t bytesInRow = rowWidth * kColorComponentsCount;
 	const size_t bytesInRegionRow = region.GetWidth() * kColorComponentsCount;
 
-	std::unique_ptr<byte_t[]> row(new byte_t[bytesInRegionRow]);
+	const std::unique_ptr<byte_t[]> row(new byte_t[bytesInRegionRow]);
 	for (size_t i = 0; i < bytesInRegionRow; i += kColorComponentsCount)
 	{
 		row.get()[i]   = color.GetRed();
@@ -109,9 +108,8 @@ Map::Map(const Size cellSize, const CellIndex::value_t rowsCount, const size_t v
     const Size topBottomPadding = (viewportHeight - mapHeight) / 2;
 
     mRect = SpriteRegion(leftRightPadding, topBottomPadding, mapWidth, mapHeight);
-    LogI("mRect: posx: %u, posy: %u", mRect.GetPosX(), mRect.GetPosY());
-    std::shared_ptr<Sprite> sprite = GenerateSprite();
-	mNode = std::make_shared<SceneNode>(sprite, Position::kZero, Rotation::kZero);
+    const std::shared_ptr<Sprite> sprite = GenerateSprite();
+	mNode = std::make_shared<SceneNode>(std::move(sprite), Position::kZero, Rotation::kZero);
 }
 
 void Map::AttachToScene(SceneManager& sceneManager)
@@ -295,12 +293,12 @@ std::shared_ptr<Sprite> Map::GenerateSprite()
 {
 	// lets generate!
 	TextureRegion textureRegion(Math::Vector2f::kZero, 0.0f, 0.0f);
-	std::shared_ptr<Texture2D> texture = GenerateTexture(&textureRegion);
+	const std::shared_ptr<Texture2D> texture = GenerateTexture(&textureRegion);
 
 	AssetManager& assetManager = GetEngine().GetAssetManager();
-	std::shared_ptr<ShaderProgram> shaderProgram = assetManager.LoadShaderProgram(AssetManager::kDefaultTextureVertexShader, AssetManager::kDefaultTextureFragmentShader);
+	const std::shared_ptr<ShaderProgram> shaderProgram = assetManager.LoadShaderProgram(AssetManager::kDefaultTextureVertexShader, AssetManager::kDefaultTextureFragmentShader);
 
-	return std::make_shared<Sprite>(mRect, textureRegion, texture, shaderProgram, false);
+	return std::make_shared<Sprite>(mRect, textureRegion, std::move(texture), std::move(shaderProgram), false);
 }
 
 std::shared_ptr<Texture2D> Map::GenerateTexture(TextureRegion* textureRegion)
@@ -311,7 +309,7 @@ std::shared_ptr<Texture2D> Map::GenerateTexture(TextureRegion* textureRegion)
 
 	const size_t bufferSize = textureWidth * textureHeight * kColorComponentsCount;
 	const size_t bytesInRow = textureWidth * kColorComponentsCount;
-	std::unique_ptr<byte_t[]> buffer(new byte_t[bufferSize]);
+	const std::unique_ptr<byte_t[]> buffer(new byte_t[bufferSize]);
 
 	//
 	// fill map
@@ -320,7 +318,7 @@ std::shared_ptr<Texture2D> Map::GenerateTexture(TextureRegion* textureRegion)
 	{
 		for (size_t j = 0; j < mColumnsCount; j++)
 		{
-			MapCellType cell = GetCell(i, j);
+			const MapCellType cell = GetCell(i, j);
 			SpriteRegion cellRegion(j * mCellSize, i * mCellSize, mCellSize, mCellSize);
 
 			if (cell == MapCellType::Door)
@@ -331,7 +329,7 @@ std::shared_ptr<Texture2D> Map::GenerateTexture(TextureRegion* textureRegion)
 			} 
 			else if (cell == MapCellType::Wall)
 			{
-				MapNeighborsInfo neighbors = GetDirectNeighbors(i, j);
+				const MapNeighborsInfo neighbors = GetDirectNeighbors(i, j);
 				if ((neighbors.mLeft.mCellType == MapCellType::Empty) || (neighbors.mLeft.mCellType == MapCellType::Space))
 					CutLeft(cellRegion, mCellSizeQuarter); // cut left side
 				if ((neighbors.mRight.mCellType == MapCellType::Empty) || (neighbors.mRight.mCellType == MapCellType::Space))
@@ -353,20 +351,20 @@ std::shared_ptr<Texture2D> Map::GenerateTexture(TextureRegion* textureRegion)
 	//
 #ifdef PACMAN_DEBUG_MAP_TEXTURE
 	// fill right align rectangle
-	SpriteRegion rightRectangle(mRect.GetWidth(), 0, textureWidth - mRect.GetWidth(), mRect.GetHeight());
+	const SpriteRegion rightRectangle(mRect.GetWidth(), 0, textureWidth - mRect.GetWidth(), mRect.GetHeight());
 	FillRegion(buffer.get(), textureWidth, rightRectangle, kAlignColor);
 
 	// fill bottom align rectangle
-	SpriteRegion bottomRectangle(0, mRect.GetHeight(), textureWidth, textureHeight - mRect.GetHeight());
+	const SpriteRegion bottomRectangle(0, mRect.GetHeight(), textureWidth, textureHeight - mRect.GetHeight());
 	FillRegion(buffer.get(), textureWidth, bottomRectangle, kAlignColor);
-
-	//
-	// calculate texcoords
-	//
-	const float u = static_cast<float>(mRect.GetWidth()) / static_cast<float>(textureWidth);
-	const float v = static_cast<float>(mRect.GetHeight()) / static_cast<float>(textureHeight);
-	*textureRegion = TextureRegion(Math::Vector2f::kZero, u, v);
 #endif
+
+    //
+    // calculate texcoords
+    //
+    const float u = static_cast<float>(mRect.GetWidth()) / static_cast<float>(textureWidth);
+    const float v = static_cast<float>(mRect.GetHeight()) / static_cast<float>(textureHeight);
+    *textureRegion = TextureRegion(Math::Vector2f::kZero, u, v);
 
 	//
 	// make texture
@@ -385,18 +383,18 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 	{
 		for (size_t j = 0; j < mColumnsCount; j++)
 		{
-			MapCellType cell = GetCell(i, j);
+			const MapCellType cell = GetCell(i, j);
 			if (cell != MapCellType::Wall)
 				continue;
 
-			SpriteRegion cellRegion(j * mCellSize, i * mCellSize, mCellSize, mCellSize);
-			FullMapNeighborsInfo neighbors = GetFullNeighbors(i, j);
+			const SpriteRegion cellRegion(j * mCellSize, i * mCellSize, mCellSize, mCellSize);
+			const FullMapNeighborsInfo neighbors = GetFullNeighbors(i, j);
 
 			if (neighbors.mLeftTop == MapCellType::Empty &&
 				neighbors.mDirectInfo.mLeft.mCellType == MapCellType::Wall &&
 				neighbors.mDirectInfo.mTop.mCellType == MapCellType::Wall)
 			{
-				SpriteRegion artifactRegion(cellRegion.GetPosition(), mCellSizeQuarter, mCellSizeQuarter);
+				const SpriteRegion artifactRegion(cellRegion.GetPosition(), mCellSizeQuarter, mCellSizeQuarter);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.mLeftTop));
 			}
 
@@ -404,9 +402,8 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.mDirectInfo.mRight.mCellType == MapCellType::Wall &&
 				neighbors.mDirectInfo.mTop.mCellType == MapCellType::Wall)
 			{
-				Position pos = cellRegion.GetRightTopPos();
-				pos.SetX(pos.GetX() - mCellSizeQuarter);
-				SpriteRegion artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);
+				const Position pos = cellRegion.GetRightTopPos() - Position(mCellSizeQuarter, 0);
+				const SpriteRegion artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.mRightTop));
 			}
 
@@ -414,9 +411,8 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.mDirectInfo.mLeft.mCellType == MapCellType::Wall &&
 				neighbors.mDirectInfo.mBottom.mCellType == MapCellType::Wall)
 			{
-				Position pos = cellRegion.GetLeftBottomPos();
-				pos.SetY(pos.GetY() - mCellSizeQuarter);
-				SpriteRegion artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);
+				const Position pos = cellRegion.GetLeftBottomPos() - Position(0, mCellSizeQuarter);
+				const SpriteRegion artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.mLeftBottom));
 			}
 
@@ -424,10 +420,8 @@ void Map::CleanArtifacts(byte_t* buffer, const size_t textureWidth)
 				neighbors.mDirectInfo.mRight.mCellType == MapCellType::Wall &&
 				neighbors.mDirectInfo.mBottom.mCellType == MapCellType::Wall)
 			{
-				Position pos = cellRegion.GetRightBottomPos();
-				pos.SetX(pos.GetX() - mCellSizeQuarter);
-				pos.SetY(pos.GetY() - mCellSizeQuarter);
-				SpriteRegion artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);
+				const Position pos = cellRegion.GetRightBottomPos() - Position(mCellSizeQuarter, mCellSizeQuarter);
+				const SpriteRegion artifactRegion(pos, mCellSizeQuarter, mCellSizeQuarter);
 				FillRegion(buffer, textureWidth, artifactRegion, GetColor(neighbors.mRightBottom));
 			}
 		}

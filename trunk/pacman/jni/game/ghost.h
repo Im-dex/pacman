@@ -11,14 +11,13 @@ class Ghost
 {
 public:
 
-    Ghost(const std::shared_ptr<Actor>& actor, const Size size,
-          const std::weak_ptr<SpriteSheet>& spriteSheetPtr,
-          const GhostState startState,
+    Ghost(std::unique_ptr<Actor> actor, const Size size,
+          SpriteSheet& spriteSheet, const GhostState startState,
           const std::string& leftDrawableName, const std::string& rightDrawableName,
           const std::string& topDrawableName, const std::string& bottomDrawableName);
 
     Ghost(const Ghost&) = delete;
-    virtual ~Ghost() {}
+    virtual ~Ghost();
 
     Ghost& operator= (const Ghost&) = delete;
 
@@ -47,16 +46,16 @@ public:
         mState = state;
     }
 
-    std::shared_ptr<Actor> GetActor() const
+    Actor& GetActor() const
     {
-        return mActor;
+        return *mActor;
     }
 
 protected:
 
     const GhostState        mStartState;
     GhostState              mState;
-    std::shared_ptr<Actor>  mActor;
+    std::unique_ptr<Actor>  mActor;
     std::shared_ptr<Sprite> mLeftSprite;
     std::shared_ptr<Sprite> mRightSprite;
     std::shared_ptr<Sprite> mTopSprite;

@@ -19,7 +19,7 @@ public:
 
     GhostsFactory& operator= (const GhostsFactory&) = delete;
 
-    std::shared_ptr<Ghost> CreateGhost(const Size actorSize, const std::weak_ptr<SpriteSheet>& spriteSheetPtr,
+    std::unique_ptr<Ghost> CreateGhost(const Size actorSize, SpriteSheet& spriteSheet,
                                        const GhostId ghostId) const;
 };
 

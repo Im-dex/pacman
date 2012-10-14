@@ -68,16 +68,16 @@ std::unique_ptr<Map> GameLoader::LoadMap(const std::string& fileName, const Size
         mDotsInfo.push_back(dot);
     }
 
-    return std::unique_ptr<Map>(new Map(cellSize, rowsCount, renderer.GetViewportWidth(), renderer.GetViewportHeight(),
-                                        leftTunnelExitValue, rightTunnelExitValue, cellsValues));
+    return MakeUnique<Map>(cellSize, rowsCount, renderer.GetViewportWidth(), renderer.GetViewportHeight(),
+                           leftTunnelExitValue, rightTunnelExitValue, cellsValues);
 }
 
 std::unique_ptr<DotsGrid> GameLoader::MakeDotsGrid(const std::weak_ptr<SpriteSheet>& spritesheetPtr)
 {
-    return std::unique_ptr<DotsGrid>(new DotsGrid(mDotsInfo, spritesheetPtr));
+    return MakeUnique<DotsGrid>(mDotsInfo, spritesheetPtr);
 }
 
-std::shared_ptr<Actor> GameLoader::LoadActor(const std::string& fileName, const Size actorSize,
+std::unique_ptr<Actor> GameLoader::LoadActor(const std::string& fileName, const Size actorSize,
                                              const std::shared_ptr<IDrawable>& drawable) const
 {
     typedef EnumType<MoveDirection>::value MoveDirectionValueT;
@@ -98,7 +98,7 @@ std::shared_ptr<Actor> GameLoader::LoadActor(const std::string& fileName, const 
     const Size cellSize = map.GetCellSize();
     const Position startPosition = CalcActorPosition(cellSize, actorSize, map.GetCellCenterPos(startCellIndex));
 
-    return std::make_shared<Actor>(actorSize, startSpeed, startPosition, MakeEnum<MoveDirection>(startDirection), drawable);
+    return MakeUnique<Actor>(actorSize, startSpeed, startPosition, MakeEnum<MoveDirection>(startDirection), drawable);
 }
 
 AIInfo GameLoader::LoadAIInfo(const std::string& fileName) const

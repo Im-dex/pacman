@@ -60,6 +60,4 @@ static FORCEINLINE Position GetFuturePosition(const Position& current, const Mov
     }
 }
 
-bool ContainsElements(const CellIndexArray& array, const CellIndexArray& elements);
-
 } // Pacman namespace

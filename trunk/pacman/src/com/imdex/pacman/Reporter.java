@@ -91,6 +91,7 @@ public class Reporter {
 		builder.setMessage(error)
 			   .setIcon(android.R.drawable.ic_delete)
 			   .setTitle("Fatal error occurred")
+			   .setCancelable(false)
 			   .setPositiveButton("Ok", new OnClickListener() {
 				   public void onClick(DialogInterface dialog, int which) {
 					   Process.killProcess(Process.myPid());
@@ -106,6 +107,7 @@ public class Reporter {
 		builder.setMessage(message)
 			   .setIcon(android.R.drawable.ic_dialog_info)
 			   .setTitle(title)
+			   .setCancelable(false)
 			   .setPositiveButton("Ok", new OnClickListener() {
 				   public void onClick(DialogInterface dialog, int which) {
 					   if (terminateOnOk)
