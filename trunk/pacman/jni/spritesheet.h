@@ -28,7 +28,7 @@ class SpriteSheet
 public:
 
 	SpriteSheet() = delete;
-	SpriteSheet(const std::shared_ptr<Texture2D>& texture, const NamedSpriteInfoArray& namedSpritesInfo);
+	SpriteSheet(const std::shared_ptr<Texture2D> texture, const NamedSpriteInfoArray& namedSpritesInfo);
 	SpriteSheet(const SpriteSheet&) = default;
 	~SpriteSheet() = default;
 

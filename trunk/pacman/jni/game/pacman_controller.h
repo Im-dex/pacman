@@ -13,7 +13,7 @@ class PacmanController : public IActorController
 {
 public:
 
-    PacmanController(const Size actorSize, SpriteSheet& spriteSheet);
+    PacmanController(const Size actorSize, const SpriteSheet& spriteSheet);
     PacmanController(const PacmanController&) = delete;
     ~PacmanController() = default;
 

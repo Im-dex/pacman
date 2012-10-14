@@ -29,15 +29,15 @@ class DotsGrid
 public:
 
     DotsGrid() = delete;
-    DotsGrid(const std::vector<DotType>& dotsInfo, const std::weak_ptr<SpriteSheet>& spritesheetPtr);
+    DotsGrid(const std::vector<DotType>& dotsInfo, const SpriteSheet& spritesheet);
     DotsGrid(const DotsGrid&) = delete;
     ~DotsGrid() = default;
 
     DotsGrid& operator= (const DotsGrid&) = delete;
 
-    void AttachToScene(SceneManager& sceneManager);
+    void AttachToScene(SceneManager& sceneManager) const;
 
-    void DetachFromScene(SceneManager& sceneManager);
+    void DetachFromScene(SceneManager& sceneManager) const;
 
     void HideDot(const CellIndex& cellIndex);
 

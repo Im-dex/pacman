@@ -31,46 +31,43 @@ static FORCEINLINE Position GetDotPosition(const CellIndex& cellIndex, const Siz
     return GetGame().GetMap().GetCellCenterPos(cellIndex) - Position(dotSizeHalf, dotSizeHalf);
 }
 
-DotsGrid::DotsGrid(const std::vector<DotType>& dotsInfo, const std::weak_ptr<SpriteSheet>& spritesheetPtr)
+DotsGrid::DotsGrid(const std::vector<DotType>& dotsInfo, const SpriteSheet& spritesheet)
         : mDotsInfo(dotsInfo),
           mMapColumnsCount(GetGame().GetMap().GetColumnsCount()),
           mHiddenDotsCounts(0)
 {
-    const std::shared_ptr<SpriteSheet> spritesheet = spritesheetPtr.lock();
-    PACMAN_CHECK_ERROR(spritesheet != nullptr);
-
     Map& map = GetGame().GetMap();
     AssetManager& assetManager = GetEngine().GetAssetManager();
 
     const Size smallDotSize = map.GetCellSize() / 2;
     const Size bigDotSize = map.GetCellSize();
-    SpriteRegion smallRegion(0, 0, smallDotSize, smallDotSize);
-    SpriteRegion bigRegion(0, 0, bigDotSize, bigDotSize);
+    const SpriteRegion smallRegion(0, 0, smallDotSize, smallDotSize);
+    const SpriteRegion bigRegion(0, 0, bigDotSize, bigDotSize);
 
-    SpriteInfo info = spritesheet->GetSpriteInfo(kDotSpriteName);
-    std::shared_ptr<ShaderProgram> shaderProgram = assetManager.LoadShaderProgram(info.mVertexShaderName, info.mFragmentShaderName);
+    const SpriteInfo info = spritesheet.GetSpriteInfo(kDotSpriteName);
+    const std::shared_ptr<ShaderProgram> shaderProgram = assetManager.LoadShaderProgram(info.mVertexShaderName, info.mFragmentShaderName);
 
-    DotsInstancesTuple instancesTuple = MakeInstances(smallDotSize, bigDotSize);
-    std::vector<Position>& smallDotsInstances = std::get<0>(instancesTuple);
-    std::vector<Position>& bigDotsInstances = std::get<1>(instancesTuple);
+    const DotsInstancesTuple instancesTuple = MakeInstances(smallDotSize, bigDotSize);
+    static const size_t kSmallDotsInstances = 0;
+    static const size_t kBigDotsInstances = 1;
 
-    mSmallDotsSprite = std::make_shared<InstancedSprite>(smallRegion, info.mTextureRegion, spritesheet->GetTexture(), shaderProgram,
-                                                         info.mAlphaBlend, smallDotsInstances, true);
+    mSmallDotsSprite = std::make_shared<InstancedSprite>(smallRegion, info.mTextureRegion, spritesheet.GetTexture(), shaderProgram,
+                                                         info.mAlphaBlend, std::get<kSmallDotsInstances>(instancesTuple), true);
 
-    mBigDotsSprite = std::make_shared<InstancedSprite>(bigRegion, info.mTextureRegion, spritesheet->GetTexture(), shaderProgram,
-                                                       info.mAlphaBlend, bigDotsInstances, true);
+    mBigDotsSprite = std::make_shared<InstancedSprite>(bigRegion, info.mTextureRegion, spritesheet.GetTexture(), shaderProgram,
+                                                       info.mAlphaBlend, std::get<kBigDotsInstances>(instancesTuple), true);
 
     mSmallDotsNode = std::make_shared<SceneNode>(mSmallDotsSprite, Position::kZero, Rotation::kZero);
     mBigDotsNode = std::make_shared<SceneNode>(mBigDotsSprite, Position::kZero, Rotation::kZero);
 }
 
-void DotsGrid::AttachToScene(SceneManager& sceneManager)
+void DotsGrid::AttachToScene(SceneManager& sceneManager) const
 {
     sceneManager.AttachNode(mSmallDotsNode);
     sceneManager.AttachNode(mBigDotsNode);
 }
 
-void DotsGrid::DetachFromScene(SceneManager& sceneManager)
+void DotsGrid::DetachFromScene(SceneManager& sceneManager) const
 {
     sceneManager.DetachNode(mSmallDotsNode);
     sceneManager.DetachNode(mBigDotsNode);

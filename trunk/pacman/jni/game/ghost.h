@@ -12,7 +12,7 @@ class Ghost
 public:
 
     Ghost(std::unique_ptr<Actor> actor, const Size size,
-          SpriteSheet& spriteSheet, const GhostState startState,
+          const SpriteSheet& spriteSheet, const GhostState startState,
           const std::string& leftDrawableName, const std::string& rightDrawableName,
           const std::string& topDrawableName, const std::string& bottomDrawableName);
 

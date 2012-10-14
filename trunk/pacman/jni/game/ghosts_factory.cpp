@@ -44,8 +44,7 @@ class Blinky : public Ghost
 {
 public:
 
-    Blinky(std::unique_ptr<Actor> actor, const Size size,
-           SpriteSheet& spriteSheet)
+    Blinky(std::unique_ptr<Actor> actor, const Size size, const SpriteSheet& spriteSheet)
         : Ghost(std::move(actor), size, spriteSheet, GhostState::Chase,
                 "blinky_left", "blinky_right", "blinky_top", "blinky_bottom")
     {
@@ -69,8 +68,7 @@ class Pinky : public Ghost
 {
 public:
 
-    Pinky(std::unique_ptr<Actor> actor, const Size size,
-          SpriteSheet& spriteSheet)
+    Pinky(std::unique_ptr<Actor> actor, const Size size, const SpriteSheet& spriteSheet)
       : Ghost(std::move(actor), size, spriteSheet, GhostState::Chase,
         "pinky_left", "pinky_right", "pinky_top", "pinky_bottom")
     {
@@ -97,8 +95,7 @@ class Inky : public Ghost
 {
 public:
 
-    Inky(std::unique_ptr<Actor> actor, const Size size,
-         SpriteSheet& spriteSheet)
+    Inky(std::unique_ptr<Actor> actor, const Size size, const SpriteSheet& spriteSheet)
       : Ghost(std::move(actor), size, spriteSheet, GhostState::Wait,
         "inky_left", "inky_right", "inky_top", "inky_bottom")
     {
@@ -153,8 +150,7 @@ class Clyde : public Ghost
 {
 public:
 
-    Clyde(std::unique_ptr<Actor> actor, const Size size,
-          SpriteSheet& spriteSheet)
+    Clyde(std::unique_ptr<Actor> actor, const Size size, const SpriteSheet& spriteSheet)
       : Ghost(std::move(actor), size, spriteSheet, GhostState::Wait,
         "clyde_left", "clyde_right", "clyde_top", "clyde_bottom")
     {
@@ -187,7 +183,7 @@ public:
     }
 };
 
-std::unique_ptr<Ghost> GhostsFactory::CreateGhost(const Size actorSize, SpriteSheet& spriteSheet,
+std::unique_ptr<Ghost> GhostsFactory::CreateGhost(const Size actorSize, const SpriteSheet& spriteSheet,
                                                  const GhostId ghostId) const
 {
     GameLoader& loader = GetGame().GetLoader();

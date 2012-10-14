@@ -72,9 +72,9 @@ std::unique_ptr<Map> GameLoader::LoadMap(const std::string& fileName, const Size
                            leftTunnelExitValue, rightTunnelExitValue, cellsValues);
 }
 
-std::unique_ptr<DotsGrid> GameLoader::MakeDotsGrid(const std::weak_ptr<SpriteSheet>& spritesheetPtr)
+std::unique_ptr<DotsGrid> GameLoader::MakeDotsGrid(const SpriteSheet& spritesheet)
 {
-    return MakeUnique<DotsGrid>(mDotsInfo, spritesheetPtr);
+    return MakeUnique<DotsGrid>(mDotsInfo, spritesheet);
 }
 
 std::unique_ptr<Actor> GameLoader::LoadActor(const std::string& fileName, const Size actorSize,
