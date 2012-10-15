@@ -18,9 +18,9 @@ public:
 
 	SceneManager& operator= (const SceneManager&) = delete;
 
-	void AttachNode(const std::shared_ptr<SceneNode>& node);
+	void AttachNode(const std::shared_ptr<SceneNode> node);
 
-	void DetachNode(const std::shared_ptr<SceneNode>& node);
+	void DetachNode(const std::shared_ptr<SceneNode> node);
 
 private:
 

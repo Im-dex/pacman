@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 #include "base.h"
 #include "engine_forwdecl.h"
 
@@ -11,11 +9,11 @@ class IEngineListener
 {
 public:
 
-	virtual void OnStart(Engine& engine) = 0;
+	virtual void OnStart(const Engine& engine) = 0;
 
-	virtual void OnStop(Engine& engine) = 0;
+	virtual void OnStop(const Engine& engine) = 0;
 
-	virtual void OnUpdate(Engine& engine, const uint64_t dt) = 0;
+	virtual void OnUpdate(const Engine& engine, const uint64_t dt) = 0;
 };
 
 enum class GestureType : uint8_t

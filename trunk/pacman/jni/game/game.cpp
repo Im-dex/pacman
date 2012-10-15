@@ -94,7 +94,7 @@ static void PacmanGhostCollision(const GhostId ghostId)
     }
 }
 
-void Game::OnStart(Engine& engine)
+void Game::OnStart(const Engine& engine)
 {
     mPause = false;
     mLoader = std::unique_ptr<GameLoader>(new GameLoader());
@@ -131,13 +131,12 @@ void Game::OnStart(Engine& engine)
     InitActionsAndTriggers();
 }
 
-void Game::OnStop(Engine& engine)
+void Game::OnStop(const Engine& engine)
 {
-    engine.SetListener(nullptr);
     gGame = nullptr;
 }
 
-void Game::OnUpdate(Engine& engine, const uint64_t dt)
+void Game::OnUpdate(const Engine& engine, const uint64_t dt)
 {
     if (!mPause)
     {

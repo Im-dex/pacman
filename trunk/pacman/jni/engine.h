@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <cstdint>
 
 #include "base.h"
 #include "engine_forwdecl.h"
@@ -29,10 +28,10 @@ public:
 
     void ShowInfo(const std::string& message, const std::string& title, const bool terminate);
 
-	void SetListener(std::shared_ptr<IEngineListener> listener)
-	{
-		mListener = listener;
-	}
+	void SetListener(const std::shared_ptr<IEngineListener> listener)
+    {
+        mListener = std::move(listener);
+    }
 
 	AssetManager& GetAssetManager() const
 	{
@@ -44,7 +43,7 @@ public:
 		return *mSceneManager;
 	}
 
-	Renderer& GetRenderer()
+	Renderer& GetRenderer() const
 	{
 		return *mRenderer;
 	}

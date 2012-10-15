@@ -2,7 +2,7 @@
 
 namespace Pacman {
 
-SceneNode::SceneNode(const std::shared_ptr<IDrawable>& drawable,
+SceneNode::SceneNode(const std::shared_ptr<IDrawable> drawable,
                      const Position& position, const Rotation& rotation)
 	: mDrawable(drawable),
       mPivotOffset(Position::kZero),

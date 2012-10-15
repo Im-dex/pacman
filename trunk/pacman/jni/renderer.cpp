@@ -2,7 +2,6 @@
 
 #include <GLES2/gl2.h>
 
-#include "log.h"
 #include "error.h"
 #include "engine.h"
 #include "scene_manager.h"
@@ -50,23 +49,20 @@ void Renderer::DrawFrame()
 	glClear(GL_COLOR_BUFFER_BIT);
 	PACMAN_CHECK_GL_ERROR();
 
-	SceneManager& sceneManager = GetEngine().GetSceneManager();
+	const SceneManager& sceneManager = GetEngine().GetSceneManager();
 	for (const std::shared_ptr<SceneNode>& node : sceneManager)
 	{
-		RenderDrawable(node->GetDrawable(), node->GetModelMatrix());
+        const IDrawable& drawable = *(node->GetDrawable());
+		RenderDrawable(drawable, node->GetModelMatrix());
 	}
 }
 
-void Renderer::RenderDrawable(const std::shared_ptr<IDrawable>& drawable, const Math::Matrix4f modelMatrix)
+void Renderer::RenderDrawable(const IDrawable& drawable, const Math::Matrix4f modelMatrix)
 {
-    PACMAN_CHECK_ERROR(drawable != nullptr);
-
-	std::shared_ptr<VertexBuffer> vertexBuffer = drawable->GetVertexBuffer();
-	std::shared_ptr<ShaderProgram> shaderProgram = drawable->GetShaderProgram();
-	std::weak_ptr<Texture2D> texture = drawable->GetTexture();
-	bool hasAlphaBlend = drawable->HasAlphaBlend();
-    
-    PACMAN_CHECK_ERROR((vertexBuffer != nullptr) && (shaderProgram != nullptr));
+	const std::shared_ptr<VertexBuffer> vertexBuffer = drawable.GetVertexBuffer();
+	const std::shared_ptr<ShaderProgram> shaderProgram = drawable.GetShaderProgram();
+	const std::weak_ptr<Texture2D> texturePtr = drawable.GetTexture();
+	const bool hasAlphaBlend = drawable.HasAlphaBlend();
 
 	if (hasAlphaBlend && !mLastAlphaBlendState)
 	{
@@ -82,12 +78,12 @@ void Renderer::RenderDrawable(const std::shared_ptr<IDrawable>& drawable, const 
         mLastAlphaBlendState = false;
     }
 
-	if (auto texturePtr = texture.lock())
+	if (const std::shared_ptr<Texture2D> texture = texturePtr.lock())
     {
-        if (mLastTexture != texturePtr.get())
+        if (mLastTexture != texture.get())
         {
-		    texturePtr->Bind();
-            mLastTexture = texturePtr.get();
+		    texture->Bind();
+            mLastTexture = texture.get();
         }
     }
 

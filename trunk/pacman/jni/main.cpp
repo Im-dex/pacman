@@ -30,7 +30,6 @@ Engine& GetEngine()
 
 void SurfaceChanged(const size_t width, const size_t heigth)
 {
-	LogI("w: %d, h: %d", width, heigth);
     gEngine.Start(width, heigth);
 }
 

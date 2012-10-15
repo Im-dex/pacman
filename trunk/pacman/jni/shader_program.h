@@ -29,14 +29,14 @@ class ShaderProgram
 public:
 
 	ShaderProgram() = delete;
-	ShaderProgram(const std::string& vertexShaderSource, const std::string& fragmentShaderSource);
+	ShaderProgram(const std::string vertexShaderSource, const std::string fragmentShaderSource);
 	ShaderProgram(const ShaderProgram&) = delete;
 	~ShaderProgram();
 
 	ShaderProgram& operator= (const ShaderProgram&) = delete;
 
-	void SetVertexShader(const std::string& shaderSource);
-	void SetFragmentShader(const std::string& shaderSource);
+	void SetVertexShader(const std::string shaderSource);
+	void SetFragmentShader(const std::string shaderSource);
 
 	void Link();
 

@@ -6,8 +6,8 @@
 
 namespace Pacman {
 
-Shader::Shader(const ShaderType type, const std::string& shaderSource)
-	  : mShaderSource(shaderSource),
+Shader::Shader(const ShaderType type, const std::string shaderSource)
+	  : mShaderSource(std::move(shaderSource)),
 	    mIsCompiled(false)
 {
 	GLenum glType = (type == ShaderType::VERTEX) ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER;
@@ -36,7 +36,7 @@ void Shader::Compile()
 		glGetShaderiv(mShaderHandle, GL_INFO_LOG_LENGTH, &infoLength);
 		if (infoLength > 0)
 		{
-			std::unique_ptr<char[]> buf(new char[infoLength]);
+			const std::unique_ptr<char[]> buf(new char[infoLength]);
 			glGetShaderInfoLog(mShaderHandle, infoLength, nullptr, buf.get());
 			PACMAN_CHECK_ERROR2(false, buf.get());
 		}

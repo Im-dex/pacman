@@ -17,11 +17,11 @@ public:
 
 	Game& operator= (const Game&) = delete;
 
-	virtual void OnStart(Engine& engine);
+	virtual void OnStart(const Engine& engine);
 
-	virtual void OnStop(Engine& engine);
+	virtual void OnStop(const Engine& engine);
 
-	virtual void OnUpdate(Engine& engine, const uint64_t dt);
+	virtual void OnUpdate(const Engine& engine, const uint64_t dt);
 
     virtual void OnGesture(const GestureType gestureType);
 
