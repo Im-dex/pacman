@@ -6,9 +6,9 @@
 
 namespace Pacman {
 
-ShaderProgram::ShaderProgram(const std::string& vertexShaderSource, const std::string& fragmentShaderSource)
-			 : mVertexShader(ShaderType::VERTEX, vertexShaderSource),
-			   mFragmentShader(ShaderType::FRAGMENT, fragmentShaderSource),
+ShaderProgram::ShaderProgram(const std::string vertexShaderSource, const std::string fragmentShaderSource)
+			 : mVertexShader(ShaderType::VERTEX, std::move(vertexShaderSource)),
+			   mFragmentShader(ShaderType::FRAGMENT, std::move(fragmentShaderSource)),
 			   mIsLinked(false),
 			   mAttributeUniformHandles()
 {
@@ -22,15 +22,15 @@ ShaderProgram::~ShaderProgram()
     glDeleteProgram(mProgramHandle);
 }
 
-void ShaderProgram::SetVertexShader(const std::string& shaderSource)
+void ShaderProgram::SetVertexShader(const std::string shaderSource)
 {
-	mVertexShader.SetSource(shaderSource);
+	mVertexShader.SetSource(std::move(shaderSource));
 	mIsLinked = false;
 }
 
-void ShaderProgram::SetFragmentShader(const std::string& shaderSource)
+void ShaderProgram::SetFragmentShader(const std::string shaderSource)
 {
-	mFragmentShader.SetSource(shaderSource);
+	mFragmentShader.SetSource(std::move(shaderSource));
 	mIsLinked = false;
 }
 

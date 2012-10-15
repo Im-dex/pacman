@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 #include "base.h"
 #include "engine_forwdecl.h"
 #include "color.h"
@@ -40,7 +38,7 @@ public:
 
 private:
 
-	void RenderDrawable(const std::shared_ptr<IDrawable>& drawable, const Math::Matrix4f modelMatrix);
+	void RenderDrawable(const IDrawable& drawable, const Math::Matrix4f modelMatrix);
 
 	Math::Matrix4f mProjection;
 	Color mClearColor;

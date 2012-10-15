@@ -2,7 +2,6 @@
 
 #include <unistd.h>
 
-#include "log.h"
 #include "main.h"
 #include "error.h"
 #include "asset_manager.h"
@@ -50,7 +49,6 @@ void Engine::Start(const size_t screenWidth, const size_t screenHeight)
 {
     if (!mStarted)
     {
-        LogI("Engine start");
         std::string configData = mAssetManager->LoadTextFile("config.json");
         const JsonHelper::Value root(configData);
 
@@ -69,14 +67,13 @@ void Engine::Start(const size_t screenWidth, const size_t screenHeight)
         mTimer = nullptr;
         mLastTime = 0;
         ErrorHandler::CleanGLErrors();
-        PACMAN_CHECK_GL_ERROR();
     }
     
-    mAssetManager = std::unique_ptr<AssetManager>(new AssetManager());
-    mSceneManager = std::unique_ptr<SceneManager>(new SceneManager());
-    mRenderer = std::unique_ptr<Renderer>(new Renderer());
-    mInputManager = std::unique_ptr<InputManager>(new InputManager());
-    mTimer = std::unique_ptr<Timer>(new Timer());
+    mAssetManager = MakeUnique<AssetManager>();
+    mSceneManager = MakeUnique<SceneManager>();
+    mRenderer = MakeUnique<Renderer>();
+    mInputManager = MakeUnique<InputManager>();
+    mTimer = MakeUnique<Timer>();
     PacmanSetEngineListener(*this);
     PACMAN_CHECK_ERROR(mListener != nullptr);
 

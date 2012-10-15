@@ -14,7 +14,7 @@ class SceneNode
 public:
 
 	SceneNode() = delete;
-	SceneNode(const std::shared_ptr<IDrawable>& drawable,
+	SceneNode(const std::shared_ptr<IDrawable> drawable,
               const Position& position, const Rotation& rotation);
 
 	SceneNode(const SceneNode&) = default;
@@ -29,9 +29,9 @@ public:
         return mDrawable;
     }
 
-    void SetDrawable(const std::shared_ptr<IDrawable>& drawable)
+    void SetDrawable(const std::shared_ptr<IDrawable> drawable)
     {
-        mDrawable = drawable;
+        mDrawable = std::move(drawable);
     }
 
 	Position GetPosition() const

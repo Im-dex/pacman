@@ -19,17 +19,17 @@ public:
 	InstancedSprite() = delete;
 
 	InstancedSprite(const SpriteRegion& region, const Color leftTop, const Color rightTop, const Color leftBottom,
-		            const Color rightBottom, const std::shared_ptr<ShaderProgram>& shaderProgram, const bool alphaBlend,
+		            const Color rightBottom, const std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend,
                     const std::vector<Position>& instances, const bool instanceEraseEnabled);
 
-	InstancedSprite(const SpriteRegion& region, const std::shared_ptr<ShaderProgram>& shaderProgram, const bool alphaBlend,
+	InstancedSprite(const SpriteRegion& region, const std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend,
                     const std::vector<Position>& instances, const bool instanceEraseEnabled);
 
-	InstancedSprite(const SpriteRegion& region, const TextureRegion& textureRegion, const std::shared_ptr<Texture2D>& texture,
-		            const std::shared_ptr<ShaderProgram>& shaderProgram, const bool alphaBlend, const std::vector<Position>& instances,
+	InstancedSprite(const SpriteRegion& region, const TextureRegion& textureRegion, const std::shared_ptr<Texture2D> texture,
+		            const std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend, const std::vector<Position>& instances,
                     const bool instanceEraseEnabled);
 
-	InstancedSprite(const SpriteRegion& region, const std::shared_ptr<Texture2D>& texture, const std::shared_ptr<ShaderProgram>& shaderProgram,
+	InstancedSprite(const SpriteRegion& region, const std::shared_ptr<Texture2D> texture, const std::shared_ptr<ShaderProgram> shaderProgram,
                     const bool alphaBlend, const std::vector<Position>& instances, const bool instanceEraseEnabled);
 
 	InstancedSprite(const InstancedSprite&) = default;

@@ -18,7 +18,7 @@ class Shader
 public:
 
 	Shader() = delete;
-	Shader(const ShaderType type, const std::string& shaderSource);
+	Shader(const ShaderType type, const std::string shaderSource);
 	Shader(const Shader&) = delete;
 	~Shader();
 
@@ -31,9 +31,9 @@ public:
 		return mShaderHandle;
 	}
 
-	void SetSource(const std::string& source)
+	void SetSource(const std::string source)
 	{
-		mShaderSource = source;
+		mShaderSource = std::move(source);
 		mIsCompiled = false;
 	}
 

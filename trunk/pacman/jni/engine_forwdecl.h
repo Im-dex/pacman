@@ -10,6 +10,7 @@ class InstancedSprite;
 class SpriteSheet;
 class Sprite;
 class Texture2D;
+class Color;
 class FrameAnimator;
 class ShaderProgram;
 class VertexBuffer;

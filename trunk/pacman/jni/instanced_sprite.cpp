@@ -90,9 +90,9 @@ static FORCEINLINE void FillTexCoord(TextureVertex& vertex, const Math::Vector2f
 //===========================================================================================================
 
 InstancedSprite::InstancedSprite(const SpriteRegion& region, const Color leftTop, const Color rightTop, const Color leftBottom,
-			                     const Color rightBottom, const std::shared_ptr<ShaderProgram>& shaderProgram, const bool alphaBlend,
+			                     const Color rightBottom, const std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend,
                                  const std::vector<Position>& instances, const bool instanceEraseEnabled)
-	           : mShaderProgram(shaderProgram),
+	           : mShaderProgram(std::move(shaderProgram)),
 	             mTexture(nullptr),
 		         mVertexBuffer(nullptr),
 		         mAlphaBlend(alphaBlend),
@@ -103,9 +103,9 @@ InstancedSprite::InstancedSprite(const SpriteRegion& region, const Color leftTop
     InitInstancesEraseState();
 }
 
-InstancedSprite::InstancedSprite(const SpriteRegion& region, const std::shared_ptr<ShaderProgram>& shaderProgram, const bool alphaBlend,
+InstancedSprite::InstancedSprite(const SpriteRegion& region, const std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend,
                                  const std::vector<Position>& instances, const bool instanceEraseEnabled)
-	           : mShaderProgram(shaderProgram),
+	           : mShaderProgram(std::move(shaderProgram)),
 	             mTexture(nullptr),
 		         mVertexBuffer(nullptr),
 		         mAlphaBlend(alphaBlend),
@@ -116,11 +116,11 @@ InstancedSprite::InstancedSprite(const SpriteRegion& region, const std::shared_p
     InitInstancesEraseState();
 }
 
-InstancedSprite::InstancedSprite(const SpriteRegion& region, const TextureRegion& textureRegion, const std::shared_ptr<Texture2D>& texture,
-			                     const std::shared_ptr<ShaderProgram>& shaderProgram, const bool alphaBlend, const std::vector<Position>& instances,
+InstancedSprite::InstancedSprite(const SpriteRegion& region, const TextureRegion& textureRegion, const std::shared_ptr<Texture2D> texture,
+			                     const std::shared_ptr<ShaderProgram> shaderProgram, const bool alphaBlend, const std::vector<Position>& instances,
                                  const bool instanceEraseEnabled)
-	           : mShaderProgram(shaderProgram),
-	             mTexture(texture),
+	           : mShaderProgram(std::move(shaderProgram)),
+	             mTexture(std::move(texture)),
 		         mVertexBuffer(nullptr),
 		         mAlphaBlend(alphaBlend),
                  mInstanceEraseEnabled(instanceEraseEnabled),
@@ -130,10 +130,10 @@ InstancedSprite::InstancedSprite(const SpriteRegion& region, const TextureRegion
     InitInstancesEraseState();
 }
 
-InstancedSprite::InstancedSprite(const SpriteRegion& region, const std::shared_ptr<Texture2D>& texture, const std::shared_ptr<ShaderProgram>& shaderProgram,
+InstancedSprite::InstancedSprite(const SpriteRegion& region, const std::shared_ptr<Texture2D> texture, const std::shared_ptr<ShaderProgram> shaderProgram,
                                  const bool alphaBlend, const std::vector<Position>& instances, const bool instanceEraseEnabled)
-	           : mShaderProgram(shaderProgram),
-	             mTexture(texture),
+	           : mShaderProgram(std::move(shaderProgram)),
+	             mTexture(std::move(texture)),
 		         mVertexBuffer(nullptr),
 		         mAlphaBlend(alphaBlend),
                  mInstanceEraseEnabled(instanceEraseEnabled),
@@ -210,7 +210,7 @@ void InstancedSprite::InitByColor(const SpriteRegion& region, const Color leftTo
         FillColor(vertices[i*kSpriteVertexCount + 3], rightTop);
     }
 
-    BufferUsage indexBufferUsage = mInstanceEraseEnabled ? BufferUsage::Dynamic : BufferUsage::Static;
+    const BufferUsage indexBufferUsage = mInstanceEraseEnabled ? BufferUsage::Dynamic : BufferUsage::Static;
 	mVertexBuffer = std::make_shared<VertexBuffer>(vertices, indices, BufferUsage::Static, indexBufferUsage);
 }
 
@@ -236,7 +236,7 @@ void InstancedSprite::InitByTexture(const SpriteRegion& region, const TextureReg
         FillTexCoord(vertices[i*kSpriteVertexCount + 3], Math::Vector2f(textureRegion.GetPosX() + textureRegion.GetWidth(), textureRegion.GetPosY()));
     }
 
-    BufferUsage indexBufferUsage = mInstanceEraseEnabled ? BufferUsage::Dynamic : BufferUsage::Static;
+    const BufferUsage indexBufferUsage = mInstanceEraseEnabled ? BufferUsage::Dynamic : BufferUsage::Static;
 	mVertexBuffer = std::make_shared<VertexBuffer>(vertices, indices, BufferUsage::Static, indexBufferUsage);
 }
 
