@@ -1,2 +1,0 @@
-set solib-search-path D:/bitbuket/mywork/trunk/pacman//obj/local/armeabi-v7a
-directory D:/android/ndk/platforms/android-8/arch-arm/usr/include D:/android/ndk/sources/cxx-stl/gnu-libstdc++ D:/android/ndk/sources/cxx-stl/gnu-libstdc++/4.6/include D:/android/ndk/sources/cxx-stl/gnu-libstdc++/4.6/libs/armeabi-v7a/include D:/bitbuket/mywork/trunk/pacman//jni
